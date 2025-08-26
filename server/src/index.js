@@ -1,0 +1,34 @@
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import helmet from 'helmet';
+import { env } from './config/env.js';
+import { syncDb } from './models/index.js';
+import authRoutes from './routes/auth.js';
+import articleRoutes from './routes/articles.js';
+
+const app = express();
+
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(express.json());
+
+// CORS: allow dev web app + extension
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // Postman / curl
+    if (origin.startsWith('chrome-extension://')) return cb(null, true);
+    if (env.corsOrigins.includes(origin)) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
+  }
+}));
+app.get('/v1/health', (_, res) => res.json({ ok: true }));
+app.use('/v1/auth', authRoutes);
+app.use('/v1/articles', articleRoutes);
+
+syncDb().then(() => {
+  app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));
+}).catch(err => {
+  console.error('DB connect failed:', err);
+  process.exit(1);
+});
