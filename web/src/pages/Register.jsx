@@ -3,12 +3,18 @@ import { useAuth } from '../auth';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Register() {
-  const { register } = useAuth(); const nav = useNavigate();
-  const [name,setN]=useState(''); const [email,setE]=useState(''); const [password,setP]=useState('');
+  const { register } = useAuth(); 
+  const nav = useNavigate();
+  const [name,setN]=useState(''); 
+  const [email,setE]=useState(''); 
+  const [password,setP]=useState('');
   const [err,setErr]=useState('');
   const submit = async (e) => {
     e.preventDefault();
-    try { await register(name, email, password); nav('/'); } catch (ex) { setErr(ex?.response?.data?.message || 'Failed'); }
+    try { await register(name, email, password); nav('/'); } 
+    catch (ex) { 
+      setErr(ex?.response?.data?.message || 'Failed'); 
+    }
   };
   return (
     <form onSubmit={submit} style={{ maxWidth: 360, margin: '40px auto' }}>
