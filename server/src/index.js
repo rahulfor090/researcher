@@ -22,6 +22,26 @@ app.use(cors({
     cb(new Error('Not allowed by CORS'));
   }
 }));
+
+// Temporary article-saving endpoint (move to articleRoutes.js later)
+app.post('/v1/articles', async (req, res) => {
+  const { title, url, authors, doi, notes } = req.body;
+
+  try {
+    const query = 'INSERT INTO articles (title, url, authors, doi, notes, created_at) VALUES (?, ?, ?, ?, ?, NOW())';
+    pool.query(query, [title, url, authors || null, doi || null, notes || null], (err, results) => {
+      if (err) {
+        console.error('Error adding article:', err.stack);
+        return res.status(500).send('Error adding article');
+      }
+      res.status(201).send('Article added successfully');
+    });
+  } catch (error) {
+    console.error('Error processing request:', error.stack);
+    res.status(500).send('Error processing request');
+  }
+});
+
 app.get('/v1/health', (_, res) => res.json({ ok: true }));
 app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
