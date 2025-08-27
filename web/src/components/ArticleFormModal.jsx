@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function ArticleFormModal({ onClose, onSave }) {
+export default function ArticleFormModal({ onClose, onSave, initialData }) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [doi, setDoi] = useState('');
@@ -8,6 +8,25 @@ export default function ArticleFormModal({ onClose, onSave }) {
   const [authors, setAuthors] = useState('');
   const [price, setPrice] = useState('');
   const [error, setError] = useState('');
+
+  // Pre-fill form fields if editing
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || '');
+      setUrl(initialData.url || '');
+      setDoi(initialData.doi || '');
+      setPurchaseDate(initialData.purchaseDate || '');
+      setAuthors(initialData.authors || '');
+      setPrice(initialData.price || '');
+    } else {
+      setTitle('');
+      setUrl('');
+      setDoi('');
+      setPurchaseDate('');
+      setAuthors('');
+      setPrice('');
+    }
+  }, [initialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +48,7 @@ export default function ArticleFormModal({ onClose, onSave }) {
   return (
     <div style={modalOverlayStyle}>
       <div style={modalContentStyle}>
-        <h3>Add New Article</h3>
+        <h3>{initialData ? 'Edit Article' : 'Add New Article'}</h3>
         {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
         <form onSubmit={handleSubmit} style={formStyle}>
           <input
@@ -82,7 +101,9 @@ export default function ArticleFormModal({ onClose, onSave }) {
           
           <div style={buttonContainerStyle}>
             <button type="button" onClick={onClose} style={cancelButtonStyle}>Cancel</button>
-            <button type="submit" style={saveButtonStyle}>Save Article</button>
+            <button type="submit" style={saveButtonStyle}>
+              {initialData ? 'Save Changes' : 'Save Article'}
+            </button>
           </div>
         </form>
       </div>
