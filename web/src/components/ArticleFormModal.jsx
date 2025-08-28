@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
+import { primaryButtonStyle, secondaryButtonStyle } from '../theme';
 
 export default function ArticleFormModal({ onClose, onSave, initialData }) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [doi, setDoi] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
   const [authors, setAuthors] = useState('');
-  const [price, setPrice] = useState('');
   const [error, setError] = useState('');
 
   // Pre-fill form fields if editing
@@ -15,16 +14,12 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
       setTitle(initialData.title || '');
       setUrl(initialData.url || '');
       setDoi(initialData.doi || '');
-      setPurchaseDate(initialData.purchaseDate || '');
       setAuthors(initialData.authors || '');
-      setPrice(initialData.price || '');
     } else {
       setTitle('');
       setUrl('');
       setDoi('');
-      setPurchaseDate('');
       setAuthors('');
-      setPrice('');
     }
   }, [initialData]);
 
@@ -38,7 +33,7 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
     }
 
     try {
-      await onSave({ title, url, doi, purchaseDate, authors, price });
+      await onSave({ title, url, doi, authors });
       onClose(); // Close the modal on success
     } catch (ex) {
       setError(ex?.response?.data?.message || 'Failed to save article.');
@@ -82,22 +77,7 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
             style={inputStyle}
             required
           />
-          <input
-            type="date"
-            placeholder="Purchase Date"
-            value={purchaseDate}
-            onChange={(e) => setPurchaseDate(e.target.value)}
-            style={inputStyle}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            style={inputStyle}
-            required
-          />
+          {/* Date and Price removed from UI */}
           
           <div style={buttonContainerStyle}>
             <button type="button" onClick={onClose} style={cancelButtonStyle}>Cancel</button>
@@ -156,22 +136,10 @@ const buttonContainerStyle = {
   marginTop: '20px',
 };
 
-const baseButtonStyle = {
-  padding: '10px 20px',
-  borderRadius: '5px',
-  cursor: 'pointer',
-  border: 'none',
-  fontSize: '1rem',
-};
-
 const cancelButtonStyle = {
-  ...baseButtonStyle,
-  backgroundColor: '#f0f0f0',
-  color: '#333',
+  ...secondaryButtonStyle,
 };
 
 const saveButtonStyle = {
-  ...baseButtonStyle,
-  backgroundColor: '#007bff',
-  color: 'white',
+  ...primaryButtonStyle,
 };

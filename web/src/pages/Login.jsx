@@ -1,135 +1,395 @@
 import { useState } from 'react';
-import { useAuth } from '../auth';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { api } from '../api';
+import { colors, cardStyle, primaryButtonStyle, gradients, shadows } from '../theme';
 
 export default function Login() {
-  const { login } = useAuth();
-  const nav = useNavigate();
-  const [email, setE] = useState('');
-  const [password, setP] = useState('');
-  const [err, setErr] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
     try {
-      await login(email, password);
-      nav('/');
-    } catch (ex) {
-      setErr(ex?.response?.data?.message || 'Login failed');
+      const { data } = await api.post('/auth/login', { email, password });
+      localStorage.setItem('token', data.token);
+      navigate('/');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div style={{
-      display: 'flex',
       minHeight: '100vh',
-      backgroundColor: '#f8f9fa',
-      fontFamily: 'Inter, sans-serif'
+      background: `linear-gradient(135deg, ${colors.backgroundAlt} 0%, ${colors.secondary} 50%, ${colors.primary} 100%)`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      fontFamily: 'Inter, sans-serif',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      {/* Left Branding Sidebar */}
+      {/* Background decorative elements */}
       <div style={{
-        width: '320px',
-        backgroundColor: '#111827',
-        color: 'white',
-        padding: '40px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center'
-      }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '20px', color: '#e5e7eb' }}>
-          Research Locker
-        </h1>
-        <p style={{ color: '#9ca3af', fontSize: '1rem', lineHeight: '1.5' }}>
-          Securely log in to manage your research library, collections, and insights all in one place.
-        </p>
-      </div>
-
-      {/* Main Content */}
+        position: 'absolute',
+        top: '-50%',
+        left: '-50%',
+        width: '200%',
+        height: '200%',
+        background: `radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 50%)`,
+        animation: 'float 20s ease-in-out infinite'
+      }} />
+      
       <div style={{
-        flexGrow: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '40px'
-      }}>
-        <form onSubmit={submit} style={{
-          width: '100%',
-          maxWidth: '400px',
-          backgroundColor: 'white',
-          padding: '32px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
-        }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '20px', color: '#1f2937' }}>
-            Login
-          </h2>
+        position: 'absolute',
+        top: '10%',
+        right: '10%',
+        width: '200px',
+        height: '200px',
+        background: `linear-gradient(45deg, ${colors.link}, ${colors.highlight})`,
+        borderRadius: '50%',
+        opacity: 0.1,
+        animation: 'pulse 4s ease-in-out infinite'
+      }} />
 
-          {err && (
+      <div style={{
+        position: 'absolute',
+        bottom: '15%',
+        left: '15%',
+        width: '150px',
+        height: '150px',
+        background: `linear-gradient(45deg, ${colors.highlight}, ${colors.link})`,
+        borderRadius: '50%',
+        opacity: 0.08,
+        animation: 'pulse 6s ease-in-out infinite reverse'
+      }} />
+
+      {/* Main Login Card */}
+      <div style={{
+        ...cardStyle,
+        width: '100%',
+        maxWidth: '420px',
+        padding: '48px 40px',
+        position: 'relative',
+        zIndex: 10,
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: `${shadows.soft}, 0 25px 50px -12px rgba(0, 0, 0, 0.15)`,
+        transform: 'translateY(0)',
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        animation: 'slideUp 0.8s ease-out'
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-8px)';
+        e.currentTarget.style.boxShadow = `${shadows.medium}, 0 32px 64px -12px rgba(0, 0, 0, 0.2)`;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = `${shadows.soft}, 0 25px 50px -12px rgba(0, 0, 0, 0.15)`;
+      }}>
+        
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px',
+            boxShadow: `0 8px 32px rgba(13, 148, 136, 0.3)`,
+            animation: 'bounce 2s ease-in-out infinite'
+          }}>
+            <span style={{ fontSize: '2.5rem', color: 'white' }}>🔐</span>
+          </div>
+          
+          <h1 style={{
+            fontSize: '2.25rem',
+            fontWeight: 700,
+            color: colors.primaryText,
+            margin: '0 0 8px',
+            background: `linear-gradient(135deg, ${colors.primaryText}, ${colors.link})`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            Welcome Back
+          </h1>
+          
+          <p style={{
+            fontSize: '1.1rem',
+            color: colors.mutedText,
+            margin: 0,
+            fontWeight: 400
+          }}>
+            Sign in to your Research Locker account
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ marginBottom: '32px' }}>
+          {error && (
             <div style={{
-              marginBottom: '16px',
-              padding: '10px 14px',
-              backgroundColor: '#fee2e2',
-              color: '#b91c1c',
-              border: '1px solid #fecaca',
-              borderRadius: '8px'
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '24px',
+              color: '#dc2626',
+              fontSize: '0.95rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              animation: 'shake 0.5s ease-in-out'
             }}>
-              {err}
+              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+              {error}
             </div>
           )}
 
-          <div style={{ marginBottom: '16px' }}>
-            <input
-              placeholder="Email"
-              value={email}
-              onChange={e => setE(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #d1d5db',
-                fontSize: '1rem'
-              }}
-            />
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              color: colors.primaryText
+            }}>
+              Email Address
+            </label>
+            <div style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute',
+                left: '16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: '1.1rem',
+                color: colors.mutedText
+              }}>📧</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '16px 16px 16px 48px',
+                  border: `2px solid ${colors.border}`,
+                  borderRadius: '12px',
+                  fontSize: '1rem',
+                  transition: 'all 0.3s ease',
+                  background: 'white',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.border = `2px solid ${colors.link}`;
+                  e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.border = `2px solid ${colors.border}`;
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+                placeholder="Enter your email"
+              />
+            </div>
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <input
-              placeholder="Password"
-              type="password"
-              value={password}
-              onChange={e => setP(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #d1d5db',
-                fontSize: '1rem'
-              }}
-            />
+          <div style={{ marginBottom: '32px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              color: colors.primaryText
+            }}>
+              Password
+            </label>
+            <div style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute',
+                left: '16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: '1.1rem',
+                color: colors.mutedText
+              }}>🔒</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '16px 16px 16px 48px',
+                  border: `2px solid ${colors.border}`,
+                  borderRadius: '12px',
+                  fontSize: '1rem',
+                  transition: 'all 0.3s ease',
+                  background: 'white',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.border = `2px solid ${colors.link}`;
+                  e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.border = `2px solid ${colors.border}`;
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+                placeholder="Enter your password"
+              />
+            </div>
           </div>
 
-          <button style={{
-            width: '100%',
-            padding: '12px',
-            backgroundColor: '#4f46e5',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'background-color 0.2s'
-          }}>
-            Login
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              ...primaryButtonStyle,
+              width: '100%',
+              padding: '18px 24px',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              borderRadius: '12px',
+              border: 'none',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              overflow: 'hidden',
+              background: isLoading ? colors.mutedText : `linear-gradient(135deg, ${colors.highlight}, ${colors.link})`,
+              boxShadow: isLoading ? 'none' : `0 8px 25px rgba(249, 115, 22, 0.3)`
+            }}
+            onMouseEnter={e => {
+              if (!isLoading) {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = `0 12px 35px rgba(249, 115, 22, 0.4)`;
+              }
+            }}
+            onMouseLeave={e => {
+              if (!isLoading) {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = `0 8px 25px rgba(249, 115, 22, 0.3)`;
+              }
+            }}
+          >
+            {isLoading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderTop: '2px solid white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                Signing In...
+              </div>
+            ) : (
+              'Sign In'
+            )}
           </button>
+        </form>
 
-          <p style={{ marginTop: '16px', fontSize: '0.95rem', color: '#374151' }}>
-            New here?{' '}
-            <Link to="/register" style={{ color: '#4f46e5', fontWeight: 500 }}>
-              Register
+        {/* Footer */}
+        <div style={{ textAlign: 'center' }}>
+          <p style={{
+            color: colors.mutedText,
+            margin: '0 0 16px',
+            fontSize: '0.95rem'
+          }}>
+            Don't have an account?{' '}
+            <Link to="/register" style={{
+              color: colors.link,
+              textDecoration: 'none',
+              fontWeight: 600,
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = colors.highlight;
+              e.currentTarget.style.textDecoration = 'underline';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = colors.link;
+              e.currentTarget.style.textDecoration = 'none';
+            }}>
+              Create one here
             </Link>
           </p>
-        </form>
+          
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '16px',
+            padding: '20px 0 0',
+            borderTop: `1px solid ${colors.border}`
+          }}>
+            <span style={{ fontSize: '0.9rem', color: colors.mutedText }}>🔒 Secure & Private</span>
+            <span style={{ fontSize: '0.9rem', color: colors.mutedText }}>⚡ Fast & Reliable</span>
+          </div>
+        </div>
       </div>
+
+      {/* Animations */}
+      <style>
+        {`
+          @keyframes slideUp {
+            from { 
+              opacity: 0; 
+              transform: translateY(40px); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0); 
+            }
+          }
+          
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(20px) rotate(240deg); }
+          }
+          
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.1; }
+            50% { transform: scale(1.1); opacity: 0.15; }
+          }
+          
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+          }
+        `}
+      </style>
     </div>
   );
 }

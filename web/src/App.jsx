@@ -3,6 +3,7 @@ import { AuthProvider, Protected } from './auth';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Library from './pages/Library';
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
           <Route path="/login" element={<Login/>} />
           <Route path="/register" element={<Register/>} />
           <Route path="/" element={<Protected><Dashboard/></Protected>} />
+          <Route path="/library" element={<Protected><Library/></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
