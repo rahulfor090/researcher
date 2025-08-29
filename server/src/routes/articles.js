@@ -27,6 +27,18 @@ router.get('/', requireAuth, async (req, res) => {
   res.json(list);
 });
 
+// READ (single article by ID)  <--- ADD THIS ROUTE
+router.get('/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const article = await Article.findOne({
+    where: { id, userId: req.user.id }
+  });
+  if (!article) {
+    return res.status(404).json({ message: 'Article not found' });
+  }
+  res.json(article);
+});
+
 // UPDATE (edit)
 router.put('/:id',
   requireAuth,
