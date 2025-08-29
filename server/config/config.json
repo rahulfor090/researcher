@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "root",
+    "password": "hellosir@9958_",
     "database": "research_locker",
     "host": "127.0.0.1",
     "dialect": "mysql"

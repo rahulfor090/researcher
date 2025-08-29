@@ -6,9 +6,12 @@ import { env } from './config/env.js';
 import { syncDb } from './models/index.js';
 import authRoutes from './routes/auth.js';
 import articleRoutes from './routes/articles.js';
+import profileRouter from './routes/profile.js';
 
 const app = express();
 
+
+app.use(express.json({ limit: '10mb' }));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
@@ -25,6 +28,7 @@ app.use(cors({
 app.get('/v1/health', (_, res) => res.json({ ok: true }));
 app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
+app.use('/v1/profile', profileRouter);
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));
