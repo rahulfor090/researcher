@@ -12,7 +12,8 @@ export default (sequelize) => {
     abstract: { type: DataTypes.TEXT },
     purchaseDate: { type: DataTypes.DATEONLY },
     price: { type: DataTypes.DECIMAL(10,2) },
-    tags: { type: DataTypes.JSON }
+    tags: { type: DataTypes.JSON },
+    file_name: { type: DataTypes.STRING(255) }
   }, { tableName: 'articles' });
 
   return Article;

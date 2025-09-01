@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, shadows, gradients, secondaryButtonStyle, shadows as shadowsTheme } from '../theme';
@@ -12,7 +12,10 @@ export default function ArticleDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const initials = (user?.name || 'User  ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+  const fileInputRef = useRef(null);
+  const [uploadStatus, setUploadStatus] = useState(null);
+
+  const initials = (user?.name || 'User      ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -28,6 +31,45 @@ export default function ArticleDetails() {
     };
     fetchArticle();
   }, [id]);
+
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        setUploadStatus('Please select a PDF file.');
+        return;
+      }
+      setUploadStatus('Uploading...');
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      try {
+        // Send article id as query parameter
+        const response = await fetch(`http://localhost:5000/v1/upload/pdf?id=${id}`, {
+          method: 'POST',
+          body: formData,
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUploadStatus('Upload successful: ' + data.filename);
+          // Optionally, refresh article data to show updated file_name
+          const refreshed = await api.get(`/articles/${id}`);
+          setArticle(refreshed.data);
+        } else {
+          const errorData = await response.json();
+          setUploadStatus('Upload failed: ' + (errorData.error || 'Unknown error'));
+        }
+      } catch (error) {
+        setUploadStatus('Upload error: ' + error.message);
+      }
+    }
+  };
 
   if (loading) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif' }}>Loading...</div>;
   if (error) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: 'red' }}>{error}</div>;
@@ -253,6 +295,21 @@ export default function ArticleDetails() {
           <div style={{ marginTop: '16px' }}>
             <h3>Abstract / Description</h3>
             <p>{article.abstract || 'No description available.'}</p>
+
+            {/* Show current uploaded file name if exists */}
+            {article.file_name && (
+              <p>
+                <strong>Uploaded PDF:</strong>{' '}
+                <a
+                  href={`http://localhost:5000/uploads/${article.file_name}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {article.file_name}
+                </a>
+              </p>
+            )}
+
             <button
               style={{
                 marginTop: '16px',
@@ -263,9 +320,24 @@ export default function ArticleDetails() {
                 padding: '10px 16px',
               }}
               type="button"
+              onClick={handleButtonClick}
             >
               Upload PDF
             </button>
+
+            <input
+              type="file"
+              accept="application/pdf"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+
+            {uploadStatus && (
+              <p style={{ marginTop: '8px', color: uploadStatus.startsWith('Upload successful') ? 'green' : 'red' }}>
+                {uploadStatus}
+              </p>
+            )}
           </div>
         </div>
       </div>

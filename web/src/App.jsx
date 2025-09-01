@@ -16,8 +16,8 @@ export default function App() {
           <Route path="/register" element={<Register/>} />
           <Route path="/" element={<Protected><Dashboard/></Protected>} />
           <Route path="/library" element={<Protected><Library/></Protected>} />
+          <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />
-          <Route path="/library/article/:id" element={<ArticleDetails />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
