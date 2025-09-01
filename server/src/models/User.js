@@ -8,7 +8,14 @@ export default (sequelize) => {
     password: { type: DataTypes.STRING(200), allowNull: false },
     plan: { type: DataTypes.ENUM('free','pro'), defaultValue: 'free' },
     phone_number: { type: DataTypes.STRING(20), allowNull: true },
-    profile_image: { type: DataTypes.TEXT, allowNull: true }, // Store URL of the profile image
+    profile_image: { 
+      type: DataTypes.STRING(255), 
+      allowNull: true,
+      get() {
+        const rawValue = this.getDataValue('profile_image');
+        return rawValue ? `/uploads/pictures/${rawValue}` : null;
+      }
+    }, 
     gender: { type: DataTypes.ENUM('Male', 'Female', 'Other'), allowNull: true },
     university: { type: DataTypes.STRING(255), allowNull: true },
     department: { type: DataTypes.STRING(255), allowNull: true },
@@ -23,6 +30,8 @@ export default (sequelize) => {
     bio: { type: DataTypes.TEXT, allowNull: true },
     skills: { type: DataTypes.TEXT, allowNull: true },
   }, { tableName: 'users' });
+  
 
   return User;
 };
+
