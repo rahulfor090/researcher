@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Library from './pages/Library';
+import Settings from './pages/Settings'
 import ArticleDetails from './pages/ArticleDetails';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/" element={<Protected><Dashboard/></Protected>} />
           <Route path="/library" element={<Protected><Library/></Protected>} />
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
+          <Route path="/settings" element={<Protected><Settings/></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

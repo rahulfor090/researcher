@@ -7,12 +7,16 @@ import { syncDb } from './models/index.js';
 import authRoutes from './routes/auth.js';
 import articleRoutes from './routes/articles.js';
 import uploadRoutes from './routes/uploads.js';
+import profileRouter from './routes/profile.js';
 
 const app = express();
 
+
+app.use(express.json({ limit: '10mb' }));
 app.use(helmet());
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // CORS: allow dev web app + extension
 app.use(cors({
@@ -27,6 +31,8 @@ app.get('/v1/health', (_, res) => res.json({ ok: true }));
 app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
+app.use('/v1/profile', profileRouter);
+app.use('/uploads', express.static('src/uploads'));
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));
