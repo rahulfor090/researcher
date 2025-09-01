@@ -27,7 +27,7 @@ router.get('/', requireAuth, async (req, res) => {
   res.json(list);
 });
 
-// READ (single article by ID)  <--- ADD THIS ROUTE
+// READ (single article by ID)
 router.get('/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
   const article = await Article.findOne({
@@ -56,6 +56,31 @@ router.put('/:id',
     if (!updated) {
       return res.status(404).json({ message: 'Article not found' });
     }
+    const updatedArticle = await Article.findOne({ where: { id, userId: req.user.id } });
+    res.json(updatedArticle);
+  }
+);
+
+// PATCH route to update only the file_name field
+router.patch('/:id/file-name',
+  requireAuth,
+  body('file_name').notEmpty().withMessage('file_name is required'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { id } = req.params;
+    const { file_name } = req.body;
+
+    const [updated] = await Article.update(
+      { file_name },
+      { where: { id, userId: req.user.id } }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+
     const updatedArticle = await Article.findOne({ where: { id, userId: req.user.id } });
     res.json(updatedArticle);
   }
