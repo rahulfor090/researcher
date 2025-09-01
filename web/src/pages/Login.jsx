@@ -29,7 +29,7 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: `linear-gradient(135deg, ${colors.backgroundAlt} 0%, ${colors.secondary} 50%, ${colors.primary} 100%)`,
+      background: gradients.auth,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -45,8 +45,9 @@ export default function Login() {
         left: '-50%',
         width: '200%',
         height: '200%',
-        background: `radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.1) 0%, transparent 50%)`,
+        background: `radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%)`,
         animation: 'float 20s ease-in-out infinite'
       }} />
       
@@ -88,7 +89,9 @@ export default function Login() {
         boxShadow: `${shadows.soft}, 0 25px 50px -12px rgba(0, 0, 0, 0.15)`,
         transform: 'translateY(0)',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        animation: 'slideUp 0.8s ease-out'
+        animation: 'slideUp 0.8s ease-out',
+        backdropFilter: 'blur(25px)',
+        WebkitBackdropFilter: 'blur(25px)'
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-8px)';
@@ -104,14 +107,15 @@ export default function Login() {
           <div style={{
             width: '80px',
             height: '80px',
-            background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+            background: colors.link,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 24px',
-            boxShadow: `0 8px 32px rgba(13, 148, 136, 0.3)`,
-            animation: 'bounce 2s ease-in-out infinite'
+            boxShadow: `0 8px 32px rgba(13, 148, 136, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)`,
+            animation: 'bounce 2s ease-in-out infinite',
+            position: 'relative'
           }}>
             <span style={{ fontSize: '2.5rem', color: 'white' }}>🔐</span>
           </div>
@@ -124,7 +128,8 @@ export default function Login() {
             background: `linear-gradient(135deg, ${colors.primaryText}, ${colors.link})`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            backgroundClip: 'text',
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
             Welcome Back
           </h1>
@@ -273,19 +278,19 @@ export default function Login() {
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               position: 'relative',
               overflow: 'hidden',
-              background: isLoading ? colors.mutedText : `linear-gradient(135deg, ${colors.highlight}, ${colors.link})`,
-              boxShadow: isLoading ? 'none' : `0 8px 25px rgba(249, 115, 22, 0.3)`
+              background: isLoading ? colors.mutedText : colors.link,
+              boxShadow: isLoading ? 'none' : `0 4px 12px rgba(13, 148, 136, 0.3)`
             }}
             onMouseEnter={e => {
               if (!isLoading) {
                 e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                e.currentTarget.style.boxShadow = `0 12px 35px rgba(249, 115, 22, 0.4)`;
+                e.currentTarget.style.boxShadow = `0 6px 20px rgba(13, 148, 136, 0.4)`;
               }
             }}
             onMouseLeave={e => {
               if (!isLoading) {
                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = `0 8px 25px rgba(249, 115, 22, 0.3)`;
+                e.currentTarget.style.boxShadow = `0 4px 12px rgba(13, 148, 136, 0.3)`;
               }
             }}
           >
@@ -353,29 +358,29 @@ export default function Login() {
           @keyframes slideUp {
             from { 
               opacity: 0; 
-              transform: translateY(40px); 
+              transform: translateY(40px) scale(0.95); 
             }
             to { 
               opacity: 1; 
-              transform: translateY(0); 
+              transform: translateY(0) scale(1); 
             }
           }
           
           @keyframes float {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-20px) rotate(120deg); }
-            66% { transform: translateY(20px) rotate(240deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(30px) rotate(240deg); }
           }
           
           @keyframes pulse {
             0%, 100% { transform: scale(1); opacity: 0.1; }
-            50% { transform: scale(1.1); opacity: 0.15; }
+            50% { transform: scale(1.15); opacity: 0.2; }
           }
           
           @keyframes bounce {
             0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+            40% { transform: translateY(-15px) scale(1.05); }
+            60% { transform: translateY(-8px) scale(1.02); }
           }
           
           @keyframes spin {
