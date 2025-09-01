@@ -6,30 +6,22 @@ import { useAuth } from '../auth';
 import ArticleFormModal from '../components/ArticleFormModal';
 
 export default function Library() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const nav = useNavigate();
   const [articles, setArticles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editArticle, setEditArticle] = useState(null);
   const [bulkEditMode, setBulkEditMode] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [selectedRows, setSelectedRows] = useState(new Set());
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
-
-  // Hover animation helpers for action buttons
-  const onActionEnter = (e) => {
-    e.currentTarget.style.transform = 'translateY(-1px)';
-    e.currentTarget.style.boxShadow = '0 6px 12px -4px rgba(0,0,0,0.15)';
-  };
-  const onActionLeave = (e) => {
-    e.currentTarget.style.transform = '';
-    e.currentTarget.style.boxShadow = '';
-  };
 
   // Load articles from backend
   const load = async () => {
     const { data } = await api.get('/articles');
     setArticles(data);
+    setTimeout(() => setIsLoaded(true), 100);
   };
 
   // Save new or edited article
@@ -63,17 +55,94 @@ export default function Library() {
     setShowModal(true);
   };
 
-  // Filter articles based on search term
-  const filteredArticles = articles.filter(article =>
-    article.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.doi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.authors?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Handle row selection
+  const handleRowSelection = (articleId, event) => {
+    event.stopPropagation();
+    const newSelectedRows = new Set(selectedRows);
+    if (newSelectedRows.has(articleId)) {
+      newSelectedRows.delete(articleId);
+    } else {
+      newSelectedRows.add(articleId);
+    }
+    setSelectedRows(newSelectedRows);
+  };
+
+  // Select all rows
+  const handleSelectAll = () => {
+    if (selectedRows.size === articles.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(articles.map(a => a.id)));
+    }
+  };
 
   useEffect(() => { load(); }, []);
 
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showProfileMenu) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: gradients.app, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ 
+      display: 'flex', 
+      minHeight: '100vh', 
+      background: gradients.app, 
+      fontFamily: 'Inter, sans-serif',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Enhanced Background decorative elements */}
+      <div style={{
+        position: 'absolute',
+        top: '-50%',
+        left: '-50%',
+        width: '200%',
+        height: '200%',
+        background: `radial-gradient(circle at 25% 75%, rgba(13, 148, 136, 0.12) 0%, transparent 50%),
+                    radial-gradient(circle at 75% 25%, rgba(249, 115, 22, 0.12) 0%, transparent 50%),
+                    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 70%)`,
+        animation: 'libraryFloat 30s ease-in-out infinite',
+        zIndex: 0
+      }} />
+      
+      <div style={{
+        position: 'absolute',
+        top: '5%',
+        right: '10%',
+        width: '200px',
+        height: '200px',
+        background: `linear-gradient(45deg, ${colors.link}, ${colors.highlight})`,
+        borderRadius: '50%',
+        opacity: 0.05,
+        animation: 'libraryPulse 12s ease-in-out infinite',
+        zIndex: 0
+      }} />
+
+      <div style={{
+        position: 'absolute',
+        bottom: '10%',
+        left: '8%',
+        width: '160px',
+        height: '160px',
+        background: `linear-gradient(45deg, ${colors.highlight}, ${colors.accent || colors.link})`,
+        borderRadius: '50%',
+        opacity: 0.04,
+        animation: 'libraryPulse 15s ease-in-out infinite reverse',
+        zIndex: 0
+      }} />
       {/* Left Navigation Sidebar */}
       <div
         style={{
@@ -87,13 +156,23 @@ export default function Library() {
           borderTopLeftRadius: '16px',
           borderBottomLeftRadius: '16px',
           position: 'relative',
+          animation: 'slideInLeft 0.6s ease-out'
         }}
       >
-        <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '16px', color: '#e5e7eb' }}>
+        <h1 style={{ 
+          fontSize: '2rem', 
+          fontWeight: 700, 
+          marginBottom: '16px', 
+          color: '#e5e7eb',
+          animation: 'fadeInDown 0.8s ease-out 0.2s both'
+        }}>
           Research Locker
         </h1>
         <div
-          onClick={() => setShowProfileMenu(v => !v)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowProfileMenu(v => !v);
+          }}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -103,6 +182,16 @@ export default function Library() {
             background: 'rgba(255,255,255,0.06)',
             marginBottom: '16px',
             cursor: 'pointer',
+            animation: 'fadeInUp 0.8s ease-out 0.4s both',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+            e.currentTarget.style.transform = 'scale(1.02)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+            e.currentTarget.style.transform = 'scale(1)';
           }}
         >
           <div
@@ -115,6 +204,7 @@ export default function Library() {
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 700,
+              animation: 'pulse 2s infinite'
             }}
           >
             {initials}
@@ -126,11 +216,12 @@ export default function Library() {
         </div>
         {showProfileMenu && (
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              position: 'absolute',
-              top: '96px',
-              left: '24px',
-              right: '24px',
+              position: 'relative',
+              top: '0px',
+              left: '0px',
+              right: '0px',
               background: 'white',
               color: colors.primaryText,
               border: `1px solid ${colors.border}`,
@@ -138,8 +229,9 @@ export default function Library() {
               boxShadow: shadows.soft,
               overflow: 'hidden',
               zIndex: 30,
-              animation: 'dropdownIn 180ms ease-out forwards',
+              animation: 'slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
               transformOrigin: 'top center',
+              marginBottom: '16px'
             }}
           >
             <button
@@ -151,7 +243,10 @@ export default function Library() {
                 width: '100%',
                 textAlign: 'left',
                 cursor: 'pointer',
+                transition: 'background 0.2s ease'
               }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               Settings
             </button>
@@ -164,20 +259,51 @@ export default function Library() {
                 width: '100%',
                 textAlign: 'left',
                 cursor: 'pointer',
+                transition: 'background 0.2s ease'
               }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               About
             </button>
+            <button
+              onClick={() => {
+                logout();
+                nav('/login');
+              }}
+              style={{
+                display: 'block',
+                padding: '10px 14px',
+                background: 'transparent',
+                border: 'none',
+                width: '100%',
+                textAlign: 'left',
+                cursor: 'pointer',
+                transition: 'background 0.2s ease',
+                color: '#dc2626',
+                fontWeight: 600
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                e.currentTarget.style.color = '#b91c1c';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = '#dc2626';
+              }}
+            >
+              Logout
+            </button>
           </div>
         )}
-        <nav>
+        <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {[
               { label: 'Dashboard', icon: '🏠', path: '/' },
               { label: 'Library', icon: '📚', path: '/library' },
               { label: 'Collections', icon: '🗂️', path: null },
               { label: 'All insights', icon: '📈', path: null },
-            ].map(({ label, icon, path }) => (
+            ].map(({ label, icon, path }, index) => (
               <li
                 key={label}
                 style={{
@@ -188,15 +314,18 @@ export default function Library() {
                   alignItems: 'center',
                   gap: '10px',
                   cursor: 'pointer',
-                  transition: 'background 180ms ease, transform 180ms ease',
+                  transition: 'all 0.3s ease',
+                  animation: `fadeInLeft 0.6s ease-out ${0.8 + index * 0.1}s both`
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                  e.currentTarget.style.transform = 'translateX(2px)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                  e.currentTarget.style.transform = 'translateX(8px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.transform = '';
+                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
                 onClick={() => {
                   if (path) nav(path);
@@ -219,6 +348,7 @@ export default function Library() {
           flexDirection: 'column',
           borderTopRightRadius: '16px',
           borderBottomRightRadius: '16px',
+          animation: 'fadeInRight 0.6s ease-out 0.3s both'
         }}
       >
         <div
@@ -226,50 +356,216 @@ export default function Library() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '20px',
+            marginBottom: '30px',
+            animation: 'fadeInDown 0.8s ease-out 0.5s both'
           }}
         >
-          <h2
-            style={{
-              fontSize: '2.25rem',
-              fontWeight: 700,
-              color: '#1f2937',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Library
-          </h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div>
+            <h2
+              style={{
+                fontSize: '2.25rem',
+                fontWeight: 700,
+                color: '#1f2937',
+                letterSpacing: '-0.02em',
+                marginBottom: '8px',
+                background: 'linear-gradient(135deg, #1f2937, #4b5563)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
+              📚 Research Library
+            </h2>
+            <p style={{
+              color: colors.mutedText,
+              fontSize: '1rem',
+              margin: 0,
+              fontWeight: 400
+            }}>
+              Manage and organize your research articles
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              background: 'rgba(13, 148, 136, 0.1)',
+              borderRadius: '12px',
+              border: '1px solid rgba(13, 148, 136, 0.2)'
+            }}>
+              <span style={{ fontSize: '1.2rem' }}>📊</span>
+              <span style={{ fontSize: '0.9rem', color: colors.primaryText, fontWeight: 600 }}>
+                {articles.length} Total Articles
+              </span>
+            </div>
             <button
               onClick={() => setBulkEditMode(v => !v)}
               style={{
                 ...secondaryButtonStyle,
-                backgroundColor: bulkEditMode ? colors.highlight : secondaryButtonStyle.backgroundColor,
+                backgroundColor: bulkEditMode ? colors.link : secondaryButtonStyle.backgroundColor,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={e => {
+                if (!bulkEditMode) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              {bulkEditMode ? 'Done' : 'Edit'}
+              {bulkEditMode ? '✅ Done' : '✏️ Edit'}
             </button>
             <button
-              style={{ marginLeft: '12px', ...primaryButtonStyle }}
+              style={{ 
+                ...primaryButtonStyle,
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
               onClick={() => {
                 setEditArticle(null);
                 setShowModal(true);
               }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(249, 115, 22, 0.3)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
-              + Add New
+              <span>+</span> Add New Article
             </button>
           </div>
         </div>
 
+        {/* Library Statistics */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px',
+          marginBottom: '30px',
+          animation: 'fadeInUp 0.8s ease-out 0.7s both'
+        }}>
+          {[
+            {
+              count: articles.length,
+              label: 'Total Articles',
+              icon: '📄',
+              color: '#3b82f6',
+              bgColor: 'rgba(59, 130, 246, 0.1)',
+              borderColor: 'rgba(59, 130, 246, 0.2)',
+              description: 'Articles in library'
+            },
+            {
+              count: articles.filter(a => a.doi).length,
+              label: 'With DOI',
+              icon: '✅',
+              color: '#22c55e',
+              bgColor: 'rgba(34, 197, 94, 0.1)',
+              borderColor: 'rgba(34, 197, 94, 0.2)',
+              description: 'Properly referenced'
+            },
+            {
+              count: articles.filter(a => a.url).length,
+              label: 'With Links',
+              icon: '🔗',
+              color: '#8b5cf6',
+              bgColor: 'rgba(139, 92, 246, 0.1)',
+              borderColor: 'rgba(139, 92, 246, 0.2)',
+              description: 'Accessible online'
+            },
+            {
+              count: Math.round((articles.filter(a => a.doi && a.authors).length / Math.max(articles.length, 1)) * 100),
+              label: 'Complete %',
+              icon: '🎯',
+              color: '#f59e0b',
+              bgColor: 'rgba(245, 158, 11, 0.1)',
+              borderColor: 'rgba(245, 158, 11, 0.2)',
+              description: 'Fully documented',
+              isPercentage: true
+            }
+          ].map((stat, index) => (
+            <div
+              key={stat.label}
+              style={{
+                padding: '20px',
+                background: stat.bgColor,
+                borderRadius: '16px',
+                border: `1px solid ${stat.borderColor}`,
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                animation: `fadeInUp 0.6s ease-out ${0.9 + index * 0.1}s both`,
+                transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
+                opacity: isLoaded ? 1 : 0
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                e.currentTarget.style.boxShadow = `0 12px 24px ${stat.color}20`;
+                e.currentTarget.style.border = `2px solid ${stat.color}`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.border = `1px solid ${stat.borderColor}`;
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '12px'
+              }}>
+                <span style={{ fontSize: '1.8rem' }}>{stat.icon}</span>
+                <div style={{
+                  fontSize: '2rem',
+                  fontWeight: 700,
+                  color: stat.color
+                }}>
+                  {stat.count}{stat.isPercentage ? '%' : ''}
+                </div>
+              </div>
+              <div style={{
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                color: colors.primaryText,
+                marginBottom: '4px'
+              }}>
+                {stat.label}
+              </div>
+              <div style={{
+                fontSize: '0.8rem',
+                color: colors.mutedText
+              }}>
+                {stat.description}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Articles Table */}
         <div
-          style={{ ...cardStyle }}
+          style={{ 
+            ...cardStyle,
+            marginBottom: '24px',
+            animation: `fadeInUp 0.8s ease-out ${isLoaded ? '1.1s' : '0s'} both`,
+            transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
+            opacity: isLoaded ? 1 : 0
+          }}
           onMouseEnter={e => {
             e.currentTarget.style.boxShadow = shadows.medium;
             e.currentTarget.style.transform = 'translateY(-2px)';
           }}
           onMouseLeave={e => {
             e.currentTarget.style.boxShadow = shadows.soft;
-            e.currentTarget.style.transform = '';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
           <div
@@ -277,260 +573,641 @@ export default function Library() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '10px',
+              marginBottom: '20px',
             }}
           >
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: colors.primaryText }}>
-              My Articles
-            </h3>
-            <div
-              style={{
-                fontSize: '0.9rem',
+            <div>
+              <h3 style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: 600, 
+                color: colors.primaryText,
+                margin: '0 0 4px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🗃️ My Articles Collection
+              </h3>
+              <p style={{
                 color: colors.mutedText,
-                padding: '6px 12px',
-                background: 'rgba(13, 148, 136, 0.1)',
-                borderRadius: '20px',
-                border: `1px solid rgba(13, 148, 136, 0.2)`,
-              }}
-            >
-              {filteredArticles.length} of {articles.length} articles
+                fontSize: '0.9rem',
+                margin: 0
+              }}>
+                {articles.length === 0 ? 'Your research library is empty' : `Manage your ${articles.length} research articles`}
+              </p>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div
+                style={{
+                  fontSize: '0.85rem',
+                  color: colors.mutedText,
+                  padding: '6px 12px',
+                  background: 'rgba(13, 148, 136, 0.1)',
+                  borderRadius: '20px',
+                  border: `1px solid rgba(13, 148, 136, 0.2)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>📊</span>
+                {articles.length} articles
+              </div>
+              {articles.length > 0 && (
+                <div style={{
+                  fontSize: '0.85rem',
+                  color: articles.filter(a => a.doi).length > articles.length * 0.7 ? '#22c55e' : '#f59e0b',
+                  padding: '6px 12px',
+                  background: articles.filter(a => a.doi).length > articles.length * 0.7 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                  borderRadius: '20px',
+                  border: articles.filter(a => a.doi).length > articles.length * 0.7 ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <span>{articles.filter(a => a.doi).length > articles.length * 0.7 ? '✅' : '⚠️'}</span>
+                  {Math.round((articles.filter(a => a.doi).length / articles.length) * 100)}% with DOI
+                </div>
+              )}
             </div>
           </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
-              <thead>
-                <tr>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '10px 12px',
-                      borderBottom: `1px solid ${colors.border}`,
-                      color: colors.primaryText,
-                    }}
-                  >
-                    S.No
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '10px 12px',
-                      borderBottom: `1px solid ${colors.border}`,
-                      color: colors.primaryText,
-                    }}
-                  >
-                    Title
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '10px 12px',
-                      borderBottom: `1px solid ${colors.border}`,
-                      color: colors.primaryText,
-                    }}
-                  >
-                    DOI
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '10px 12px',
-                      borderBottom: `1px solid ${colors.border}`,
-                      color: colors.primaryText,
-                    }}
-                  >
-                    Authors
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'center',
-                      padding: '10px 12px',
-                      borderBottom: `1px solid ${colors.border}`,
-                      color: colors.primaryText,
-                    }}
-                  >
-                    Details
-                  </th>
-                  {bulkEditMode && (
+          
+          {/* Selection Summary */}
+          {selectedRows.size > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              background: 'rgba(13, 148, 136, 0.1)',
+              border: `1px solid rgba(13, 148, 136, 0.2)`,
+              borderRadius: '8px',
+              marginBottom: '16px',
+              animation: 'fadeInDown 0.3s ease-out'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: colors.primaryText
+                }}>
+                  ✅ {selectedRows.size} article{selectedRows.size !== 1 ? 's' : ''} selected
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <button
+                  onClick={() => setSelectedRows(new Set())}
+                  style={{
+                    padding: '6px 12px',
+                    background: 'transparent',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    color: colors.primaryText,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = colors.mutedText;
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = colors.primaryText;
+                  }}
+                >
+                  Clear Selection
+                </button>
+                <button
+                  style={{
+                    padding: '6px 12px',
+                    background: colors.link,
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    color: 'white',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#0f766e';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = colors.link;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  🗑️ Delete Selected
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {articles.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 40px',
+              color: colors.mutedText,
+              background: 'rgba(0,0,0,0.02)',
+              borderRadius: '12px',
+              border: `1px dashed ${colors.border}`
+            }}>
+              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📚</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px', color: colors.primaryText }}>
+                Your Library is Empty
+              </div>
+              <div style={{ fontSize: '1rem', marginBottom: '24px', lineHeight: 1.5 }}>
+                Start building your research collection by adding your first article.<br/>
+                You can add articles with DOI, URLs, or manual entries.
+              </div>
+              <button
+                onClick={() => {
+                  setEditArticle(null);
+                  setShowModal(true);
+                }}
+                style={{
+                  background: colors.link,
+                  color: 'white',
+                  border: 'none',
+                  padding: '14px 28px',
+                  borderRadius: '12px',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  margin: '0 auto'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(13, 148, 136, 0.3)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span>🚀</span> Add Your First Article
+              </button>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                <thead>
+                  <tr style={{ background: 'rgba(0,0,0,0.02)' }}>
                     <th
                       style={{
-                        textAlign: 'right',
-                        padding: '10px 12px',
-                        borderBottom: `1px solid ${colors.border}`,
-                        color: colors.primaryText,
-                      }}
-                    >
-                      Actions
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredArticles.map((a, idx) => (
-                  <tr key={a.id}>
-                    <td
-                      style={{
-                        padding: '12px',
-                        borderBottom: `1px solid ${colors.border}`,
-                        color: colors.primaryText,
-                      }}
-                    >
-                      {idx + 1}
-                    </td>
-                    <td style={{ padding: '12px', borderBottom: `1px solid ${colors.border}` }}>
-                      <a
-                        href={a.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: colors.link, textDecoration: 'none', fontWeight: 600 }}
-                      >
-                        {a.title}
-                      </a>
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px',
-                        borderBottom: `1px solid ${colors.border}`,
-                        color: colors.primaryText,
-                      }}
-                    >
-                      {a.doi || '-'}
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px',
-                        borderBottom: `1px solid ${colors.border}`,
-                        color: colors.primaryText,
-                      }}
-                    >
-                      {a.authors || '-'}
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px',
-                        borderBottom: `1px solid ${colors.border}`,
                         textAlign: 'center',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        width: '50px'
                       }}
                     >
-                      <button
-                        onClick={() => nav(`/library/article/${a.id}`)}
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.size === articles.length && articles.length > 0}
+                        onChange={handleSelectAll}
                         style={{
-                          ...primaryButtonStyle,
-                          padding: '6px 12px',
-                          fontWeight: 600,
+                          width: '16px',
+                          height: '16px',
                           cursor: 'pointer',
-                          borderRadius: '8px',
-                          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                          accentColor: colors.highlight
                         }}
-                        onMouseEnter={onActionEnter}
-                        onMouseLeave={onActionLeave}
-                      >
-                        Article Details
-                      </button>
-                    </td>
+                      />
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'center',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      🔢 No.
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'left',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      📄 Title
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'left',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      🏷️ DOI
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'left',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      👥 Authors
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'center',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      ⚡ Action
+                    </th>
                     {bulkEditMode && (
-                      <td style={{ padding: '12px', borderBottom: `1px solid ${colors.border}` }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <button
-                            style={{
-                              background: colors.mutedText,
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '6px 12px',
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                            }}
-                            onMouseEnter={onActionEnter}
-                            onMouseLeave={onActionLeave}
-                            onClick={() => handleEditArticle(a)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            style={{
-                              background: colors.highlight,
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '6px 12px',
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                            }}
-                            onMouseEnter={onActionEnter}
-                            onMouseLeave={onActionLeave}
-                            onClick={() => handleDeleteArticle(a.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+                      <th
+                        style={{
+                          textAlign: 'right',
+                          padding: '14px 16px',
+                          borderBottom: `2px solid ${colors.border}`,
+                          color: colors.primaryText,
+                          fontWeight: 600,
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        ⚙️ Actions
+                      </th>
                     )}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Sidebar (Filters & Recent Activity) */}
-      <div style={{ width: '420px', backgroundColor: 'transparent', padding: '40px 20px 40px 20px' }}>
-        <div style={{ ...cardStyle, marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h4 style={{ marginTop: 0, marginBottom: '12px', color: colors.primaryText }}>Filters</h4>
-            <button
-              style={{
-                background: 'transparent',
-                color: colors.link,
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-              onClick={() => {
-                setSearchTerm('');
-              }}
-            >
-              Clear
-            </button>
-          </div>
-
-          {/* Search field with icon */}
-          <div style={{ position: 'relative', marginTop: '12px', marginBottom: '16px' }}>
-            <span
-              style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: colors.mutedText,
-              }}
-            >
-              🔎
-            </span>
-            <input
-              type="text"
-              placeholder="Search articles, titles, DOI..."
-              style={{
-                width: '100%',
-                maxWidth: '100%',
-                padding: '12px 12px 12px 36px',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '8px',
-                fontSize: '1rem',
-                boxSizing: 'border-box',
-                display: 'block',
-              }}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div style={{ ...cardStyle }}>
-          <h4 style={{ marginTop: 0, marginBottom: '8px', color: colors.primaryText }}>Recent Activity</h4>
-          <p style={{ color: colors.mutedText }}>No recent activity yet.</p>
+                </thead>
+                <tbody>
+                  {articles.map((a, idx) => {
+                    const isSelected = selectedRows.has(a.id);
+                    return (
+                    <tr 
+                      key={a.id}
+                      style={{
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer',
+                        animation: `fadeInUp 0.4s ease-out ${idx * 0.05}s both`,
+                        background: isSelected ? 'rgba(13, 148, 136, 0.1)' : 'transparent',
+                        borderLeft: isSelected ? `4px solid ${colors.highlight}` : '4px solid transparent'
+                      }}
+                      onMouseEnter={e => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'rgba(13, 148, 136, 0.04)';
+                        }
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                        // Animate the number badge
+                        const badge = e.currentTarget.querySelector('td:nth-child(2) div div');
+                        if (badge) {
+                          badge.style.transform = 'scale(1.1) rotate(5deg)';
+                          badge.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'transparent';
+                        }
+                        e.currentTarget.style.transform = 'translateX(0)';
+                        // Reset the number badge
+                        const badge = e.currentTarget.querySelector('td:nth-child(2) div div');
+                        if (badge) {
+                          badge.style.transform = 'scale(1) rotate(0deg)';
+                          badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                        }
+                      }}
+                      onClick={() => nav(`/library/article/${a.id}`)}
+                    >
+                      <td
+                        style={{
+                          padding: '16px',
+                          borderBottom: `1px solid ${colors.border}`,
+                          textAlign: 'center',
+                          width: '50px'
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => handleRowSelection(a.id, e)}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            cursor: 'pointer',
+                            accentColor: colors.highlight
+                          }}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          padding: '16px',
+                          borderBottom: `1px solid ${colors.border}`,
+                          color: colors.primaryText,
+                          fontWeight: 600,
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <div style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '8px',
+                            background: `linear-gradient(135deg, ${colors.highlight}, #f97316)`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '0.85rem',
+                            fontWeight: 700,
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                            transition: 'all 0.2s ease'
+                          }}>
+                            {idx + 1}
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ 
+                        padding: '16px', 
+                        borderBottom: `1px solid ${colors.border}`,
+                        maxWidth: '300px'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '4px'
+                        }}>
+                          <div style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: a.doi ? '#22c55e' : '#f59e0b',
+                            flexShrink: 0
+                          }} />
+                          <a
+                            href={a.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ 
+                              color: colors.link, 
+                              textDecoration: 'none', 
+                              fontWeight: 600,
+                              fontSize: '0.95rem',
+                              lineHeight: 1.4,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                            onClick={e => e.stopPropagation()}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.textDecoration = 'underline';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.textDecoration = 'none';
+                            }}
+                          >
+                            {a.title || 'Untitled Article'}
+                          </a>
+                        </div>
+                        {a.abstract && (
+                          <div style={{
+                            fontSize: '0.8rem',
+                            color: colors.mutedText,
+                            lineHeight: 1.3,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 1,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {a.abstract}
+                          </div>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: '16px',
+                          borderBottom: `1px solid ${colors.border}`,
+                          color: colors.primaryText,
+                        }}
+                      >
+                        {a.doi ? (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 8px',
+                            background: 'rgba(34, 197, 94, 0.1)',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(34, 197, 94, 0.2)',
+                            fontSize: '0.8rem',
+                            maxWidth: 'fit-content'
+                          }}>
+                            <span>✅</span>
+                            <span style={{ 
+                              fontFamily: 'monospace',
+                              color: '#22c55e',
+                              fontWeight: 600
+                            }}>
+                              {a.doi.length > 20 ? `${a.doi.substring(0, 20)}...` : a.doi}
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 8px',
+                            background: 'rgba(245, 158, 11, 0.1)',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(245, 158, 11, 0.2)',
+                            fontSize: '0.8rem',
+                            color: '#f59e0b',
+                            maxWidth: 'fit-content'
+                          }}>
+                            <span>⚠️</span>
+                            <span>No DOI</span>
+                          </div>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: '16px',
+                          borderBottom: `1px solid ${colors.border}`,
+                          color: colors.primaryText,
+                          maxWidth: '200px'
+                        }}
+                      >
+                        <div style={{
+                          fontSize: '0.9rem',
+                          fontWeight: 500,
+                          lineHeight: 1.3,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}>
+                          {a.authors || (
+                            <span style={{ 
+                              color: colors.mutedText,
+                              fontStyle: 'italic'
+                            }}>
+                              Unknown authors
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td
+                        style={{
+                          padding: '16px',
+                          borderBottom: `1px solid ${colors.border}`,
+                          textAlign: 'center',
+                        }}
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            nav(`/library/article/${a.id}`);
+                          }}
+                          style={{
+                            ...primaryButtonStyle,
+                            padding: '8px 16px',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            borderRadius: '8px',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            margin: '0 auto'
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                        >
+                          <span>👁️</span>
+                          Action
+                        </button>
+                      </td>
+                      {bulkEditMode && (
+                        <td style={{ padding: '16px', borderBottom: `1px solid ${colors.border}` }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                            <button
+                              style={{
+                                background: colors.mutedText,
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                                cursor: 'pointer',
+                                fontWeight: 600,
+                                fontSize: '0.8rem',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditArticle(a);
+                              }}
+                            >
+                              <span>✏️</span>
+                              Edit
+                            </button>
+                            <button
+                              style={{
+                                background: colors.highlight,
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                                cursor: 'pointer',
+                                fontWeight: 600,
+                                fontSize: '0.8rem',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+                                e.currentTarget.style.background = '#dc2626';
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
+                                e.currentTarget.style.background = colors.highlight;
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteArticle(a.id);
+                              }}
+                            >
+                              <span>🔥</span>
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 
@@ -546,9 +1223,124 @@ export default function Library() {
         />
       )}
 
-      {/* Animations keyframes */}
+      {/* Enhanced Animations keyframes */}
       <style>
-        {`@keyframes dropdownIn { from { opacity: 0; transform: scaleY(0.9); } to { opacity: 1; transform: scaleY(1); } }`}
+        {`
+          @keyframes libraryFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-25px) rotate(90deg); }
+            50% { transform: translateY(20px) rotate(180deg); }
+            75% { transform: translateY(-15px) rotate(270deg); }
+          }
+          
+          @keyframes libraryPulse {
+            0%, 100% { transform: scale(1); opacity: 0.05; }
+            50% { transform: scale(1.2); opacity: 0.1; }
+          }
+          
+          @keyframes slideInLeft {
+            from { 
+              opacity: 0; 
+              transform: translateX(-100px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateX(0) scale(1); 
+            }
+          }
+          
+          @keyframes slideInRight {
+            from { 
+              opacity: 0; 
+              transform: translateX(100px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateX(0) scale(1); 
+            }
+          }
+          
+          @keyframes fadeInDown {
+            from { 
+              opacity: 0; 
+              transform: translateY(-30px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0) scale(1); 
+            }
+          }
+          
+          @keyframes fadeInUp {
+            from { 
+              opacity: 0; 
+              transform: translateY(30px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0) scale(1); 
+            }
+          }
+          
+          @keyframes fadeInLeft {
+            from { 
+              opacity: 0; 
+              transform: translateX(-30px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateX(0) scale(1); 
+            }
+          }
+          
+          @keyframes fadeInRight {
+            from { 
+              opacity: 0; 
+              transform: translateX(30px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateX(0) scale(1); 
+            }
+          }
+          
+          @keyframes dropdownIn { 
+            from { opacity: 0; transform: scaleY(0.9) scale(0.95); } 
+            to { opacity: 1; transform: scaleY(1) scale(1); } 
+          }
+          
+          @keyframes slideDown {
+            0% { 
+              opacity: 0; 
+              transform: translateY(-15px) scaleY(0.95) scale(0.95); 
+              maxHeight: 0;
+              filter: blur(4px);
+            }
+            30% {
+              opacity: 0.3;
+              transform: translateY(-8px) scaleY(0.98) scale(0.98);
+              maxHeight: 60px;
+              filter: blur(2px);
+            }
+            70% {
+              opacity: 0.8;
+              transform: translateY(-2px) scaleY(0.99) scale(0.99);
+              maxHeight: 160px;
+              filter: blur(1px);
+            }
+            100% { 
+              opacity: 1; 
+              transform: translateY(0) scaleY(1) scale(1); 
+              maxHeight: 200px;
+              filter: blur(0px);
+            }
+          }
+          
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+        `}}
       </style>
     </div>
   );
