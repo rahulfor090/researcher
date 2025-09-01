@@ -236,48 +236,49 @@ export default function Dashboard() {
         )}
         
         <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {[
-              { label: 'Dashboard', icon: '🏠', path: '/' },
-              { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'Collections', icon: '🗂️', path: null },
-              { label: 'All insights', icon: '📈', path: null }
-            ].map(({ label, icon, path }, index) => (
-              <li
-                key={label}
-                style={{ 
-                  padding: '10px 12px', 
-                  color: '#cbd5e1', 
-                  borderRadius: '10px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '10px', 
-                  cursor: 'pointer', 
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  animation: `fadeInLeft 0.6s ease-out ${0.8 + index * 0.1}s both`
-                }}
-                onMouseEnter={e => { 
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; 
-                  e.currentTarget.style.transform = 'translateX(8px) scale(1.02)'; 
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                }}
-                onMouseLeave={e => { 
-                  e.currentTarget.style.background = 'transparent'; 
-                  e.currentTarget.style.transform = 'translateX(0) scale(1)'; 
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                onClick={() => { if (path) nav(path); }}
-              >
-                <span style={{ 
-                  width: 20, 
-                  textAlign: 'center',
-                  transition: 'transform 0.3s ease'
-                }}>{icon}</span>
-                <span>{label}</span>
-              </li>
-            ))}
-          </ul>
-        </nav>
+  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+    {[
+      { label: 'Dashboard', icon: '🏠', path: '/' },
+      { label: 'Library', icon: '📚', path: '/library' },
+      { label: 'Collections', icon: '🗂️', path: null },
+      { label: 'All insights', icon: '📈', path: null },
+      { label: 'Settings', icon: '⚙️', path: '/settings' } // <-- Add this line
+    ].map(({ label, icon, path }, index) => (
+      <li
+        key={label}
+        style={{
+          padding: '10px 12px',
+          color: '#cbd5e1',
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          cursor: 'pointer',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          animation: `fadeInLeft 0.6s ease-out ${0.8 + index * 0.1}s both`
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+          e.currentTarget.style.transform = 'translateX(8px) scale(1.02)';
+          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.transform = 'translateX(0) scale(1)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+        onClick={() => { if (path) nav(path); }}
+      >
+        <span style={{
+          width: 20,
+          textAlign: 'center',
+          transition: 'transform 0.3s ease'
+        }}>{icon}</span>
+        <span>{label}</span>
+      </li>
+    ))}
+  </ul>
+</nav>
       </div>
 
       {/* Main Content Area */}
