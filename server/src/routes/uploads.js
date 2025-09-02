@@ -33,9 +33,12 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
   try {
-    // Update the article's file_name in DB
+    // Update both file_name and summary columns in DB
     const [updated] = await Article.update(
-      { file_name: req.file.filename },
+      { 
+        file_name: req.file.filename,
+        summary: req.file.filename  // Save filename in summary as well
+      },
       { where: { id: articleId } }
     );
 

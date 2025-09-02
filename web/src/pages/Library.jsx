@@ -11,7 +11,6 @@ export default function Library() {
   const [articles, setArticles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editArticle, setEditArticle] = useState(null);
-  const [bulkEditMode, setBulkEditMode] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRows, setSelectedRows] = useState(new Set());
@@ -303,6 +302,7 @@ export default function Library() {
               { label: 'Library', icon: '📚', path: '/library' },
               { label: 'Collections', icon: '🗂️', path: null },
               { label: 'All insights', icon: '📈', path: null },
+              { label: 'Settings', icon: '⚙️', path: '/settings' }
             ].map(({ label, icon, path }, index) => (
               <li
                 key={label}
@@ -400,26 +400,6 @@ export default function Library() {
                 {articles.length} Total Articles
               </span>
             </div>
-            <button
-              onClick={() => setBulkEditMode(v => !v)}
-              style={{
-                ...secondaryButtonStyle,
-                backgroundColor: bulkEditMode ? colors.link : secondaryButtonStyle.backgroundColor,
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={e => {
-                if (!bulkEditMode) {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                }
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              {bulkEditMode ? '✅ Done' : '✏️ Edit'}
-            </button>
             <button
               style={{ 
                 ...primaryButtonStyle,
@@ -852,22 +832,8 @@ export default function Library() {
                         fontSize: '0.9rem'
                       }}
                     >
-                      ⚡ Action
+                      ⚙️ Actions
                     </th>
-                    {bulkEditMode && (
-                      <th
-                        style={{
-                          textAlign: 'right',
-                          padding: '14px 16px',
-                          borderBottom: `2px solid ${colors.border}`,
-                          color: colors.primaryText,
-                          fontWeight: 600,
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        ⚙️ Actions
-                      </th>
-                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -1098,8 +1064,13 @@ export default function Library() {
                           padding: '16px',
                           borderBottom: `1px solid ${colors.border}`,
                           textAlign: 'center',
+                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          gap: '8px'
                         }}
                       >
+                      {/* View Details Button */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1107,16 +1078,15 @@ export default function Library() {
                           }}
                           style={{
                             ...primaryButtonStyle,
-                            padding: '8px 16px',
-                            fontSize: '0.85rem',
+                            padding: '6px 12px',
+                            fontSize: '0.8rem',
                             fontWeight: 600,
                             cursor: 'pointer',
                             borderRadius: '8px',
                             transition: 'all 0.2s ease',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px',
-                            margin: '0 auto'
+                            gap: '4px'
                           }}
                           onMouseEnter={e => {
                             e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
@@ -1127,80 +1097,75 @@ export default function Library() {
                             e.currentTarget.style.boxShadow = 'none';
                           }}
                         >
-                          <span>👁️</span>
-                          Action
+                          <span>👁️</span> View
+                        </button>
+
+                        {/* Edit Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditArticle(a);
+                          }}
+                          style={{
+                            background: colors.mutedText,
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.8rem',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                        >
+                          <span>✏️</span> Edit
+                        </button>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteArticle(a.id);
+                          }}
+                          style={{
+                            background: colors.highlight,
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.8rem',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+                            e.currentTarget.style.background = '#dc2626';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.background = colors.highlight;
+                          }}
+                        >
+                          <span>🔥</span> Delete
                         </button>
                       </td>
-                      {bulkEditMode && (
-                        <td style={{ padding: '16px', borderBottom: `1px solid ${colors.border}` }}>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                            <button
-                              style={{
-                                background: colors.mutedText,
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '8px 12px',
-                                cursor: 'pointer',
-                                fontWeight: 600,
-                                fontSize: '0.8rem',
-                                transition: 'all 0.2s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = 'none';
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditArticle(a);
-                              }}
-                            >
-                              <span>✏️</span>
-                              Edit
-                            </button>
-                            <button
-                              style={{
-                                background: colors.highlight,
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '8px 12px',
-                                cursor: 'pointer',
-                                fontWeight: 600,
-                                fontSize: '0.8rem',
-                                transition: 'all 0.2s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
-                                e.currentTarget.style.background = '#dc2626';
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = 'none';
-                                e.currentTarget.style.background = colors.highlight;
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteArticle(a.id);
-                              }}
-                            >
-                              <span>🔥</span>
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      )}
                     </tr>
                     );
                   })}
@@ -1340,7 +1305,7 @@ export default function Library() {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
           }
-        `}}
+        `}
       </style>
     </div>
   );
