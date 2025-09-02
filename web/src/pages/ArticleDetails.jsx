@@ -401,7 +401,7 @@ export default function ArticleDetails() {
               transform: translateY(0) scale(1); 
             }
           }
-        `}}
+        `}
       </style>
     </div>
   );
