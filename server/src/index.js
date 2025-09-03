@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js';
 import articleRoutes from './routes/articles.js';
 import uploadRoutes from './routes/uploads.js';
 import profileRouter from './routes/profile.js';
+import summary from "./routes/summary.js";
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
 app.use('/v1/profile', profileRouter);
+app.use('/v1/summary', summary);
 app.use('/uploads', express.static('src/uploads'));
 
 syncDb().then(() => {
