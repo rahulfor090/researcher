@@ -4,6 +4,7 @@ import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, secondaryButtonStyle, gradients, shadows } from '../theme';
 import { useAuth } from '../auth';
 import ArticleFormModal from '../components/ArticleFormModal';
+import SummaryModal from '../components/SummaryModal';
 
 export default function Library() {
   const { user, logout } = useAuth();
@@ -15,6 +16,8 @@ export default function Library() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRows, setSelectedRows] = useState(new Set());
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summary, setSummary] = useState('');
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
 
   // Load articles from backend
@@ -65,6 +68,22 @@ export default function Library() {
       newSelectedRows.add(articleId);
     }
     setSelectedRows(newSelectedRows);
+  };
+
+  // Generate summary for a PDF
+  const handleGenerateSummary = async (filename) => {
+    try {
+      const { data } = await api.post('/summary/generate', { filename });
+      if (data.success) {
+        setSummary(data.summary);
+        setShowSummaryModal(true);
+      } else {
+        alert('Failed to generate summary: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Summary generation error:', error);
+      alert('Failed to generate summary. Please try again.');
+    }
   };
 
   // Select all rows
@@ -1100,36 +1119,75 @@ export default function Library() {
                           textAlign: 'center',
                         }}
                       >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            nav(`/library/article/${a.id}`);
-                          }}
-                          style={{
-                            ...primaryButtonStyle,
-                            padding: '8px 16px',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            margin: '0 auto'
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        >
-                          <span>👁️</span>
-                          Action
-                        </button>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          justifyContent: 'center'
+                        }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              nav(`/library/article/${a.id}`);
+                            }}
+                            style={{
+                              ...primaryButtonStyle,
+                              padding: '8px 16px',
+                              fontSize: '0.85rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              borderRadius: '8px',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <span>👁️</span>
+                            View
+                          </button>
+                          {a.file_name && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGenerateSummary(a.file_name);
+                              }}
+                              style={{
+                                background: colors.highlight,
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 16px',
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                borderRadius: '8px',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }}
+                            >
+                              <span>📝</span>
+                              Summary
+                            </button>
+                          )}
+                        </div>
                       </td>
                       {bulkEditMode && (
                         <td style={{ padding: '16px', borderBottom: `1px solid ${colors.border}` }}>
@@ -1220,6 +1278,14 @@ export default function Library() {
           }}
           onSave={handleSaveArticle}
           initialData={editArticle}
+        />
+      )}
+
+      {/* Summary Modal */}
+      {showSummaryModal && (
+        <SummaryModal
+          summary={summary}
+          onClose={() => setShowSummaryModal(false)}
         />
       )}
 
@@ -1340,7 +1406,7 @@ export default function Library() {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
           }
-        `}}
+        `}
       </style>
     </div>
   );
