@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, shadows, gradients, secondaryButtonStyle, shadows as shadowsTheme } from '../theme';
 import { useAuth } from '../auth';
+import ReactMarkdown from 'react-markdown';
 
 export default function ArticleDetails() {
   const { id } = useParams();
@@ -12,10 +13,13 @@ export default function ArticleDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
+
   const fileInputRef = useRef(null);
   const [uploadStatus, setUploadStatus] = useState(null);
+  const [abstract, setAbstract] = useState('');
 
-  const initials = (user?.name || 'User').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+
+  const initials = (user?.name || 'User        ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -50,63 +54,73 @@ export default function ArticleDetails() {
       formData.append('pdf', file);
 
       try {
-        const response = await fetch(`http://localhost:3000/upload?id=${id}`, {
+        // Send article id as query parameter
+        const response = await fetch(`http://localhost:5000/v1/upload/pdf?id=${id}`, {
           method: 'POST',
           body: formData,
         });
         if (response.ok) {
           const data = await response.json();
-          if (data.success) {
-            setUploadStatus(`Upload successful: ${data.pdfFile}`);
-            const refreshed = await api.get(`/articles/${id}`);
-            setArticle(refreshed.data);
-            console.log('Updated article.file_name:', refreshed.data.file_name);
-          } else {
-            setUploadStatus(`Upload failed: ${data.error || 'Unknown error'}`);
-          }
+          setUploadStatus('Upload successful: ' + data.filename);
+          // Optionally, refresh article data to show updated file_name
+          const refreshed = await api.get(`/articles/${id}`);
+          setArticle(refreshed.data);
         } else {
           const errorData = await response.json();
-          setUploadStatus(`Upload failed: ${errorData.error || 'Server error'}`);
+          setUploadStatus('Upload failed: ' + (errorData.error || 'Unknown error'));
         }
       } catch (error) {
-        console.error('Upload error:', error);
-        setUploadStatus(`Upload error: ${error.message}`);
+        setUploadStatus('Upload error: ' + error.message);
       }
-    }
-  };
-
-  const handleProcessPDF = async () => {
-    console.log(article.file_name);
-    if (!article?.file_name) {
-      setUploadStatus('No PDF file associated with this article.');
-      return;
-    }
-    setUploadStatus('Processing PDF...');
-    try {
-      const response = await fetch(`http://localhost:5000/process-pdf?filename=${encodeURIComponent(article.file_name)}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Process PDF error:', errorData);
-        setUploadStatus(`Processing failed: ${errorData.error || 'Server error'}`);
-        return;
-      }
-      const data = await response.json();
-      console.log('Process PDF response:', data);
-      if (data.success) {
-        setSummary(data.summary);
-        setUploadStatus('Processing successful');
-      } else {
-        setUploadStatus(`Processing failed: ${data.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Network error in processPDF:', error);
-      setUploadStatus(`Processing error: ${error.message}`);
     }
   };
 
   if (loading) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif' }}>Loading...</div>;
   if (error) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: 'red' }}>{error}</div>;
   if (!article) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif' }}>Article not found.</div>;
+
+  const handleProcessPDF = async () => {
+    if (!article?.file_name || !article?.id) {
+      setUploadStatus('Missing article data');
+      return;
+    }
+
+    const articleId = article.id;
+    setUploadStatus('Processing PDF...');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/process-pdf-by-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ article_id: articleId })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setUploadStatus('Processing failed: ' + (data.error || 'Unknown error'));
+        return;
+      }
+
+      const newSummary = data.result.summary;
+
+      // ✅ Update abstract immediately
+      setAbstract(newSummary);
+
+      // ✅ Sync article object if needed
+      setArticle(prev => ({
+        ...prev,
+        abstract: newSummary,
+        summary: newSummary
+      }));
+
+      setUploadStatus('Processing successful');
+    } catch (error) {
+      setUploadStatus('Processing error: ' + error.message);
+    }
+  };
+
+
 
   return (
     <div style={{ 
@@ -117,7 +131,7 @@ export default function ArticleDetails() {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Background Decorative Elements */}
+      {/* Enhanced Background decorative elements */}
       <div style={{
         position: 'absolute',
         top: '-50%',
@@ -156,7 +170,6 @@ export default function ArticleDetails() {
         animation: 'detailsPulse 18s ease-in-out infinite reverse',
         zIndex: 0
       }} />
-
       {/* Left Sidebar */}
       <div
         style={{
@@ -327,76 +340,63 @@ export default function ArticleDetails() {
             )}
           </p>
           <div style={{ marginTop: '16px' }}>
-            <h3>Abstract / Description</h3>
-            <p style={{ lineHeight: '1.6', color: colors.secondaryText || '#4b5563' }}>
-              {article.abstract || 'No description available.'}
-            </p>
-
-            {/* Summary displayed directly under Abstract/Description */}
-            {summary && (
-              <div style={{ marginTop: '16px' }}>
-                <h4 style={{ margin: '8px 0', color: colors.primaryText || '#111827' }}>Generated Summary</h4>
-                <p style={{ lineHeight: '1.6', color: colors.secondaryText || '#4b5563', whiteSpace: 'pre-wrap' }}>
-                  {summary}
-                </p>
-              </div>
-            )}
+            <h3>Summary</h3>
+            <ReactMarkdown>{article.abstract || 'No summary available.'}</ReactMarkdown>
 
             {/* Show current uploaded file name if exists */}
             {article.file_name && (
-              <p style={{ marginTop: '16px' }}>
+              <p>
                 <strong>Uploaded PDF:</strong>{' '}
                 <a
-                  href={`http://localhost:3000/uploads/${article.file_name}`}
+                  href={`http://localhost:5000/uploads/${article.file_name}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: colors.link }}
                 >
                   {article.file_name}
                 </a>
               </p>
             )}
 
-            <div style={{ marginTop: '16px', display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <button
-                style={{
-                  ...secondaryButtonStyle,
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  padding: '10px 16px',
-                }}
-                type="button"
-                onClick={handleButtonClick}
-              >
-                Upload PDF
-              </button>
-              {article.file_name && (
-                <button
-                  style={{
-                    ...secondaryButtonStyle,
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    borderRadius: '8px',
-                    padding: '10px 16px',
-                    backgroundColor: colors.accent || '#8b5cf6',
-                    color: 'white',
-                    border: 'none',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                  type="button"
-                  onClick={handleProcessPDF}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = '#7c3aed';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = colors.accent || '#8b5cf6';
-                  }}
-                >
-                  Process PDF
-                </button>
-              )}
-            </div>
+                <div style={{ marginTop: '16px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <button
+                    style={{
+                      ...secondaryButtonStyle,
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      borderRadius: '8px',
+                      padding: '10px 16px',
+                    }}
+                    type="button"
+                    onClick={handleButtonClick}
+                  >
+                    Upload PDF
+                  </button>
+                  {article.file_name && (
+                    <button
+                      style={{
+                        ...secondaryButtonStyle,
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        borderRadius: '8px',
+                        padding: '10px 16px',
+                        backgroundColor: colors.accent || '#8b5cf6',
+                        color: 'white',
+                        border: 'none',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      type="button"
+                      onClick={handleProcessPDF}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.backgroundColor = '#7c3aed';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.backgroundColor = colors.accent || '#8b5cf6';
+                      }}
+                    >
+                      Process PDF
+                    </button>
+                  )}
+                </div>
 
             <input
               type="file"
@@ -407,19 +407,17 @@ export default function ArticleDetails() {
             />
 
             {uploadStatus && (
-              <p style={{ 
-                marginTop: '8px', 
-                color: uploadStatus.includes('successful') ? 'green' : 'red',
-                fontSize: '0.9rem'
-              }}>
+              <p style={{ marginTop: '8px', color: uploadStatus.startsWith('Upload successful') ? 'green' : 'red' }}>
                 {uploadStatus}
               </p>
             )}
+
+            
           </div>
         </div>
       </div>
 
-      {/* Animations */}
+      {/* Enhanced Animations */}
       <style>
         {`
           @keyframes detailsFloat {

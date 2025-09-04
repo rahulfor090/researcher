@@ -1,62 +1,27 @@
-import { Router } from 'express';
-import fs from "fs";
-import path from "path";
-import pdf from "pdf-parse/lib/pdf-parse.js";
-import dotenv from "dotenv";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import express from "express";
-import multer from "multer";
-import cors from "cors";
-import mysql from "mysql2/promise";
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import pdf from 'pdf-parse/lib/pdf-parse.js';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Article } from '../models/index.js'; // ✅ Sequelize model
 
 dotenv.config();
 
-const router = Router();
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Enable CORS for all origins (adjust as needed)
-app.use(cors());
-
-// Middleware
-app.use(express.json());
-
-// Configure multer for file uploads
-const upload = multer({ 
-  dest: 'uploads/',
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF files are allowed'), false);
-    }
-  }
-});
-
-// MySQL pool setup
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || '127.0.0.1',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'Smarth@2006',
-  database: process.env.DB_NAME || 'research_locker',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
-
-// Gemini client
+const router = express.Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-async function processPDF(pdfBuffer, filename = "uploaded file") {
+router.use(cors());
+router.use(express.json());
+
+async function processPDF(pdfBuffer, filename = 'uploaded file') {
   try {
     console.log(`📄 Processing PDF: ${filename}`);
 
-    // Parse PDF
     const pdfData = await pdf(pdfBuffer);
 
-    // Ask Gemini for a structured summary
     const prompt = `
 You are an expert document summarizer. Produce a structured summary in the EXACT format below.
 
@@ -96,13 +61,12 @@ ${pdfData.text.slice(0, 8000)}
       success: true,
       pdfFile: filename,
       extractedText: pdfData.text,
-      summary: summary,
+      summary,
       pages: pdfData.numpages,
       info: pdfData.info
     };
-
   } catch (err) {
-    console.error("❌ Error:", err);
+    console.error('❌ Error during PDF processing:', err);
     return {
       success: false,
       error: err.message
@@ -110,84 +74,46 @@ ${pdfData.text.slice(0, 8000)}
   }
 }
 
-// Upload and process PDF
-app.post('/upload', upload.single('pdf'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'No PDF file uploaded' });
-    }
-
-    const pdfBuffer = fs.readFileSync(req.file.path);
-    const result = await processPDF(pdfBuffer, req.file.originalname);
-    
-    // Clean up uploaded file
-    fs.unlinkSync(req.file.path);
-    
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Process existing PDF in project root (fallback)
-app.get('/process-existing', async (req, res) => {
-  try {
-    const projectRoot = process.cwd();
-    const pdfFile = fs.readdirSync(projectRoot).find(f => f.endsWith(".pdf"));
-
-    if (!pdfFile) {
-      return res.status(404).json({ 
-        success: false, 
-        error: "No PDF file found in project root. Please add a .pdf file." 
-      });
-    }
-
-    const pdfPath = path.join(projectRoot, pdfFile);
-    const dataBuffer = fs.readFileSync(pdfPath);
-    const result = await processPDF(dataBuffer, pdfFile);
-    
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-console.log("Server starting...");
-app.get('/process-pdf', (req, res) => {
-  console.log("Route triggered");
-  res.send("ok");
-});
-
-// New endpoint: Process uploaded PDF by article ID (fetch filename from DB)
-
-
-app.get('/v1/summary/process-pdf', async (req, res) => {
-  console.log("Hello Process pdf");
+// ✅ POST /api/process-pdf-by-article
+router.post('/api/process-pdf-by-article', async (req, res) => {
+  console.log('🔍 Received request to process PDF by article');
 
   try {
-    const { pdf_file } = req.query; 
-    console.log("Requested PDF:", pdf_file);
+    const { article_id } = req.body;
 
-    if (!pdf_file) {
-      return res.status(400).json({ success: false, error: 'pdf_file query parameter is required' });
+    if (!article_id) {
+      return res.status(400).json({ success: false, error: 'Missing article_id in request body' });
     }
 
-    // Absolute path to your uploads folder
-    const uploadsDir = path.join("S:", "researcher", "server", "src", "uploads");
-    const pdfPath = path.join(uploadsDir, pdf_file);
+    const article = await Article.findByPk(Number(article_id));
 
-    console.log("Looking for PDF at:", pdfPath);
+    if (!article || !article.file_name) {
+      return res.status(404).json({ success: false, error: 'Article not found or missing file_name' });
+    }
+
+    const uploadsDir = path.resolve('src/uploads');
+    const pdfPath = path.join(uploadsDir, article.file_name.trim());
 
     if (!fs.existsSync(pdfPath)) {
       return res.status(404).json({ success: false, error: 'PDF file not found on server' });
     }
 
     const pdfBuffer = fs.readFileSync(pdfPath);
-    // Call your custom PDF processing
-    const result = await processPDF(pdfBuffer, pdf_file);
+    const result = await processPDF(pdfBuffer, article.file_name);
+
+    if (!result.success) {
+      return res.status(500).json({ success: false, error: result.error });
+    }
+
+    article.summary = result.summary;
+    article.abstract = result.summary;
+    await article.save();
 
     res.json({ success: true, result });
   } catch (error) {
-    console.error('Error processing PDF:', error);
+    console.error('❌ Error in /api/process-pdf-by-article:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+export default router;

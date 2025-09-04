@@ -37,7 +37,7 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
     const [updated] = await Article.update(
       { 
         file_name: req.file.filename,
-        summary: req.file.filename  // Save filename in summary as well
+        summary: req.file.filename// Save filename in summary as well
       },
       { where: { id: articleId } }
     );
