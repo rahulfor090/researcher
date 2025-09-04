@@ -10,11 +10,7 @@ export default (sequelize) => {
     phone_number: { type: DataTypes.STRING(20), allowNull: true },
     profile_image: { 
       type: DataTypes.STRING(255), 
-      allowNull: true,
-      get() {
-        const rawValue = this.getDataValue('profile_image');
-        return rawValue ? `/uploads/pictures/${rawValue}` : null;
-      }
+      allowNull: true
     }, 
     gender: { type: DataTypes.ENUM('Male', 'Female', 'Other'), allowNull: true },
     university: { type: DataTypes.STRING(255), allowNull: true },

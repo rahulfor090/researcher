@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, gradients, shadows } from '../theme';
 
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,6 +29,9 @@ export default function Login() {
 
   return (
     <div style={{
+    
+    
+    
       minHeight: '100vh',
       background: gradients.auth,
       display: 'flex',
@@ -84,14 +88,13 @@ export default function Login() {
         position: 'relative',
         zIndex: 10,
         background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        backdropFilter: 'blur(25px)',
+        WebkitBackdropFilter: 'blur(25px)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
         boxShadow: `${shadows.soft}, 0 25px 50px -12px rgba(0, 0, 0, 0.15)`,
         transform: 'translateY(0)',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        animation: 'slideUp 0.8s ease-out',
-        backdropFilter: 'blur(25px)',
-        WebkitBackdropFilter: 'blur(25px)'
+        animation: 'slideUp 0.8s ease-out'
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-8px)';

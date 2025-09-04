@@ -32,8 +32,10 @@ app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
 app.use('/v1/profile', profileRouter);
+
+// Serve uploaded files with CORS headers
+app.use('/uploads', cors(), express.static('src/uploads'));
 app.use('/', summaryRoutes);
-app.use('/uploads', express.static('src/uploads'));
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));
