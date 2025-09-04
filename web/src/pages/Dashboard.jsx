@@ -90,6 +90,7 @@ export default function Dashboard() {
         animation: 'dashboardPulse 10s ease-in-out infinite reverse',
         zIndex: 0
       }} />
+
       {/* Left Navigation Sidebar */}
       <div 
         style={{ 
@@ -108,7 +109,7 @@ export default function Dashboard() {
       >
         <h1 style={{ 
           fontSize: '2rem', 
-          fontWeight: 700, 
+          fontWeight: '700', 
           marginBottom: '16px', 
           color: '#e5e7eb',
           animation: 'fadeInDown 0.8s ease-out 0.2s both'
@@ -191,7 +192,8 @@ export default function Dashboard() {
               transition: 'background 0.2s ease'
             }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Settings</button>
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            onClick={() => { setShowProfileMenu(false); nav('/settings'); }}>Settings</button>
             <button style={{ 
               display: 'block', 
               padding: '10px 14px', 
@@ -236,49 +238,52 @@ export default function Dashboard() {
         )}
         
         <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
-  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-    {[
-      { label: 'Dashboard', icon: '🏠', path: '/' },
-      { label: 'Library', icon: '📚', path: '/library' },
-      { label: 'Collections', icon: '🗂️', path: null },
-      { label: 'All insights', icon: '📈', path: null },
-      { label: 'Settings', icon: '⚙️', path: '/settings' } // <-- Add this line
-    ].map(({ label, icon, path }, index) => (
-      <li
-        key={label}
-        style={{
-          padding: '10px 12px',
-          color: '#cbd5e1',
-          borderRadius: '10px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          cursor: 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          animation: `fadeInLeft 0.6s ease-out ${0.8 + index * 0.1}s both`
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-          e.currentTarget.style.transform = 'translateX(8px) scale(1.02)';
-          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.transform = 'translateX(0) scale(1)';
-          e.currentTarget.style.boxShadow = 'none';
-        }}
-        onClick={() => { if (path) nav(path); }}
-      >
-        <span style={{
-          width: 20,
-          textAlign: 'center',
-          transition: 'transform 0.3s ease'
-        }}>{icon}</span>
-        <span>{label}</span>
-      </li>
-    ))}
-  </ul>
-</nav>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {[
+              { label: 'Dashboard', icon: '🏠', path: '/' },
+              { label: 'Library', icon: '📚', path: '/library' },
+              { label: 'Collections', icon: '🗂️', path: null },
+              { label: 'All insights', icon: '📈', path: null },
+              
+            ].map(({ label, icon, path }, index) => (
+              <li
+                key={label}
+                style={{
+                  padding: '10px 12px',
+                  color: '#cbd5e1',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  animation: `fadeInLeft 0.6s ease-out ${0.8 + index * 0.1}s both`
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                  e.currentTarget.style.transform = 'translateX(8px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+                onClick={() => { if (path) nav(path); }}
+              >
+                <span style={{
+                  width: 20,
+                  textAlign: 'center',
+                  transition: 'transform 0.3s ease'
+                }}>{icon}</span>
+                <span>{label}</span>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+      <div>
+        
       </div>
 
       {/* Main Content Area */}
@@ -822,102 +827,102 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      
-        {/* Enhanced Animations */}
-        <style>
-          {`
-            @keyframes dashboardFloat {
-              0%, 100% { transform: translateY(0px) rotate(0deg); }
-              33% { transform: translateY(-30px) rotate(120deg); }
-              66% { transform: translateY(30px) rotate(240deg); }
-            }
-                
-            @keyframes dashboardPulse {
-              0%, 100% { transform: scale(1); opacity: 0.06; }
-              50% { transform: scale(1.15); opacity: 0.12; }
-            }
-                
-            @keyframes slideInLeft {
-              from { 
-                opacity: 0; 
-                transform: translateX(-100px) scale(0.95); 
-              }
-              to { 
-                opacity: 1; 
-                transform: translateX(0) scale(1); 
-              }
-            }
-                
-            @keyframes fadeInRight {
-              from { 
-                opacity: 0; 
-                transform: translateX(50px) scale(0.95); 
-              }
-              to { 
-                opacity: 1; 
-                transform: translateX(0) scale(1); 
-              }
-            }
-                
-            @keyframes fadeInDown {
-              from { 
-                opacity: 0; 
-                transform: translateY(-30px) scale(0.95); 
-              }
-              to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-              }
-            }
-                
-            @keyframes fadeInUp {
-              from { 
-                opacity: 0; 
-                transform: translateY(30px) scale(0.95); 
-              }
-              to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-              }
-            }
-                
-            @keyframes fadeInLeft {
-              from { 
-                opacity: 0; 
-                transform: translateX(-30px) scale(0.95); 
-              }
-              to { 
-                opacity: 1; 
-                transform: translateX(0) scale(1); 
-              }
-            }
-                
-            @keyframes slideDown {
-              0% {
-                opacity: 0;
-                transform: translateY(-10px) scale(0.95);
-                maxHeight: 0;
-                filter: blur(4px);
-              }
-              50% {
-                opacity: 0.7;
-                filter: blur(2px);
-              }
-              100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                maxHeight: 200px;
-                filter: blur(0);
-              }
-            }
-                
-            @keyframes pulse {
-              0%, 100% { transform: scale(1); }
-              50% { transform: scale(1.05); }
-            }
-          `}
-        </style>
       </div>
+      
+      {/* Enhanced Animations */}
+      <style>
+        {`
+          @keyframes dashboardFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(30px) rotate(240deg); }
+          }
+              
+          @keyframes dashboardPulse {
+            0%, 100% { transform: scale(1); opacity: 0.06; }
+            50% { transform: scale(1.15); opacity: 0.12; }
+          }
+              
+          @keyframes slideInLeft {
+            from { 
+              opacity: 0; 
+              transform: translateX(-100px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateX(0) scale(1); 
+            }
+          }
+              
+          @keyframes fadeInRight {
+            from { 
+              opacity: 0; 
+              transform: translateX(50px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateX(0) scale(1); 
+            }
+          }
+              
+          @keyframes fadeInDown {
+            from { 
+              opacity: 0; 
+              transform: translateY(-30px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0) scale(1); 
+            }
+          }
+              
+          @keyframes fadeInUp {
+            from { 
+              opacity: 0; 
+              transform: translateY(30px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0) scale(1); 
+            }
+          }
+              
+          @keyframes fadeInLeft {
+            from { 
+              opacity: 0; 
+              transform: translateX(-30px) scale(0.95); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateX(0) scale(1); 
+            }
+          }
+              
+          @keyframes slideDown {
+            0% {
+              opacity: 0;
+              transform: translateY(-10px) scale(0.95);
+              maxHeight: 0;
+              filter: blur(4px);
+            }
+            50% {
+              opacity: 0.7;
+              filter: blur(2px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+              maxHeight: 200px;
+              filter: blur(0);
+            }
+          }
+              
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+        `}
+      </style>
       
       {/* Animations keyframes */}
       <style>

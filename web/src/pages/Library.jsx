@@ -302,7 +302,7 @@ export default function Library() {
               { label: 'Library', icon: '📚', path: '/library' },
               { label: 'Collections', icon: '🗂️', path: null },
               { label: 'All insights', icon: '📈', path: null },
-              { label: 'Settings', icon: '⚙️', path: '/settings' }
+              
             ].map(({ label, icon, path }, index) => (
               <li
                 key={label}
