@@ -97,14 +97,13 @@ export default function Register() {
         position: 'relative',
         zIndex: 10,
         background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        backdropFilter: 'blur(25px)',
+        WebkitBackdropFilter: 'blur(25px)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
         boxShadow: `${shadows.soft}, 0 25px 50px -12px rgba(0, 0, 0, 0.15)`,
         transform: 'translateY(0)',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        animation: 'slideUp 0.8s ease-out 0.1s both',
-        backdropFilter: 'blur(25px)',
-        WebkitBackdropFilter: 'blur(25px)'
+        animation: 'slideUp 0.8s ease-out 0.1s both'
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-8px)';

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, Protected } from './auth';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Library from './pages/Library';
 import Settings from './pages/Settings'
 import ArticleDetails from './pages/ArticleDetails';
+
 
 export default function App() {
   return (

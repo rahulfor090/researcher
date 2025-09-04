@@ -1,11 +1,13 @@
 export const colors = {
   primaryText: '#1F2937',
+  secondaryText: '#6B7280',
   secondaryBackground: '#F5F5DC',
   highlight: '#F97316',
   link: '#0D9488',
   backgroundAlt: '#FAFAF9',
   dark: '#111827',
   cardBackground: '#FFFFFF',
+  background: '#FFFFFF',
   border: '#E5E7EB',
   mutedText: '#6B7280',
   primary: '#0f172a',
@@ -13,7 +15,8 @@ export const colors = {
   accent: '#8b5cf6',
   success: '#22c55e',
   warning: '#f59e0b',
-  error: '#ef4444'
+  error: '#ef4444',
+  hover: 'rgba(0,0,0,0.05)'
 };
 
 export const motion = {
