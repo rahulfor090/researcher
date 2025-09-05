@@ -35,6 +35,39 @@ const upload = multer({
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
+async function extractHashtags(text) {
+  try {
+    const prompt = `
+You are a expert medical researcher. Extract 10-15 important keywords or phrases from the following Medical text. Output them as a comma-separated list.
+
+Text:
+${text.slice(0, 8000)}
+    `;
+
+    const result = await model.generateContent(prompt);
+    const keywordsText = result.response.text();
+
+    const keywords = keywordsText
+      .split(',')
+      .map(k => k.trim())
+      .filter(k => k.length > 0);
+
+    const hashtags = keywords.map(k => {
+      const cleaned = k.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+      const pascalCase = cleaned
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join('');
+      return '#' + pascalCase;
+    });
+
+    return hashtags.join(' ');
+  } catch (err) {
+    console.error('❌ Error during hashtag extraction:', err);
+    return '';
+  }
+}
+
 async function processPDF(pdfBuffer, filename = 'uploaded file') {
   try {
     console.log(`📄 Processing PDF: ${filename}`);
@@ -76,11 +109,14 @@ ${pdfData.text.slice(0, 8000)}
     const result = await model.generateContent(prompt);
     const summary = result.response.text();
 
+    const hashtags = await extractHashtags(pdfData.text);
+
     return {
       success: true,
       pdfFile: filename,
       extractedText: pdfData.text,
       summary,
+      hashtags,
       pages: pdfData.numpages,
       info: pdfData.info
     };
@@ -99,28 +135,27 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
   try {
-    // Read the uploaded PDF file buffer
     const pdfPath = path.join(uploadDir, req.file.filename);
     const pdfBuffer = fs.readFileSync(pdfPath);
 
-    // Process PDF and generate summary
     const result = await processPDF(pdfBuffer, req.file.filename);
 
     if (!result.success) {
       return res.status(500).json({ error: 'PDF processing failed', details: result.error });
     }
 
-    // Update the article with filename and generated summary
     const [updated] = await Article.update(
       {
         file_name: req.file.filename,
         summary: result.summary,
-        abstract: result.summary
+        abstract: result.summary,
+        hashtags: result.hashtags // ✅ Make sure this column exists in your model
       },
       { where: { id: articleId } }
     );
 
     if (!updated) {
+      console.warn(`⚠️ Article with ID ${articleId} not found`);
       return res.status(404).json({ error: 'Article not found' });
     }
 
@@ -128,6 +163,7 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
       message: 'File uploaded, processed, and article updated',
       filename: req.file.filename,
       summary: result.summary,
+      hashtags: result.hashtags,
       pages: result.pages,
       info: result.info
     });
