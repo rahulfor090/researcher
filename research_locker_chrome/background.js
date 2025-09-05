@@ -41,6 +41,41 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           sendResponse({ ok: true, user: data.user });
           break;
         }
+        case "GOOGLE_LOGIN": {
+          // Open a new tab with the Google OAuth endpoint
+          chrome.tabs.create({ url: `${API_BASE}/auth/google` }, (tab) => {
+            // Listen for changes in the tab URL to detect successful authentication
+            const tabId = tab.id;
+            const listener = async (tabId, changeInfo) => {
+              // Check if the URL contains token and user parameters
+              if (changeInfo.url && changeInfo.url.includes('token=')) {
+                try {
+                  const url = new URL(changeInfo.url);
+                  const token = url.searchParams.get('token');
+                  if (token) {
+                    await setToken(token);
+                    // Close the tab after successful authentication
+                    chrome.tabs.remove(tabId);
+                    // Remove the listener
+                    chrome.tabs.onUpdated.removeListener(listener);
+                  }
+                } catch (error) {
+                  console.error('Error processing Google auth callback:', error);
+                }
+              }
+            };
+            
+            // Add the listener for this specific tab
+            chrome.tabs.onUpdated.addListener((updatedTabId, changeInfo) => {
+              if (updatedTabId === tabId) {
+                listener(tabId, changeInfo);
+              }
+            });
+          });
+          
+          sendResponse({ ok: true });
+          break;
+        }
         case "LOGOUT": {
           await clearToken();
           sendResponse({ ok: true });

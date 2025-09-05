@@ -3,6 +3,9 @@ import 'dotenv/config';
 export const env = {
   port: process.env.PORT || 5000,
   jwtSecret: process.env.JWT_SECRET,
+  sessionSecret: process.env.SESSION_SECRET,
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   db: {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,

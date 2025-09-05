@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
+import session from 'express-session';
+import passport from './config/passport.js';
 import { env } from './config/env.js';
 import { syncDb } from './models/index.js';
 import authRoutes from './routes/auth.js';
@@ -12,6 +14,20 @@ import summaryRoutes from "./routes/summary.js";
 
 const app = express();
 
+// Session configuration
+app.use(session({
+  secret: env.sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(express.json({ limit: '10mb' }));
 app.use(helmet());

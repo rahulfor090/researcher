@@ -5,10 +5,9 @@ import { api } from '../api';
 import { useAuth } from '../auth';
 
 export default function Settings() {
-  const { user, logout } = useAuth();
   const nav = useNavigate();
+  const { user, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const initials = (user?.name || 'User').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
 
   // Resolve API origin (strip trailing /v1 from VITE_API_BASE)
   const API_ORIGIN = (import.meta.env.VITE_API_BASE || '').replace(/\/?v1\/?$/, '');
@@ -34,12 +33,14 @@ export default function Settings() {
   const [saveMessage, setSaveMessage] = useState('');
   const [error, setError] = useState('');
 
+  const displayName = name || user?.name || 'You';
+  const displayEmail = email || user?.email || '';
+  const initials = (displayName).split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+
   // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
-      if (showProfileMenu) {
-        setShowProfileMenu(false);
-      }
+      if (showProfileMenu) setShowProfileMenu(false);
     };
 
     if (showProfileMenu) {
@@ -322,7 +323,11 @@ export default function Settings() {
             fontWeight: 700,
             animation: 'pulse 2s infinite'
           }}>
-            {initials}
+            {profile_image && typeof profile_image === 'string' ? (
+              <img src={profile_image} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              initials
+            )}
           </div>
           <div>
             <div style={{ fontWeight: 600 }}>{user?.name || 'You'}</div>
@@ -334,33 +339,38 @@ export default function Settings() {
           <div 
             onClick={(e) => e.stopPropagation()}
             style={{ 
-            position: 'relative', 
-            top: '0px', 
-            left: '0px', 
-            right: '0px', 
-            background: 'white', 
-            color: colors.primaryText, 
-            border: `1px solid ${colors.border}`, 
-            borderRadius: '12px', 
-            boxShadow: shadows.soft, 
-            overflow: 'hidden', 
-            zIndex: 30, 
-            animation: 'slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', 
-            transformOrigin: 'top center',
-            marginBottom: '16px'
-          }}>
-            <button style={{ 
-              display: 'block', 
-              padding: '10px 14px', 
-              background: 'transparent', 
-              border: 'none', 
-              width: '100%', 
-              textAlign: 'left', 
-              cursor: 'pointer',
-              transition: 'background 0.2s ease'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Settings</button>
+              position: 'relative', 
+              top: '0px', 
+              left: '0px', 
+              right: '0px', 
+              background: 'white', 
+              color: colors.primaryText, 
+              border: `1px solid ${colors.border}`, 
+              borderRadius: '12px', 
+              boxShadow: shadows.soft, 
+              overflow: 'hidden', 
+              zIndex: 30, 
+              animation: 'slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', 
+              transformOrigin: 'top center',
+              marginBottom: '16px'
+            }}>
+            <button
+              onClick={() => {
+                setShowProfileMenu(false);
+                nav('/settings');
+              }}
+              style={{ 
+                display: 'block', 
+                padding: '10px 14px', 
+                background: 'transparent', 
+                border: 'none', 
+                width: '100%', 
+                textAlign: 'left', 
+                cursor: 'pointer',
+                transition: 'background 0.2s ease'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Settings</button>
             <button style={{ 
               display: 'block', 
               padding: '10px 14px', 

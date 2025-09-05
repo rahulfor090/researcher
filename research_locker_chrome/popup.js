@@ -40,6 +40,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   };
 
+  // Google Login
+  $('googleLoginBtn').onclick = async () => {
+    chrome.runtime.sendMessage({ type: 'GOOGLE_LOGIN' }, (res) => {
+      if (res?.error) {
+        alert(res.error || 'Google login failed');
+      }
+      // The actual login will be handled by the background script opening a new tab
+    });
+  };
+
   // Populate preview
   const article = await getArticleFromTab();
   if (article) {

@@ -10,8 +10,8 @@ import ArticleDetails from './pages/ArticleDetails';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login/>} />
           <Route path="/register" element={<Register/>} />
@@ -20,7 +20,7 @@ export default function App() {
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

@@ -15,8 +15,7 @@ export const colors = {
   accent: '#8b5cf6',
   success: '#22c55e',
   warning: '#f59e0b',
-  error: '#ef4444',
-  hover: 'rgba(0,0,0,0.05)'
+  error: '#ef4444'
 };
 
 export const motion = {
