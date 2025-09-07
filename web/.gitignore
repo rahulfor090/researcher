@@ -1,5 +1,6 @@
 # Logs
 node_modules/
+config/config.json
 logs
 *.log
 npm-debug.log*
