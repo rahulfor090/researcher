@@ -69,7 +69,6 @@ export default function ArticleDetails() {
           if (data.summary) {
             setArticle(prev => ({
               ...prev,
-              abstract: data.summary,
               summary: data.summary,
               file_name: data.filename || prev.file_name,
               hashtags: data.hashtags || prev.hashtags,
@@ -96,7 +95,7 @@ export default function ArticleDetails() {
   if (!article) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif' }}>Article not found.</div>;
 
   // Extract summary and hashtags
-const summaryText = article.abstract || article.summary || '';
+const summaryText = article.summary || '';
 let mainSummary = summaryText.trim();
 let hashtags = article.hashtags?.trim() || '';
 
