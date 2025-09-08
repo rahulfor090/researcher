@@ -120,56 +120,78 @@ export default function Layout({ children }) {
         
         {/* Profile Menu Dropdown */}
         {showProfileMenu && (
-          <div 
-            className="profile-menu"
-            onClick={(e) => e.stopPropagation()}
-            style={{ 
-              position: 'relative',
-              background: 'white', 
-              color: colors.primaryText, 
-              border: `1px solid ${colors.border}`, 
-              borderRadius: '12px', 
-              boxShadow: shadows.soft, 
-              overflow: 'hidden', 
-              zIndex: 30, 
-              marginBottom: '16px'
-            }}
-          >
-            <div style={{ padding: '12px', borderBottom: `1px solid ${colors.border}` }}>
-              <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{user?.name || 'User'}</div>
-              <div style={{ fontSize: '0.8rem', color: colors.secondaryText }}>{user?.email || ''}</div>
-            </div>
-            <div style={{ padding: '8px 0' }}>
-              <div 
-                onClick={() => nav('/settings')}
-                style={{ 
-                  padding: '8px 12px', 
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease'
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = colors.hover}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                ⚙️ Settings
-              </div>
-              <div 
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  nav('/login');
-                }}
-                style={{ 
-                  padding: '8px 12px', 
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease'
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = colors.hover}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                🚪 Logout
-              </div>
-            </div>
-          </div>
-        )}
+  <div 
+    className="profile-menu"
+    onClick={(e) => e.stopPropagation()}
+    style={{ 
+      position: 'relative',
+      background: 'white', 
+      color: colors.primaryText, 
+      border: `1px solid ${colors.border}`, 
+      borderRadius: '12px', 
+      boxShadow: shadows.soft, 
+      overflow: 'hidden', 
+      zIndex: 30, 
+      marginBottom: '16px'
+    }}
+  >
+    <div style={{ padding: '12px', borderBottom: `1px solid ${colors.border}` }}>
+      <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{user?.name || 'User'}</div>
+      <div style={{ fontSize: '0.8rem', color: colors.secondaryText }}>{user?.email || ''}</div>
+    </div>
+    <div style={{ padding: '8px 0' }}>
+      <div 
+        onClick={() => nav('/settings')}
+        style={{ 
+          padding: '8px 12px', 
+          cursor: 'pointer',
+          transition: 'background 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <span>⚙️</span> Settings
+      </div>
+      <div 
+        onClick={() => nav('/about')}
+        style={{ 
+          padding: '8px 12px', 
+          cursor: 'pointer',
+          transition: 'background 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <span>ℹ️</span> About
+      </div>
+      <div 
+        onClick={() => {
+          localStorage.removeItem('token');
+          nav('/login');
+        }}
+        style={{ 
+          padding: '8px 12px', 
+          cursor: 'pointer',
+          transition: 'background 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          borderTop: `1px solid ${colors.border}`
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <span>🚪</span> Logout
+      </div>
+    </div>
+  </div>
+)}
         
         <nav>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
