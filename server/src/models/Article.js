@@ -9,7 +9,6 @@ export default (sequelize) => {
     journal: { type: DataTypes.STRING(255) },
     doi: { type: DataTypes.STRING(255) },
     url: { type: DataTypes.TEXT, allowNull: false },
-    abstract: { type: DataTypes.TEXT },
     purchaseDate: { type: DataTypes.DATEONLY },
     price: { type: DataTypes.DECIMAL(10,2) },
     tags: { type: DataTypes.JSON },

@@ -108,8 +108,7 @@ export default function ArticleDetails() {
             const htmlSummary = data.summary.replace(/\n/g, '<br>');
             setArticle(prev => ({
               ...prev,
-              abstract: htmlSummary,
-              summary: htmlSummary,
+              summary: data.summary,
               file_name: data.filename || prev.file_name,
               hashtags: data.hashtags || prev.hashtags,
             }));
