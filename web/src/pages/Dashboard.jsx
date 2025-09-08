@@ -163,79 +163,78 @@ export default function Dashboard() {
         </div>
         
         {showProfileMenu && (
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            style={{ 
-            position: 'relative', 
-            top: '0px', 
-            left: '0px', 
-            right: '0px', 
-            background: 'white', 
-            color: colors.primaryText, 
-            border: `1px solid ${colors.border}`, 
-            borderRadius: '12px', 
-            boxShadow: shadows.soft, 
-            overflow: 'hidden', 
-            zIndex: 30, 
-            animation: 'slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', 
-            transformOrigin: 'top center',
-            marginBottom: '16px'
-          }}>
-            <button style={{ 
-              display: 'block', 
-              padding: '10px 14px', 
-              background: 'transparent', 
-              border: 'none', 
-              width: '100%', 
-              textAlign: 'left', 
-              cursor: 'pointer',
-              transition: 'background 0.2s ease'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            onClick={() => { setShowProfileMenu(false); nav('/settings'); }}>Settings</button>
-            <button style={{ 
-              display: 'block', 
-              padding: '10px 14px', 
-              background: 'transparent', 
-              border: 'none', 
-              width: '100%', 
-              textAlign: 'left', 
-              cursor: 'pointer',
-              transition: 'background 0.2s ease'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>About</button>
-            <button 
-              onClick={() => {
-                logout();
-                nav('/login');
-              }}
-              style={{ 
-                display: 'block', 
-                padding: '10px 14px', 
-                background: 'transparent', 
-                border: 'none', 
-                width: '100%', 
-                textAlign: 'left', 
-                cursor: 'pointer',
-                transition: 'background 0.2s ease',
-                color: '#dc2626',
-                fontWeight: 600
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-                e.currentTarget.style.color = '#b91c1c';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#dc2626';
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        )}
+  <div 
+    className="profile-menu"
+    onClick={(e) => e.stopPropagation()}
+    style={{ 
+      position: 'relative',
+      background: 'white', 
+      color: colors.primaryText, 
+      border: `1px solid ${colors.border}`, 
+      borderRadius: '12px', 
+      boxShadow: shadows.soft, 
+      overflow: 'hidden', 
+      zIndex: 30, 
+      marginBottom: '16px'
+    }}
+  >
+    <div style={{ padding: '12px', borderBottom: `1px solid ${colors.border}` }}>
+      <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{user?.name || 'User'}</div>
+      <div style={{ fontSize: '0.8rem', color: colors.secondaryText }}>{user?.email || ''}</div>
+    </div>
+    <div style={{ padding: '8px 0' }}>
+      <div 
+        onClick={() => nav('/settings')}
+        style={{ 
+          padding: '8px 12px', 
+          cursor: 'pointer',
+          transition: 'background 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <span>⚙️</span> Settings
+      </div>
+      <div 
+        onClick={() => nav('/about')}
+        style={{ 
+          padding: '8px 12px', 
+          cursor: 'pointer',
+          transition: 'background 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <span>ℹ️</span> About
+      </div>
+      <div 
+        onClick={() => {
+          localStorage.removeItem('token');
+          nav('/login');
+        }}
+        style={{ 
+          padding: '8px 12px', 
+          cursor: 'pointer',
+          transition: 'background 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          borderTop: `1px solid ${colors.border}`
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <span>🚪</span> Logout
+      </div>
+    </div>
+  </div>
+)}
         
         <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
