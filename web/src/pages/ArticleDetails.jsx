@@ -1,14 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { colors, cardStyle, primaryButtonStyle, shadows, gradients, secondaryButtonStyle, shadows as shadowsTheme } from '../theme';
+import { colors, cardStyle, primaryButtonStyle, shadows, gradients, secondaryButtonStyle } from '../theme';
 import { useAuth } from '../auth';
 import ReactMarkdown from 'react-markdown';
+
+const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 
 export default function ArticleDetails() {
   const { id } = useParams();
   const nav = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,7 +38,7 @@ export default function ArticleDetails() {
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = null; // reset file input
+      fileInputRef.current.value = null;
       fileInputRef.current.click();
     }
   };
@@ -55,8 +57,7 @@ export default function ArticleDetails() {
       formData.append('pdf', file);
 
       try {
-        // Send article id as query parameter
-        const response = await fetch(`http://localhost:5000/v1/upload/pdf?id=${id}`, {
+        const response = await fetch(`${BASE_API_URL}/upload/pdf?id=${id}`, {
           method: 'POST',
           body: formData,
         });
@@ -65,7 +66,6 @@ export default function ArticleDetails() {
           const data = await response.json();
           setUploadStatus('Upload and processing successful.');
 
-          // Update article summary (abstract) with generated summary from backend
           if (data.summary) {
             setArticle(prev => ({
               ...prev,
@@ -75,7 +75,6 @@ export default function ArticleDetails() {
               hashtags: data.hashtags || prev.hashtags,
             }));
           } else {
-            // If backend does not return summary, refresh article from API
             const refreshed = await api.get(`/articles/${id}`);
             setArticle(refreshed.data);
           }
@@ -95,27 +94,25 @@ export default function ArticleDetails() {
   if (error) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: 'red' }}>{error}</div>;
   if (!article) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif' }}>Article not found.</div>;
 
-  // Extract summary and hashtags
-const summaryText = article.abstract || article.summary || '';
-let mainSummary = summaryText.trim();
-let hashtags = article.hashtags?.trim() || '';
+  const summaryText = article.abstract || article.summary || '';
+  let mainSummary = summaryText.trim();
+  let hashtags = article.hashtags?.trim() || '';
 
-// Fallback: extract hashtags from summary if not separately provided
-if (!hashtags) {
-  const lines = summaryText.split('\n');
-  let hashtagStartIndex = lines.length;
-  for (let i = lines.length - 1; i >= 0; i--) {
-    if (lines[i].trim().startsWith('#')) {
-      hashtagStartIndex = i;
-    } else if (hashtagStartIndex !== lines.length) {
-      break;
+  if (!hashtags) {
+    const lines = summaryText.split('\n');
+    let hashtagStartIndex = lines.length;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (lines[i].trim().startsWith('#')) {
+        hashtagStartIndex = i;
+      } else if (hashtagStartIndex !== lines.length) {
+        break;
+      }
     }
+    const mainSummaryLines = lines.slice(0, hashtagStartIndex);
+    const hashtagLines = lines.slice(hashtagStartIndex);
+    mainSummary = mainSummaryLines.join('\n').trim();
+    hashtags = hashtagLines.join(' ').trim();
   }
-  const mainSummaryLines = lines.slice(0, hashtagStartIndex);
-  const hashtagLines = lines.slice(hashtagStartIndex);
-  mainSummary = mainSummaryLines.join('\n').trim();
-  hashtags = hashtagLines.join(' ').trim();
-}
 
   return (
     <div style={{ 
@@ -126,9 +123,6 @@ if (!hashtags) {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* ... your existing sidebar and background code unchanged ... */}
-
-      {/* Main Content */}
       <div style={{ 
         flexGrow: 1, 
         padding: '40px', 
@@ -144,10 +138,7 @@ if (!hashtags) {
           marginBottom: '24px',
           animation: 'fadeInDown 0.8s ease-out 0.5s both'
         }}>
-          <button
-            onClick={() => nav(-1)}
-            style={{ ...primaryButtonStyle }}
-          >
+          <button onClick={() => nav(-1)} style={{ ...primaryButtonStyle }}>
             ← Back
           </button>
         </div>
@@ -171,6 +162,7 @@ if (!hashtags) {
               '-'
             )}
           </p>
+
           <div style={{ marginTop: '16px' }}>
             <h3>Summary</h3>
             <ReactMarkdown>{mainSummary || 'No summary available.'}</ReactMarkdown>
@@ -198,13 +190,11 @@ if (!hashtags) {
               </div>
             )}
 
-
-            {/* Show current uploaded file name if exists */}
             {article.file_name && (
               <p>
                 <strong>Uploaded PDF:</strong>{' '}
                 <a
-                  href={`http://localhost:5000/uploads/${article.file_name}`}
+                  href={`${BASE_API_URL}/uploads/${article.file_name}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -246,64 +236,20 @@ if (!hashtags) {
         </div>
       </div>
 
-      {/* Enhanced Animations */}
+      {/* Animations */}
       <style>
         {`
-          @keyframes detailsFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            20% { transform: translateY(-20px) rotate(72deg); }
-            40% { transform: translateY(15px) rotate(144deg); }
-            60% { transform: translateY(-10px) rotate(216deg); }
-            80% { transform: translateY(25px) rotate(288deg); }
-          }
-          
-          @keyframes detailsPulse {
-            0%, 100% { transform: scale(1); opacity: 0.04; }
-            50% { transform: scale(1.1); opacity: 0.08; }
-          }
-          
-          @keyframes slideInLeft {
-            from { 
-              opacity: 0; 
-              transform: translateX(-100px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
-          }
-          
           @keyframes fadeInRight {
-            from { 
-              opacity: 0; 
-              transform: translateX(50px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
+            from { opacity: 0; transform: translateX(50px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
           }
-          
           @keyframes fadeInDown {
-            from { 
-              opacity: 0; 
-              transform: translateY(-30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0) scale(1); 
-            }
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
           }
-          
           @keyframes fadeInUp {
-            from { 
-              opacity: 0; 
-              transform: translateY(30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0) scale(1); 
-            }
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
           }
         `}
       </style>

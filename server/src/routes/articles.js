@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
+import { Op } from 'sequelize';
 import { Article } from '../models/index.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -10,11 +11,33 @@ router.post('/',
   requireAuth,
   body('title').notEmpty(),
   body('url').isURL(),
+  body('doi').notEmpty().isString(),
   async (req, res) => {
     const errors = validationResult(req); 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-    const a = await Article.create({ ...req.body, userId: req.user.id });
-    res.json(a);
+
+    try {
+      // Check for existing article with same URL or DOI for this user
+      const existing = await Article.findOne({
+        where: {
+          userId: req.user.id,
+          [Op.or]: [
+            { url: req.body.url },
+            req.body.doi ? { doi: req.body.doi } : null
+          ].filter(Boolean)
+        }
+      });
+
+      if (existing) {
+        return res.status(400).json({ message: 'An article with the same URL or DOI already exists' });
+      }
+
+      const a = await Article.create({ ...req.body, userId: req.user.id });
+      res.json(a);
+    } catch (err) {
+      console.error('Failed to create article:', err);
+      res.status(500).json({ message: 'Failed to create article', error: String(err?.message || err) });
+    }
   }
 );
 
@@ -61,12 +84,30 @@ router.put('/:id',
   requireAuth,
   body('title').notEmpty(),
   body('url').isURL(),
+  body('doi').notEmpty().isString(),
   async (req, res) => {
     try {
       const errors = validationResult(req); 
       if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
       const { id } = req.params;
+
+      // Check if another article (different id) has the same URL or DOI for this user
+      const existing = await Article.findOne({
+        where: {
+          userId: req.user.id,
+          id: { [Op.ne]: id },
+          [Op.or]: [
+            { url: req.body.url },
+            req.body.doi ? { doi: req.body.doi } : null
+          ].filter(Boolean)
+        }
+      });
+
+      if (existing) {
+        return res.status(400).json({ message: 'Another article with the same URL or DOI already exists' });
+      }
+
       const [updated] = await Article.update(
         { ...req.body },
         { where: { id, userId: req.user.id } }
