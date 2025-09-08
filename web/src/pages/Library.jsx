@@ -972,19 +972,6 @@ export default function Library() {
                             {a.title || 'Untitled Article'}
                           </a>
                         </div>
-                        {a.abstract && (
-                          <div style={{
-                            fontSize: '0.8rem',
-                            color: colors.mutedText,
-                            lineHeight: 1.3,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 1,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
-                          }}>
-                            {a.abstract}
-                          </div>
-                        )}
                       </td>
                       <td
                         style={{
