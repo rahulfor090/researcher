@@ -11,6 +11,8 @@ import { htmlToText } from 'html-to-text';
 // Set to true if backend expects plain text; false if it accepts HTML
 const SEND_PLAIN_TEXT = false;
 
+const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+
 export default function ArticleDetails() {
   const { id } = useParams();
   const nav = useNavigate();
@@ -93,7 +95,7 @@ export default function ArticleDetails() {
       formData.append('pdf', file);
 
       try {
-        const response = await fetch(`http://localhost:5000/v1/upload/pdf?id=${id}`, {
+        const response = await fetch(`${BASE_API_URL}/upload/pdf?id=${id}`, {
           method: 'POST',
           body: formData,
         });
@@ -194,11 +196,12 @@ export default function ArticleDetails() {
   if (error) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: 'red' }}>{error}</div>;
   if (!article) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif' }}>Article not found.</div>;
 
-  const summaryText = article.abstract || article.summary || '';
+  const summaryText = article.summary || '';
   let mainSummary = summaryText.trim();
   let hashtags = article.hashtags?.trim() || '';
 
   if (!hashtags) {
+
     // To parse from HTML, first get plain text
     const plainSummary = htmlToText(summaryText, { wordwrap: false });
     const lines = plainSummary.split('\n');
@@ -212,9 +215,7 @@ export default function ArticleDetails() {
     }
     const mainSummaryLines = lines.slice(0, hashtagStartIndex);
     const hashtagLines = lines.slice(hashtagStartIndex);
-    // For mainSummary, keep the full HTML since we can't easily split it; hashtags will be extracted to plain
-    // If you want to remove hashtags from HTML, additional parsing would be needed
-    mainSummary = summaryText; // Keep HTML
+    mainSummary = mainSummaryLines.join('\n').trim();
     hashtags = hashtagLines.join(' ').trim();
   }
 
@@ -242,10 +243,7 @@ export default function ArticleDetails() {
           marginBottom: '24px',
           animation: 'fadeInDown 0.8s ease-out 0.5s both'
         }}>
-          <button
-            onClick={() => nav(-1)}
-            style={{ ...primaryButtonStyle }}
-          >
+          <button onClick={() => nav(-1)} style={{ ...primaryButtonStyle }}>
             ← Back
           </button>
         </div>
@@ -269,6 +267,7 @@ export default function ArticleDetails() {
               '-'
             )}
           </p>
+
           <div style={{ marginTop: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h3 style={{ margin: 0 }}>Summary</h3>
@@ -369,7 +368,7 @@ export default function ArticleDetails() {
               <p>
                 <strong>Uploaded PDF:</strong>{' '}
                 <a
-                  href={`http://localhost:5000/uploads/${article.file_name}`}
+                  href={`${BASE_API_URL}/uploads/${article.file_name}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -410,64 +409,19 @@ export default function ArticleDetails() {
           </div>
         </div>
       </div>
-
       <style>
         {`
-          @keyframes detailsFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            20% { transform: translateY(-20px) rotate(72deg); }
-            40% { transform: translateY(15px) rotate(144deg); }
-            60% { transform: translateY(-10px) rotate(216deg); }
-            80% { transform: translateY(25px) rotate(288deg); }
-          }
-          
-          @keyframes detailsPulse {
-            0%, 100% { transform: scale(1); opacity: 0.04; }
-            50% { transform: scale(1.1); opacity: 0.08; }
-          }
-          
-          @keyframes slideInLeft {
-            from { 
-              opacity: 0; 
-              transform: translateX(-100px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
-          }
-          
           @keyframes fadeInRight {
-            from { 
-              opacity: 0; 
-              transform: translateX(50px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
+            from { opacity: 0; transform: translateX(50px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
           }
-          
           @keyframes fadeInDown {
-            from { 
-              opacity: 0; 
-              transform: translateY(-30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0) scale(1); 
-            }
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
           }
-          
           @keyframes fadeInUp {
-            from { 
-              opacity: 0; 
-              transform: translateY(30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0) scale(1); 
-            }
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
           }
 
           /* Style Quill editor to match ReactMarkdown */

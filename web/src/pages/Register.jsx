@@ -31,7 +31,7 @@ export default function Register() {
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
       localStorage.setItem('token', data.token);
-      navigate('/');
+      navigate('/dashboard'); // Changed from '/' to '/dashboard'
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {

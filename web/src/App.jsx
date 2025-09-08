@@ -7,6 +7,7 @@ import Library from './pages/Library';
 import Settings from './pages/Settings'
 import ArticleDetails from './pages/ArticleDetails';
 import About from './pages/About';
+import Home from './pages/Home';
 
 
 export default function App() {
@@ -16,7 +17,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login/>} />
           <Route path="/register" element={<Register/>} />
-          <Route path="/" element={<Protected><Dashboard/></Protected>} />
+          <Route path="/dashboard" element={<Protected><Dashboard/></Protected>} />
+          <Route path="/" element={<Home />} />
           <Route path="/library" element={<Protected><Library/></Protected>} />
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />
