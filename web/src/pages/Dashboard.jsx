@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
   const initials = (user?.name || 'User').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
 
+
   // Load articles for overview
   useEffect(() => {
     (async () => {
