@@ -23,9 +23,9 @@ export default function Login() {
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
-      setIsLoading(false);
-    }
-  };
+          setIsLoading(false);
+        }
+      };
 
   const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000/v1';
   const providers = [
@@ -77,9 +77,6 @@ export default function Login() {
 
   return (
     <div style={{
-    
-    
-    
       minHeight: '100vh',
       background: gradients.auth,
       display: 'flex',

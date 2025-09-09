@@ -314,7 +314,7 @@ export default function Library() {
             {[
               { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
               { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'Collections', icon: '🗂️', path: null },
+              { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
               { label: 'All insights', icon: '📈', path: null },
               
             ].map(({ label, icon, path }, index) => (

@@ -8,6 +8,9 @@ import authRoutes from './routes/auth.js';
 import articleRoutes from './routes/articles.js';
 import uploadRoutes from './routes/uploads.js';
 import profileRouter from './routes/profile.js';
+import authorRoutes from './routes/authors.js';
+import userRoutes from './routes/users.js';
+import tagRouter from './routes/tag.js';
 
 const app = express();
 
@@ -31,9 +34,13 @@ app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
 app.use('/v1/profile', profileRouter);
+app.use('/api/authors', authorRoutes);
+app.use('/api/users', userRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', cors(), express.static('src/uploads'));
+
+app.use('/v1/tag', tagRouter);
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));
@@ -41,3 +48,5 @@ syncDb().then(() => {
   console.error('DB connect failed:', err);
   process.exit(1);
 });
+
+console.log('📋 Authors routes registered');

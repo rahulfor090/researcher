@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
   const initials = (user?.name || 'User').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
 
+
   // Load articles for overview
   useEffect(() => {
     (async () => {
@@ -239,9 +240,10 @@ export default function Dashboard() {
         <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {[
-              { label: 'Dashboard', icon: '🏠', path: '/' },
+              { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
               { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'Collections', icon: '🗂️', path: null },
+              { label: 'Authors', icon: '✍️', path: '/authors' },
+              { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
               { label: 'All insights', icon: '📈', path: null },
               
             ].map(({ label, icon, path }, index) => (

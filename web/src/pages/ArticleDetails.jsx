@@ -54,7 +54,7 @@ export default function ArticleDetails() {
         console.log('Fetching article with ID:', id);
         const { data } = await api.get(`/articles/${id}`);
         setArticle(data);
-        let initialContent = data.abstract || data.summary || '';
+        let initialContent = data.summary || '';
         // If initial content is plain text, convert newlines to HTML for better structure in Quill
         if (!initialContent.startsWith('<')) {
           initialContent = initialContent.replace(/\n/g, '<br>');
@@ -116,7 +116,7 @@ export default function ArticleDetails() {
           } else {
             const refreshed = await api.get(`/articles/${id}`);
             setArticle(refreshed.data);
-            let newContent = refreshed.data.abstract || refreshed.data.summary || '';
+            let newContent = refreshed.data.summary || '';
             if (!newContent.startsWith('<')) {
               newContent = newContent.replace(/\n/g, '<br>');
             }
@@ -150,7 +150,6 @@ export default function ArticleDetails() {
         url: article.url,
         doi: article.doi || '',
         authors: article.authors || '',
-        abstract: contentToSave, // Saved as HTML to preserve formatting
         summary: contentToSave,
       };
 
@@ -163,7 +162,7 @@ export default function ArticleDetails() {
         data: response.data,
       });
 
-      setArticle(prev => ({ ...prev, abstract: contentToSave, summary: contentToSave }));
+      setArticle(prev => ({ ...prev, summary: contentToSave }));
       setIsEditing(false);
       setSaveStatus('Summary saved successfully.');
       setTimeout(() => setSaveStatus(null), 3000);
@@ -183,7 +182,7 @@ export default function ArticleDetails() {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    let originalContent = article.abstract || article.summary || '';
+    let originalContent = article.summary || '';
     if (!originalContent.startsWith('<')) {
       originalContent = originalContent.replace(/\n/g, '<br>');
     }

@@ -230,6 +230,22 @@ export default function Layout({ children }) {
             <li 
               style={{ 
                 padding: '10px 12px', 
+                color: isActive('/authors') ? '#ffffff' : '#cbd5e1', 
+                borderRadius: '10px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px', 
+                cursor: 'pointer',
+                fontWeight: isActive('/authors') ? 'bold' : 'normal',
+                background: isActive('/authors') ? 'rgba(255,255,255,0.12)' : 'transparent'
+              }} 
+              onClick={() => nav('/authors')}
+            >
+              👥 Authors
+            </li>
+            <li 
+              style={{ 
+                padding: '10px 12px', 
                 color: '#cbd5e1', 
                 borderRadius: '10px', 
                 display: 'flex', 
@@ -252,22 +268,6 @@ export default function Layout({ children }) {
               }}
             >
               📈 All insights
-            </li>
-            <li 
-              style={{ 
-                padding: '10px 12px', 
-                color: isActive('/settings') ? '#ffffff' : '#cbd5e1', 
-                borderRadius: '10px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                cursor: 'pointer',
-                fontWeight: isActive('/settings') ? 'bold' : 'normal',
-                background: isActive('/settings') ? 'rgba(255,255,255,0.12)' : 'transparent'
-              }} 
-              onClick={() => nav('/settings')}
-            >
-              ⚙️ Settings
             </li>
           </ul>
         </nav>
