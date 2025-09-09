@@ -23,15 +23,12 @@ export default function Login() {
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
-      setIsLoading(false);
-    }
-  };
+          setIsLoading(false);
+        }
+      };
 
   return (
     <div style={{
-    
-    
-    
       minHeight: '100vh',
       background: gradients.auth,
       display: 'flex',
