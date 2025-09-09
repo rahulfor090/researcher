@@ -4,7 +4,7 @@ import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, shadows, gradients, secondaryButtonStyle } from '../theme';
 import { useAuth } from '../auth';
 import ReactMarkdown from 'react-markdown';
-
+import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { htmlToText } from 'html-to-text';
 
