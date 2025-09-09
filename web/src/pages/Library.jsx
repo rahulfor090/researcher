@@ -14,6 +14,7 @@ export default function Library() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRows, setSelectedRows] = useState(new Set());
+  const [search, setSearch] = useState(''); // Add search state
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
 
   // Load articles from backend
@@ -93,6 +94,17 @@ export default function Library() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, [showProfileMenu]);
+
+  // Filtered articles based on search
+  const filteredArticles = articles.filter(a => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      (a.title && a.title.toLowerCase().includes(q)) ||
+      (a.doi && a.doi.toLowerCase().includes(q)) ||
+      (a.authors && a.authors.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div style={{ 
@@ -300,7 +312,7 @@ export default function Library() {
             {[
               { label: 'Dashboard', icon: '🏠', path: '/' },
               { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'Collections', icon: '🗂️', path: null },
+              { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
               { label: 'All insights', icon: '📈', path: null },
               
             ].map(({ label, icon, path }, index) => (
@@ -424,6 +436,56 @@ export default function Library() {
               <span>+</span> Add New Article
             </button>
           </div>
+        </div>
+
+        {/* Search Bar */}
+        <div style={{
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          animation: 'fadeInDown 0.7s ease-out 0.6s both'
+        }}>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="🔍 Search articles by title, DOI, or author..."
+            style={{
+              padding: '12px 18px',
+              borderRadius: '10px',
+              border: `1px solid ${colors.border}`,
+              fontSize: '1rem',
+              width: '100%',
+              maxWidth: '400px',
+              background: '#f8fafc',
+              color: colors.primaryText,
+              outline: 'none',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              transition: 'border 0.2s'
+            }}
+            onFocus={e => e.currentTarget.style.border = `1.5px solid ${colors.link}`}
+            onBlur={e => e.currentTarget.style.border = `1px solid ${colors.border}`}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              style={{
+                background: colors.mutedText,
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 14px',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                transition: 'all 0.2s ease'
+              }}
+              title="Clear search"
+            >
+              ✖
+            </button>
+          )}
         </div>
 
         {/* Library Statistics */}
@@ -837,7 +899,7 @@ export default function Library() {
                   </tr>
                 </thead>
                 <tbody>
-                  {articles.map((a, idx) => {
+                  {filteredArticles.map((a, idx) => {
                     const isSelected = selectedRows.has(a.id);
                     return (
                     <tr 

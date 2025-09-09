@@ -19,19 +19,16 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
-      setIsLoading(false);
-    }
-  };
+          setIsLoading(false);
+        }
+      };
 
   return (
     <div style={{
-    
-    
-    
       minHeight: '100vh',
       background: gradients.auth,
       display: 'flex',

@@ -8,6 +8,7 @@ import Settings from './pages/Settings'
 import ArticleDetails from './pages/ArticleDetails';
 import About from './pages/About';
 import Home from './pages/Home';
+import HashTags from './pages/hashTags';
 
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />
           <Route path="/about" element={<About />} />
+          <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

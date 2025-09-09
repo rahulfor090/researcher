@@ -241,7 +241,7 @@ export default function Dashboard() {
             {[
               { label: 'Dashboard', icon: '🏠', path: '/' },
               { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'Collections', icon: '🗂️', path: null },
+              { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
               { label: 'All insights', icon: '📈', path: null },
               
             ].map(({ label, icon, path }, index) => (
