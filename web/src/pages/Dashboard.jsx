@@ -239,8 +239,9 @@ export default function Dashboard() {
         <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {[
-              { label: 'Dashboard', icon: '🏠', path: '/' },
+              { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
               { label: 'Library', icon: '📚', path: '/library' },
+              { label: 'Authors', icon: '✍️', path: '/authors' },
               { label: 'Collections', icon: '🗂️', path: null },
               { label: 'All insights', icon: '📈', path: null },
               
