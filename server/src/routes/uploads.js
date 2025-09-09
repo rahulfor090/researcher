@@ -148,7 +148,6 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
       {
         file_name: req.file.filename,
         summary: result.summary,
-        abstract: result.summary,
         hashtags: result.hashtags // ✅ Make sure this column exists in your model
       },
       { where: { id: articleId } }

@@ -27,8 +27,8 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
     e.preventDefault();
     setError(''); // Clear previous errors
 
-    if (!title || !url) {
-      setError('Title and URL are required.');
+    if (!title || !url || !doi) {
+      setError('Title, URL, and DOI are required.');
       return;
     }
 
@@ -44,7 +44,6 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
     <div style={modalOverlayStyle}>
       <div style={modalContentStyle}>
         <h3>{initialData ? 'Edit Article' : 'Add New Article'}</h3>
-        {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
         <form onSubmit={handleSubmit} style={formStyle}>
           <input
             type="text"
@@ -64,10 +63,11 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
           />
           <input
             type="text"
-            placeholder="DOI (Optional)"
+            placeholder="DOI"
             value={doi}
             onChange={(e) => setDoi(e.target.value)}
             style={inputStyle}
+            required
           />
           <input
             type="url"
@@ -77,8 +77,10 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
             style={inputStyle}
             required
           />
-          {/* Date and Price removed from UI */}
-          
+
+          {/* Error message above buttons */}
+          {error && <div style={errorMessageStyle}>{error}</div>}
+
           <div style={buttonContainerStyle}>
             <button type="button" onClick={onClose} style={cancelButtonStyle}>Cancel</button>
             <button type="submit" style={saveButtonStyle}>
@@ -133,7 +135,7 @@ const buttonContainerStyle = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: '10px',
-  marginTop: '20px',
+  marginTop: '10px',
 };
 
 const cancelButtonStyle = {
@@ -142,4 +144,11 @@ const cancelButtonStyle = {
 
 const saveButtonStyle = {
   ...primaryButtonStyle,
+};
+
+const errorMessageStyle = {
+  color: 'red',
+  marginBottom: '10px',
+  fontSize: '0.9rem',
+  textAlign: 'center',
 };
