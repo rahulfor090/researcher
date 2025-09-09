@@ -1,10 +1,61 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Op } from 'sequelize';
-import { Article } from '../models/index.js';
+import { Article, Author, ArticleAuthor } from '../models/index.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
+
+// Helper function to parse authors string and create/find authors
+async function processAuthors(authorsString) {
+  if (!authorsString || !authorsString.trim()) {
+    return [];
+  }
+
+  // Split authors by common delimiters (comma, semicolon, " and ", " & ")
+  const authorNames = authorsString
+    .split(/[,;]|\s+and\s+|\s+&\s+/)
+    .map(name => name.trim())
+    .filter(name => name.length > 0);
+
+  const authors = [];
+  for (const name of authorNames) {
+    // Find or create author
+    const [author] = await Author.findOrCreate({
+      where: { name },
+      defaults: { name }
+    });
+    authors.push(author);
+  }
+
+  return authors;
+}
+
+// Helper function to associate authors with article
+async function associateAuthors(article, authors) {
+  // Remove existing associations
+  await ArticleAuthor.destroy({
+    where: { article_id: article.id }
+  });
+
+  // Create new associations
+  for (const author of authors) {
+    await ArticleAuthor.create({
+      article_id: article.id,
+      author_id: author.id
+    });
+  }
+}
+
+// Helper function to get authors for an article as a formatted string
+async function getArticleAuthorsString(articleId) {
+  const articleAuthors = await ArticleAuthor.findAll({
+    where: { article_id: articleId },
+    include: [{ model: Author }]
+  });
+
+  return articleAuthors.map(aa => aa.Author.name).join(', ');
+}
 
 // CREATE
 router.post('/',
@@ -32,8 +83,23 @@ router.post('/',
         return res.status(400).json({ message: 'An article with the same URL or DOI already exists' });
       }
 
-      const a = await Article.create({ ...req.body, userId: req.user.id });
-      res.json(a);
+      // Create article (including authors in string field for backward compatibility)
+      const { authors: authorsString, ...articleData } = req.body;
+      const a = await Article.create({ 
+        ...articleData, 
+        authors: authorsString || '', // Save authors string for backward compatibility
+        userId: req.user.id 
+      });
+      
+      // Process and associate authors in relational tables
+      if (authorsString) {
+        const authors = await processAuthors(authorsString);
+        await associateAuthors(a, authors);
+      }
+
+      // Return article with authors as string for backward compatibility
+      const authorsStr = await getArticleAuthorsString(a.id);
+      res.json({ ...a.toJSON(), authors: authorsStr || authorsString || '' });
     } catch (err) {
       console.error('Failed to create article:', err);
       res.status(500).json({ message: 'Failed to create article', error: String(err?.message || err) });
@@ -48,7 +114,16 @@ router.get('/', requireAuth, async (req, res) => {
       where: { userId: req.user.id },
       order: [['id', 'DESC']]
     });
-    res.json(list);
+    
+    // Add authors string to each article for backward compatibility
+    const articlesWithAuthors = await Promise.all(
+      list.map(async (article) => {
+        const authorsStr = await getArticleAuthorsString(article.id);
+        return { ...article.toJSON(), authors: authorsStr || article.authors || '' };
+      })
+    );
+    
+    res.json(articlesWithAuthors);
   } catch (err) {
     console.error('Failed to list articles:', err);
     res.status(500).json({
@@ -72,7 +147,10 @@ router.get('/:id', requireAuth, async (req, res) => {
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
     }
-    res.json(article);
+    
+    // Add authors string for backward compatibility
+    const authorsStr = await getArticleAuthorsString(article.id);
+    res.json({ ...article.toJSON(), authors: authorsStr || article.authors || '' });
   } catch (err) {
     console.error('Failed to get article:', err);
     res.status(500).json({ message: 'Failed to get article', error: String(err?.message || err) });
@@ -108,15 +186,30 @@ router.put('/:id',
         return res.status(400).json({ message: 'Another article with the same URL or DOI already exists' });
       }
 
+      // Separate authors from other data
+      const { authors: authorsString, ...articleData } = req.body;
+      
+      // Update article including authors string field
       const [updated] = await Article.update(
-        { ...req.body },
+        { 
+          ...articleData,
+          authors: authorsString !== undefined ? authorsString : undefined // Only update if provided
+        },
         { where: { id, userId: req.user.id } }
       );
       if (!updated) {
         return res.status(404).json({ message: 'Article not found' });
       }
+      
+      // Update relational authors if provided
+      if (authorsString !== undefined) {
+        const authors = await processAuthors(authorsString);
+        await associateAuthors({ id }, authors);
+      }
+      
       const updatedArticle = await Article.findOne({ where: { id, userId: req.user.id } });
-      res.json(updatedArticle);
+      const authorsStr = await getArticleAuthorsString(id);
+      res.json({ ...updatedArticle.toJSON(), authors: authorsStr || updatedArticle.authors || '' });
     } catch (err) {
       console.error('Failed to update article:', err);
       res.status(500).json({ message: 'Failed to update article', error: String(err?.message || err) });
@@ -146,13 +239,69 @@ router.patch('/:id/file-name',
       }
 
       const updatedArticle = await Article.findOne({ where: { id, userId: req.user.id } });
-      res.json(updatedArticle);
+      const authorsStr = await getArticleAuthorsString(id);
+      res.json({ ...updatedArticle.toJSON(), authors: authorsStr || updatedArticle.authors || '' });
     } catch (err) {
       console.error('Failed to update file_name:', err);
       res.status(500).json({ message: 'Failed to update file_name', error: String(err?.message || err) });
     }
   }
 );
+
+// SEARCH - Search articles by title, authors, or other fields
+router.get('/search/:query', requireAuth, async (req, res) => {
+  try {
+    const { query } = req.params;
+    const searchTerm = `%${query}%`;
+    
+    // Search in articles by title, doi, summary, hashtags
+    const articleResults = await Article.findAll({
+      where: {
+        userId: req.user.id,
+        [Op.or]: [
+          { title: { [Op.like]: searchTerm } },
+          { doi: { [Op.like]: searchTerm } },
+          { summary: { [Op.like]: searchTerm } },
+          { hashtags: { [Op.like]: searchTerm } }
+        ]
+      },
+      order: [['id', 'DESC']]
+    });
+    
+    // Search by author names
+    const authorResults = await Article.findAll({
+      where: { userId: req.user.id },
+      include: [{
+        model: Author,
+        as: 'authorList',
+        where: {
+          name: { [Op.like]: searchTerm }
+        },
+        through: { attributes: [] }
+      }],
+      order: [['id', 'DESC']]
+    });
+    
+    // Combine and deduplicate results
+    const allResults = [...articleResults, ...authorResults];
+    const uniqueResults = allResults.filter((article, index, self) => 
+      index === self.findIndex(a => a.id === article.id)
+    );
+    
+    // Add authors string to each result
+    const resultsWithAuthors = await Promise.all(
+      uniqueResults.map(async (article) => {
+        const authorsStr = await getArticleAuthorsString(article.id);
+        return { ...article.toJSON(), authors: authorsStr || article.authors || '' };
+      })
+    );
+    
+    res.json(resultsWithAuthors);
+  } catch (err) {
+    console.error('Failed to search articles:', err);
+    res.status(500).json({ message: 'Failed to search articles', error: String(err?.message || err) });
+  }
+});
 
 // DELETE
 router.delete('/:id', requireAuth, async (req, res) => {
@@ -168,6 +317,122 @@ router.delete('/:id', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Failed to delete article:', err);
     res.status(500).json({ message: 'Failed to delete article', error: String(err?.message || err) });
+  }
+});
+
+// AUTHORS ENDPOINTS (temporary workaround)
+
+// GET all authors for the authenticated user
+router.get('/authors/list', requireAuth, async (req, res) => {
+  try {
+    console.log('📋 Fetching authors for user:', req.user.id);
+    
+    // Simple approach: get all unique authors from articles for this user
+    const articles = await Article.findAll({
+      where: { 
+        userId: req.user.id,
+        authors: { [Op.not]: null, [Op.ne]: '' }
+      },
+      attributes: ['authors']
+    });
+
+    // Extract and count unique authors
+    const authorCounts = {};
+    
+    articles.forEach(article => {
+      if (article.authors) {
+        // Split authors by common delimiters
+        const authorNames = article.authors
+          .split(/[,;]|\s+and\s+|\s+&\s+/)
+          .map(name => name.trim())
+          .filter(name => name.length > 0);
+        
+        authorNames.forEach(name => {
+          authorCounts[name] = (authorCounts[name] || 0) + 1;
+        });
+      }
+    });
+
+    // Convert to array format
+    const authorsArray = Object.entries(authorCounts).map(([name, count], index) => ({
+      id: index + 1,
+      name,
+      articleCount: count
+    }));
+
+    // Sort by name
+    authorsArray.sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log('✅ Found authors:', authorsArray.length);
+    res.json(authorsArray);
+  } catch (err) {
+    console.error('❌ Failed to get authors:', err);
+    res.status(500).json({ 
+      message: 'Failed to get authors', 
+      error: String(err?.message || err) 
+    });
+  }
+});
+
+// GET articles by author ID (using the index as ID)
+router.get('/authors/:authorId/articles', requireAuth, async (req, res) => {
+  try {
+    const { authorId } = req.params;
+    console.log('📚 Fetching articles for author ID:', authorId, 'user:', req.user.id);
+
+    // First, get all authors to find the name by ID
+    const articles = await Article.findAll({
+      where: { 
+        userId: req.user.id,
+        authors: { [Op.not]: null, [Op.ne]: '' }
+      },
+      attributes: ['authors']
+    });
+
+    // Extract unique authors
+    const authorCounts = {};
+    articles.forEach(article => {
+      if (article.authors) {
+        const authorNames = article.authors
+          .split(/[,;]|\s+and\s+|\s+&\s+/)
+          .map(name => name.trim())
+          .filter(name => name.length > 0);
+        
+        authorNames.forEach(name => {
+          authorCounts[name] = (authorCounts[name] || 0) + 1;
+        });
+      }
+    });
+
+    const authorsArray = Object.keys(authorCounts).sort();
+    const authorIndex = parseInt(authorId) - 1;
+    
+    if (authorIndex < 0 || authorIndex >= authorsArray.length) {
+      return res.status(404).json({ message: 'Author not found' });
+    }
+
+    const authorName = authorsArray[authorIndex];
+    console.log('📚 Found author name:', authorName);
+
+    // Find all articles that contain this author name
+    const authorArticles = await Article.findAll({
+      where: { 
+        userId: req.user.id,
+        authors: { 
+          [Op.like]: `%${authorName}%`
+        }
+      },
+      order: [['id', 'DESC']]
+    });
+
+    console.log('✅ Found articles for author:', authorArticles.length);
+    res.json(authorArticles);
+  } catch (err) {
+    console.error('❌ Failed to get articles by author:', err);
+    res.status(500).json({ 
+      message: 'Failed to get articles by author', 
+      error: String(err?.message || err) 
+    });
   }
 });
 
