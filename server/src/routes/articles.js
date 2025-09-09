@@ -93,7 +93,7 @@ router.put('/:id',
       const { id } = req.params;
 
       // Check if another article (different id) has the same URL or DOI for this user
-      /*const existing = await Article.findOne({
+      const existing = await Article.findOne({
         where: {
           userId: req.user.id,
           id: { [Op.ne]: id },
@@ -106,7 +106,7 @@ router.put('/:id',
 
       if (existing) {
         return res.status(400).json({ message: 'Another article with the same URL or DOI already exists' });
-      }*/
+      }
 
       const [updated] = await Article.update(
         { ...req.body },

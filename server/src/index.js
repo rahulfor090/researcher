@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js';
 import articleRoutes from './routes/articles.js';
 import uploadRoutes from './routes/uploads.js';
 import profileRouter from './routes/profile.js';
+import tagRouter from './routes/tag.js';
 
 const app = express();
 
@@ -34,6 +35,8 @@ app.use('/v1/profile', profileRouter);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', cors(), express.static('src/uploads'));
+
+app.use('/v1/tag', tagRouter);
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));
