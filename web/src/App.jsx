@@ -13,7 +13,8 @@ import AuthSuccess from './pages/AuthSuccess';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import HashTags from './pages/hashTags';
-
+import ArticlesByTag from './components/ArticlesByTag';
+import Upgrade from './pages/upgrade';
 
 export default function App() {
   return (
@@ -33,6 +34,8 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
+          <Route path="/hashtags/:id" element={<Protected><ArticlesByTag/></Protected>} />
+          <Route path="/upgrade" element={<Protected><Upgrade/></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
