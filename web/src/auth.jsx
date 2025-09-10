@@ -23,29 +23,65 @@ export function AuthProvider({ children }) {
     setUser(data.user);
   };
   const logout = () => { localStorage.removeItem('token'); setAuthToken(null); setUser(null); };
-  return <AuthCtx.Provider value={{ user, login, register, logout }}>{children}</AuthCtx.Provider>;
+  return <AuthCtx.Provider value={{ user, setUser, login, register, logout }}>{children}</AuthCtx.Provider>;
 }
 export const useAuth = () => useContext(AuthCtx);
 
 export function Protected({ children }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
-
+  const { setUser } = useAuth();
+  const [isChecking, setIsChecking] = useState(true);
+  const [hasToken, setHasToken] = useState(false);
+  
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const urlToken = params.get('token');
-    const urlRefresh = params.get('refreshToken');
-    if (urlToken && !isTokenExpired(urlToken)) {
-      setAuthToken(urlToken, urlRefresh || undefined);
-      // Strip token params from URL
-      navigate({ pathname: location.pathname }, { replace: true });
+    console.log('Protected component checking authentication...');
+    
+    // Check for token in localStorage first
+    const localToken = localStorage.getItem('token');
+    console.log('Local token:', localToken ? 'exists' : 'not found');
+    
+    if (localToken) {
+      setHasToken(true);
+      setIsChecking(false);
+      return;
     }
-    setReady(true);
-  }, [location.search, location.pathname, navigate]);
+    
+    // Check for Google OAuth callback parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const name = urlParams.get('name');
+    const email = urlParams.get('email');
+    
+    console.log('URL params - token:', token ? 'exists' : 'not found', 'name:', name, 'email:', email);
+    
+    if (token && name && email) {
+      console.log('Processing Google OAuth callback...');
+      // Store the token and user info from Google OAuth
+      localStorage.setItem('token', token);
+      setUser({ name, email, plan: 'free' });
+      setHasToken(true);
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      console.log('Google OAuth callback processed successfully');
+    }
+    
+    setIsChecking(false);
+  }, [setUser]);
+  
+  console.log('Protected component state - isChecking:', isChecking, 'hasToken:', hasToken);
+  
+  if (isChecking) {
+    return <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh',
+      fontSize: '18px',
+      color: '#666'
+    }}>Loading...</div>;
+  }
+  
+  return hasToken ? children : <Navigate to="/login" replace />;
 
-  if (!ready) return null;
-
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" replace />;
 }

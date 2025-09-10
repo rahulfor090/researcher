@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { api } from "../api";
+import { colors, shadows } from "../theme";
+import Layout from "../components/Layout";
+import "./hashtags.css";
 import { useNavigate } from "react-router-dom";
 // Use BASE_API_URL directly for API calls
 const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
@@ -9,7 +13,6 @@ export default function HashTags() {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
-  const nav = useNavigate();
 
   useEffect(() => {
     const loadTags = async () => {

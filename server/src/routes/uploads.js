@@ -68,8 +68,9 @@ ${text.slice(0, 8000)}
         .split(/\s+/)
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join('');
-      return pascalCase;
-    }).filter(Boolean);
+      // Truncate to avoid DB overflows on tags.name (VARCHAR(255))
+      return pascalCase.slice(0, 60);
+    }).filter(tag => Boolean(tag) && tag.length > 0);
 
     return pascalTags;
   } catch (err) {
@@ -116,8 +117,14 @@ Document text:
 ${pdfData.text.slice(0, 8000)}
     `;
 
-    const result = await model.generateContent(prompt);
-    const summary = result.response.text();
+    let summary = '';
+    try {
+      const result = await model.generateContent(prompt);
+      summary = result.response.text();
+    } catch (genErr) {
+      console.error('⚠️ Gemini summary generation failed, continuing without summary:', genErr);
+      summary = '';
+    }
 
     const pascalTags = await extractHashtags(pdfData.text);
 
@@ -165,20 +172,19 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
 
     const result = await processPDF(pdfBuffer, req.file.filename);
 
-    if (!result.success) {
-      console.error('❌ PDF processing failed:', result.error);
-      return res.status(500).json({ error: 'PDF processing failed', details: result.error, stack: result.stack });
-    }
-
     let tagInstances = [];
-    try {
+    if (result.success && Array.isArray(result.hashtags)) {
       for (const tagName of result.hashtags) {
-        const [tag] = await Tag.findOrCreate({ where: { name: tagName } });
-        tagInstances.push(tag);
+        const safe = (tagName || '').toString().slice(0, 60);
+        if (!safe) continue;
+        try {
+          const [tag] = await Tag.findOrCreate({ where: { name: safe } });
+          tagInstances.push(tag);
+        } catch (tagErr) {
+          console.warn('⚠️ Skipping tag due to DB error:', safe, tagErr?.message);
+          // continue
+        }
       }
-    } catch (tagErr) {
-      console.error('❌ Error inserting tags:', tagErr);
-      return res.status(500).json({ error: 'Failed to insert tags', details: tagErr.message, stack: tagErr.stack });
     }
 
     let article;
@@ -194,31 +200,33 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
     }
 
     try {
-      await article.setTags(tagInstances);
+      if (tagInstances.length > 0) {
+        await article.setTags(tagInstances);
+      }
     } catch (assocErr) {
-      console.error('❌ Error associating tags to article:', assocErr);
-      return res.status(500).json({ error: 'Failed to associate tags', details: assocErr.message, stack: assocErr.stack });
+      console.warn('⚠️ Skipping tag association:', assocErr?.message);
     }
 
     try {
       await article.update({
         file_name: req.file.filename,
-        summary: result.summary,
-        hashtags: result.hashtagsStr
+        summary: result.success ? result.summary : '',
+        hashtags: result.success ? result.hashtagsStr : ''
       });
     } catch (updateErr) {
       console.error('❌ Error updating article:', updateErr);
       return res.status(500).json({ error: 'Failed to update article', details: updateErr.message, stack: updateErr.stack });
     }
 
-    res.json({
-      message: 'File uploaded, processed, and article updated with tags',
+    const payload = {
+      message: result.success ? 'File uploaded, processed, and article updated with tags' : 'File uploaded; processing failed, saved file reference only',
       filename: req.file.filename,
-      summary: result.summary,
-      hashtags: result.hashtagsStr,
+      summary: result.success ? result.summary : undefined,
+      hashtags: result.success ? result.hashtagsStr : undefined,
       pages: result.pages,
       info: result.info
-    });
+    };
+    res.json(payload);
   } catch (err) {
     console.error('❌ Error in /pdf upload:', err);
     res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
