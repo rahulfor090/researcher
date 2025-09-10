@@ -9,7 +9,8 @@ import ArticleDetails from './pages/ArticleDetails';
 import About from './pages/About';
 import Home from './pages/Home';
 import HashTags from './pages/hashTags';
-
+import ArticlesByTag from './components/ArticlesByTag';
+import Upgrade from './pages/upgrade';
 
 export default function App() {
   return (
@@ -25,6 +26,8 @@ export default function App() {
           <Route path="/settings" element={<Protected><Settings/></Protected>} />
           <Route path="/about" element={<About />} />
           <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
+          <Route path="/hashtags/:id" element={<Protected><ArticlesByTag/></Protected>} />
+          <Route path="/upgrade" element={<Protected><Upgrade/></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
