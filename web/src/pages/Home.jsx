@@ -8,21 +8,21 @@ import Navbar from '../components/Navbar';
 const Home = () => {
   const slides = [
     {
-      image: 'https://via.placeholder.com/1500x500/818CF8/ffffff?text=Research+Locker+Slide+1',
+      image: '/upload/slider/first_slider.png',
       headline: 'Accelerate Your Research Workflow',
       subheadline: 'Organize, collaborate, and discover with ease.',
       link: '/register',
       linkText: 'Join for Free',
     },
     {
-      image: 'https://via.placeholder.com/1500x500/A78BFA/ffffff?text=Research+Locker+Slide+2',
+      image: '/upload/slider/second_slider.png',
       headline: 'Never Lose a Valuable Insight Again',
       subheadline: 'Securely store and access all your articles, anywhere.',
       link: '/membership',
       linkText: 'View Plans',
     },
     {
-      image: 'https://via.placeholder.com/1500x500/C084FC/ffffff?text=Research+Locker+Slide+3',
+      image: '/upload/slider/first_slider.png',
       headline: 'Empowering Academics and Professionals',
       subheadline: 'Your ultimate tool for research management and discovery.',
       link: '#',
@@ -64,9 +64,9 @@ const Home = () => {
 
       {/* Video Section Placeholder */}
       <section className="relative z-20 mb-20 max-w-5xl w-full">
-        <div className="bg-gray-800 h-96 rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-2xl animate-pulse-slow">
-          [Placeholder for Explainer Video]
-        </div>
+        <VideoSection
+          videoUrl="https://www.youtube.com/embed/3iMbMyKEDik" // Updated YouTube video URL
+        />
       </section>
 
       {/* Features Section */}
