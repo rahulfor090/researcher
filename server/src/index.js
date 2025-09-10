@@ -9,7 +9,7 @@ import articleRoutes from './routes/articles.js';
 import uploadRoutes from './routes/uploads.js';
 import profileRouter from './routes/profile.js';
 import authorRoutes from './routes/authors.js';
-import userRoutes from './routes/users.js';
+//import userRoutes from './routes/users.js';
 import tagRouter from './routes/tag.js';
 
 const app = express();
@@ -35,7 +35,7 @@ app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
 app.use('/v1/profile', profileRouter);
 app.use('/api/authors', authorRoutes);
-app.use('/api/users', userRoutes);
+//app.use('/api/users', userRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', cors(), express.static('src/uploads'));
