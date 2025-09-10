@@ -6,45 +6,42 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-// Helper function to parse authors string and create/find authors
-async function processAuthors(authorsString) {
-  if (!authorsString || !authorsString.trim()) {
+// Helper function to normalize authors input (array or string) and return unique names
+function normalizeAuthorNames(input) {
+  if (!input) return [];
+  let names = [];
+  if (Array.isArray(input)) {
+    names = input.flatMap(n => String(n).split(/[,;]|\s+and\s+|\s+&\s+/));
+  } else if (typeof input === 'string') {
+    names = input.split(/[,;]|\s+and\s+|\s+&\s+/);
+  } else {
     return [];
   }
+  const unique = Array.from(new Set(
+    names.map(n => n.trim()).filter(n => n.length > 0)
+  ));
+  return unique;
+}
 
-  // Split authors by common delimiters (comma, semicolon, " and ", " & ")
-  const authorNames = authorsString
-    .split(/[,;]|\s+and\s+|\s+&\s+/)
-    .map(name => name.trim())
-    .filter(name => name.length > 0);
-
+// Helper to find or create authors by name, returns array of Author instances
+async function upsertAuthorsByNames(names, transaction) {
   const authors = [];
-  for (const name of authorNames) {
-    // Find or create author
+  for (const name of names) {
     const [author] = await Author.findOrCreate({
       where: { name },
-      defaults: { name }
+      defaults: { name },
+      transaction
     });
     authors.push(author);
   }
-
   return authors;
 }
 
-// Helper function to associate authors with article
-async function associateAuthors(article, authors) {
-  // Remove existing associations
-  await ArticleAuthor.destroy({
-    where: { article_id: article.id }
-  });
-
-  // Create new associations
-  for (const author of authors) {
-    await ArticleAuthor.create({
-      article_id: article.id,
-      author_id: author.id
-    });
-  }
+// Helper function to associate authors with article without duplicates
+async function associateAuthors(articleId, authors, transaction) {
+  if (!authors || authors.length === 0) return;
+  const rows = authors.map(a => ({ article_id: articleId, author_id: a.id }));
+  await ArticleAuthor.bulkCreate(rows, { ignoreDuplicates: true, transaction });
 }
 
 // Helper function to get authors for an article as a formatted string
@@ -68,6 +65,7 @@ router.post('/',
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     try {
+      const { sequelize } = Article.sequelize; // guard not needed; kept local
       // Check for existing article with same URL or DOI for this user
       const existing = await Article.findOne({
         where: {
@@ -83,23 +81,31 @@ router.post('/',
         return res.status(400).json({ message: 'An article with the same URL or DOI already exists' });
       }
 
-      // Create article (including authors in string field for backward compatibility)
-      const { authors: authorsString, ...articleData } = req.body;
-      const a = await Article.create({ 
-        ...articleData, 
-        authors: authorsString || '', // Save authors string for backward compatibility
-        userId: req.user.id 
+      // Prepare authors names (support string or array) and run everything in a transaction
+      const { authors: authorsInput, ...articleData } = req.body;
+      const names = normalizeAuthorNames(authorsInput);
+      const authorsStringForLegacy = names.join(', ');
+
+      const result = await Article.sequelize.transaction(async (t) => {
+        // Create article first
+        const created = await Article.create({
+          ...articleData,
+          authors: authorsStringForLegacy,
+          userId: req.user.id
+        }, { transaction: t });
+
+        // Upsert authors and link without duplicates
+        if (names.length > 0) {
+          const authors = await upsertAuthorsByNames(names, t);
+          await associateAuthors(created.id, authors, t);
+        }
+
+        return created;
       });
-      
-      // Process and associate authors in relational tables
-      if (authorsString) {
-        const authors = await processAuthors(authorsString);
-        await associateAuthors(a, authors);
-      }
 
       // Return article with authors as string for backward compatibility
-      const authorsStr = await getArticleAuthorsString(a.id);
-      res.json({ ...a.toJSON(), authors: authorsStr || authorsString || '' });
+      const authorsStr = await getArticleAuthorsString(result.id);
+      res.json({ ...result.toJSON(), authors: authorsStr || authorsStringForLegacy || '' });
     } catch (err) {
       console.error('Failed to create article:', err);
       res.status(500).json({ message: 'Failed to create article', error: String(err?.message || err) });
@@ -187,13 +193,15 @@ router.put('/:id',
       }
 
       // Separate authors from other data
-      const { authors: authorsString, ...articleData } = req.body;
-      
+      const { authors: authorsInput, ...articleData } = req.body;
+      const names = authorsInput === undefined ? undefined : normalizeAuthorNames(authorsInput);
+      const authorsStringForLegacy = names === undefined ? undefined : names.join(', ');
+
       // Update article including authors string field
       const [updated] = await Article.update(
         { 
           ...articleData,
-          authors: authorsString !== undefined ? authorsString : undefined // Only update if provided
+          authors: authorsStringForLegacy !== undefined ? authorsStringForLegacy : undefined // Only update if provided
         },
         { where: { id, userId: req.user.id } }
       );
@@ -202,9 +210,15 @@ router.put('/:id',
       }
       
       // Update relational authors if provided
-      if (authorsString !== undefined) {
-        const authors = await processAuthors(authorsString);
-        await associateAuthors({ id }, authors);
+      if (names !== undefined) {
+        await Article.sequelize.transaction(async (t) => {
+          // Clear existing associations so we reflect new set accurately
+          await ArticleAuthor.destroy({ where: { article_id: id }, transaction: t });
+          if (names.length > 0) {
+            const authors = await upsertAuthorsByNames(names, t);
+            await associateAuthors(id, authors, t);
+          }
+        });
       }
       
       const updatedArticle = await Article.findOne({ where: { id, userId: req.user.id } });
