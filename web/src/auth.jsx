@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { api, setAuthToken } from './api';
-import { Navigate } from 'react-router-dom';
+import { api, setAuthToken, isTokenExpired } from './api';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 const AuthCtx = createContext();
 
@@ -28,6 +28,24 @@ export function AuthProvider({ children }) {
 export const useAuth = () => useContext(AuthCtx);
 
 export function Protected({ children }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlToken = params.get('token');
+    const urlRefresh = params.get('refreshToken');
+    if (urlToken && !isTokenExpired(urlToken)) {
+      setAuthToken(urlToken, urlRefresh || undefined);
+      // Strip token params from URL
+      navigate({ pathname: location.pathname }, { replace: true });
+    }
+    setReady(true);
+  }, [location.search, location.pathname, navigate]);
+
+  if (!ready) return null;
+
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/login" replace />;
 }
