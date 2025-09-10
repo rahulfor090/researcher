@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/index.js';
 import { env } from '../config/env.js';
+//import passport from '../config/passport.js'; // Import from config file
+
   
 const router = Router();
 
@@ -36,6 +38,29 @@ router.post('/login',
     res.json({ token, user: { id: user.id, name: user.name, email, plan: user.plan } });
   });
 
+// Check auth status (for OAuth flows)
+router.get('/status', (req, res) => {
+  if (req.user) {
+    const token = jwt.sign(
+      { id: req.user.id, email: req.user.email },
+      env.jwtSecret,
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      success: true,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        avatar: req.user.avatar
+      },
+      token
+    });
+  } else {
+    res.status(401).json({ success: false, message: 'Not authenticated' });
+  }
+});
 // Google OAuth: start -> redirect to Google
 const startGoogle = (req, res) => {
   const clientId = env.google.clientId;

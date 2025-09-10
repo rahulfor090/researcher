@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { gradients, shadows, colors } from '../theme';
+import { shadows, colors } from '../theme';
 import { api } from '../api';
+import './layout.css';
 
 export default function Layout({ children }) {
   const nav = useNavigate();
@@ -39,57 +40,19 @@ export default function Layout({ children }) {
   }, [showProfileMenu]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: gradients.app, fontFamily: 'Inter, sans-serif' }}>
+    <div className="layout">
       {/* Left Navigation Sidebar */}
-      <div 
-        style={{ 
-          width: '280px', 
-          background: gradients.sidebar, 
-          color: 'white', 
-          padding: '32px', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          boxShadow: shadows.medium, 
-          borderTopLeftRadius: '16px', 
-          borderBottomLeftRadius: '16px', 
-          position: 'relative'
-        }}
-      >
-        <h1 style={{ 
-          fontSize: '2rem', 
-          fontWeight: 700, 
-          marginBottom: '16px', 
-          color: '#e5e7eb'
-        }}>Research Locker</h1>
+      <div className="layout-sidebar" style={{ boxShadow: shadows.medium }}>
+        <h1 className="layout-title">Research Locker</h1>
         
         {/* User Profile Section */}
         <div 
-          className="profile-menu"
+          className="profile-menu profile-menu-trigger"
           onClick={(e) => {
             e.stopPropagation();
             setShowProfileMenu(v => !v);
           }} 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '12px', 
-            padding: '12px', 
-            borderRadius: '12px', 
-            background: 'rgba(255,255,255,0.06)', 
-            marginBottom: '16px', 
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-            e.currentTarget.style.transform = 'scale(1.02)';
-            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          
         >
           <div style={{ 
             width: '40px', 
@@ -194,78 +157,32 @@ export default function Layout({ children }) {
 )}
         
         <nav>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          <ul className="layout-nav">
             <li 
-              style={{ 
-                padding: '10px 12px', 
-                color: isActive('/') ? '#ffffff' : '#cbd5e1', 
-                borderRadius: '10px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                cursor: 'pointer',
-                fontWeight: isActive('/') ? 'bold' : 'normal',
-                background: isActive('/') ? 'rgba(255,255,255,0.12)' : 'transparent'
-              }} 
-              onClick={() => nav('/')}
+              className={`layout-nav-item ${isActive('/dashboard') ? 'active' : ''}`}
+              onClick={() => nav('/dashboard')}
             >
               🏠 Dashboard
             </li>
             <li 
-              style={{ 
-                padding: '10px 12px', 
-                color: isActive('/library') ? '#ffffff' : '#cbd5e1', 
-                borderRadius: '10px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                cursor: 'pointer',
-                fontWeight: isActive('/library') ? 'bold' : 'normal',
-                background: isActive('/library') ? 'rgba(255,255,255,0.12)' : 'transparent'
-              }} 
+              className={`layout-nav-item ${isActive('/library') ? 'active' : ''}`}
               onClick={() => nav('/library')}
             >
               📚 Library
             </li>
             <li 
-              style={{ 
-                padding: '10px 12px', 
-                color: isActive('/authors') ? '#ffffff' : '#cbd5e1', 
-                borderRadius: '10px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                cursor: 'pointer',
-                fontWeight: isActive('/authors') ? 'bold' : 'normal',
-                background: isActive('/authors') ? 'rgba(255,255,255,0.12)' : 'transparent'
-              }} 
+              className={`layout-nav-item ${isActive('/authors') ? 'active' : ''}`}
               onClick={() => nav('/authors')}
             >
               👥 Authors
             </li>
             <li 
-              style={{ 
-                padding: '10px 12px', 
-                color: '#cbd5e1', 
-                borderRadius: '10px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                cursor: 'pointer'
-              }}
+              className="layout-nav-item"
             >
               🗂️ Collections
             </li>
             <li 
-              style={{ 
-                padding: '10px 12px', 
-                color: '#cbd5e1', 
-                borderRadius: '10px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                cursor: 'pointer'
-              }}
+              className="layout-nav-item"
             >
               📈 All insights
             </li>
@@ -274,14 +191,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ 
-        flexGrow: 1, 
-        padding: '40px', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        borderTopRightRadius: '16px', 
-        borderBottomRightRadius: '16px' 
-      }}>
+      <div className="layout-main">
         {children}
       </div>
     </div>
