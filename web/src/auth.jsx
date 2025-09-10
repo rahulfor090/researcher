@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { api, setAuthToken } from './api';
-import { Navigate } from 'react-router-dom';
+import { api, setAuthToken, isTokenExpired } from './api';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 const AuthCtx = createContext();
 
@@ -83,4 +83,5 @@ export function Protected({ children }) {
   }
   
   return hasToken ? children : <Navigate to="/login" replace />;
+
 }

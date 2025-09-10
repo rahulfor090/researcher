@@ -20,6 +20,7 @@ export default function Library() {
   const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState(new Set());
   const [showSummary, setShowSummary] = useState(null); // { id, summary }
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Load articles from backend
   const load = async () => {
@@ -78,11 +79,16 @@ export default function Library() {
 
   // Save new or edited article
   const handleSaveArticle = async (articleData) => {
+    if (!editArticle && articles.length >= 10) {
+      // Show upgrade modal before saving if limit is reached
+      setShowLimitModal(true);
+      setShowModal(false);
+      setEditArticle(null);
+      return;
+    }
     if (editArticle) {
-      // Edit mode
       await api.put(`/articles/${editArticle.id}`, articleData);
     } else {
-      // Add mode
       await api.post('/articles', articleData);
     }
     setEditArticle(null);
@@ -1367,6 +1373,71 @@ export default function Library() {
           )}
         </div>
       </div>
+
+      {showLimitModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 1000,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            background: 'white',
+            color: colors.primaryText,
+            borderRadius: '16px',
+            boxShadow: shadows.medium,
+            padding: '40px 32px',
+            minWidth: '375px',
+            maxWidth: '95vw',
+            textAlign: 'center',
+            position: 'relative'
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🚫</div>
+            <h2 style={{ margin: '0 0 10px 0', fontWeight: 700, fontSize: '1.5rem', color: colors.highlight }}>
+              Article Limit Reached
+            </h2>
+            <p style={{ fontSize: '1rem', marginBottom: '20px', color: colors.mutedText }}>
+              Free accounts can save up to <b>10 articles</b>.<br />
+              Upgrade to unlock unlimited articles and more features.
+            </p>
+            <button
+              style={{
+                ...primaryButtonStyle,
+                fontWeight: 700,
+                fontSize: '1.09rem',
+                padding: '12px 32px',
+                borderRadius: '10px',
+                marginBottom: '6px'
+              }}
+              onClick={() => {
+                setShowLimitModal(false);
+                nav('/upgrade');
+              }}
+            >
+              Upgrade for $49
+            </button>
+            <div>
+              <button
+                style={{
+                  ...secondaryButtonStyle,
+                  fontWeight: 600,
+                  fontSize: '0.96rem',
+                  marginTop: '10px'
+                }}
+                onClick={() => setShowLimitModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Conditionally render the ArticleFormModal */}
       {showModal && (

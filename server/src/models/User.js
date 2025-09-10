@@ -5,7 +5,7 @@ export default (sequelize) => {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING(120), allowNull: false },
     email: { type: DataTypes.STRING(160), unique: true, allowNull: false },
-    password: { type: DataTypes.STRING(200), allowNull: false },
+    password: { type: DataTypes.STRING(255), allowNull: true }, // Allow null for OAuth users
     plan: { type: DataTypes.ENUM('free','pro'), defaultValue: 'free' },
     phone_number: { type: DataTypes.STRING(20), allowNull: true, defaultValue: '' },
     profile_image: { 
@@ -26,6 +26,7 @@ export default (sequelize) => {
     orcid_id: { type: DataTypes.STRING(50), allowNull: true, defaultValue: '' },
     bio: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
     skills: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
+
   }, { tableName: 'users' });
   
 

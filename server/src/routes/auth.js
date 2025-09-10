@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/index.js';
 import { env } from '../config/env.js';
+import passport from '../config/passport.js'; // Import from config file
+
   
 const router = Router();
 
@@ -35,7 +37,54 @@ router.post('/login',
     const token = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, name: user.name, email, plan: user.plan } });
   });
+// Twitter OAuth routes
+router.get('/twitter', 
+  passport.authenticate('twitter')
+);
 
+router.get('/twitter/callback', 
+  passport.authenticate('twitter', { failureRedirect: '/login?error=twitter_auth_failed' }),
+  async (req, res) => {
+    try {
+      // Generate JWT token for the authenticated user
+      const token = jwt.sign(
+        { id: req.user.id, email: req.user.email },
+        env.jwtSecret,
+        { expiresIn: '7d' }
+      );
+
+      // Redirect to frontend with token
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5000'}/auth/success?token=${token}`);
+    } catch (error) {
+      console.error('Twitter callback error:', error);
+      res.redirect('/login?error=auth_error');
+    }
+  }
+);
+
+// Check auth status (for OAuth flows)
+router.get('/status', (req, res) => {
+  if (req.user) {
+    const token = jwt.sign(
+      { id: req.user.id, email: req.user.email },
+      env.jwtSecret,
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      success: true,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        avatar: req.user.avatar
+      },
+      token
+    });
+  } else {
+    res.status(401).json({ success: false, message: 'Not authenticated' });
+  }
+});
 // Google OAuth: start -> redirect to Google
 const startGoogle = (req, res) => {
   const clientId = env.google.clientId;
