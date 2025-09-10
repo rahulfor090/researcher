@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
   const initials = (user?.name || 'User').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
 
+
   // Load articles for overview
   useEffect(() => {
     (async () => {
@@ -242,7 +243,7 @@ export default function Dashboard() {
               { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
               { label: 'Library', icon: '📚', path: '/library' },
               { label: 'Authors', icon: '✍️', path: '/authors' },
-              { label: 'Collections', icon: '🗂️', path: null },
+              { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
               { label: 'All insights', icon: '📈', path: null },
               
             ].map(({ label, icon, path }, index) => (

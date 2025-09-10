@@ -11,6 +11,8 @@ import articleRoutes from './routes/articles.js';
 import uploadRoutes from './routes/uploads.js';
 import profileRouter from './routes/profile.js';
 import authorRoutes from './routes/authors.js';
+//import userRoutes from './routes/users.js';
+import tagRouter from './routes/tag.js';
 
 const app = express();
 
@@ -47,9 +49,12 @@ app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
 app.use('/v1/profile', profileRouter);
 app.use('/v1/authors', authorRoutes);
+app.use('/api/authors', authorRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', cors(), express.static('src/uploads'));
+
+app.use('/v1/tag', tagRouter);
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));

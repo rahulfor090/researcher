@@ -258,6 +258,7 @@ export default function Library() {
               }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onClick={() => nav('/settings')}
             >
               Settings
             </button>
@@ -274,6 +275,7 @@ export default function Library() {
               }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onClick={() => nav('/about')}
             >
               About
             </button>
@@ -310,9 +312,9 @@ export default function Library() {
         <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {[
-              { label: 'Dashboard', icon: '🏠', path: '/' },
+              { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
               { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'Collections', icon: '🗂️', path: null },
+              { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
               { label: 'All insights', icon: '📈', path: null },
               
             ].map(({ label, icon, path }, index) => (

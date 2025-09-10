@@ -5,7 +5,7 @@ import fs from 'fs';
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Article } from '../models/index.js'; // Adjust path as needed
+import { Article, Tag } from '../models/index.js';
 
 dotenv.config();
 
@@ -32,8 +32,18 @@ const upload = multer({
   }
 });
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+// === Debug: Log GEMINI_API_KEY config === //
+if (!process.env.GEMINI_API_KEY) {
+  console.error('❌ GEMINI_API_KEY is not set in your environment!');
+}
+
+let genAI, model;
+try {
+  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+} catch (e) {
+  console.error('❌ Failed to initialize GoogleGenerativeAI:', e);
+}
 
 async function extractHashtags(text) {
   try {
@@ -52,19 +62,19 @@ ${text.slice(0, 8000)}
       .map(k => k.trim())
       .filter(k => k.length > 0);
 
-    const hashtags = keywords.map(k => {
+    const pascalTags = keywords.map(k => {
       const cleaned = k.replace(/[^a-zA-Z0-9 ]/g, '').trim();
       const pascalCase = cleaned
         .split(/\s+/)
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join('');
-      return '#' + pascalCase;
-    });
+      return pascalCase;
+    }).filter(Boolean);
 
-    return hashtags.join(' ');
+    return pascalTags;
   } catch (err) {
     console.error('❌ Error during hashtag extraction:', err);
-    return '';
+    throw err;
   }
 }
 
@@ -109,14 +119,18 @@ ${pdfData.text.slice(0, 8000)}
     const result = await model.generateContent(prompt);
     const summary = result.response.text();
 
-    const hashtags = await extractHashtags(pdfData.text);
+    const pascalTags = await extractHashtags(pdfData.text);
+
+    // Prepare string for hashtags column in Article (with # prefix)
+    const hashtagsStr = pascalTags.map(tag => `#${tag}`).join(' ');
 
     return {
       success: true,
       pdfFile: filename,
       extractedText: pdfData.text,
       summary,
-      hashtags,
+      hashtags: pascalTags,
+      hashtagsStr,
       pages: pdfData.numpages,
       info: pdfData.info
     };
@@ -124,51 +138,101 @@ ${pdfData.text.slice(0, 8000)}
     console.error('❌ Error during PDF processing:', err);
     return {
       success: false,
-      error: err.message
+      error: err.message,
+      stack: err.stack
     };
   }
 }
 
 router.post('/pdf', upload.single('pdf'), async (req, res) => {
   const articleId = req.query.id;
-  if (!articleId) return res.status(400).json({ error: 'Article id is required' });
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  if (!articleId) {
+    console.error('❌ Article id is required');
+    return res.status(400).json({ error: 'Article id is required' });
+  }
+  if (!req.file) {
+    console.error('❌ No file uploaded');
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  if (!model) {
+    console.error('❌ Gemini model not initialized.');
+    return res.status(500).json({ error: 'Gemini model not initialized.' });
+  }
 
   try {
     const pdfPath = path.join(uploadDir, req.file.filename);
-    const pdfBuffer = fs.readFileSync(pdfPath);
+    const pdfBuffer = await fs.promises.readFile(pdfPath);
 
     const result = await processPDF(pdfBuffer, req.file.filename);
 
     if (!result.success) {
-      return res.status(500).json({ error: 'PDF processing failed', details: result.error });
+      console.error('❌ PDF processing failed:', result.error);
+      return res.status(500).json({ error: 'PDF processing failed', details: result.error, stack: result.stack });
     }
 
-    const [updated] = await Article.update(
-      {
+    let tagInstances = [];
+    try {
+      for (const tagName of result.hashtags) {
+        const [tag] = await Tag.findOrCreate({ where: { name: tagName } });
+        tagInstances.push(tag);
+      }
+    } catch (tagErr) {
+      console.error('❌ Error inserting tags:', tagErr);
+      return res.status(500).json({ error: 'Failed to insert tags', details: tagErr.message, stack: tagErr.stack });
+    }
+
+    let article;
+    try {
+      article = await Article.findByPk(articleId);
+      if (!article) {
+        console.warn(`⚠️ Article with ID ${articleId} not found`);
+        return res.status(404).json({ error: 'Article not found' });
+      }
+    } catch (artErr) {
+      console.error('❌ Error finding article:', artErr);
+      return res.status(500).json({ error: 'Failed to find article', details: artErr.message, stack: artErr.stack });
+    }
+
+    try {
+      await article.setTags(tagInstances);
+    } catch (assocErr) {
+      console.error('❌ Error associating tags to article:', assocErr);
+      return res.status(500).json({ error: 'Failed to associate tags', details: assocErr.message, stack: assocErr.stack });
+    }
+
+    try {
+      await article.update({
         file_name: req.file.filename,
         summary: result.summary,
-        hashtags: result.hashtags // ✅ Make sure this column exists in your model
-      },
-      { where: { id: articleId } }
-    );
-
-    if (!updated) {
-      console.warn(`⚠️ Article with ID ${articleId} not found`);
-      return res.status(404).json({ error: 'Article not found' });
+        hashtags: result.hashtagsStr
+      });
+    } catch (updateErr) {
+      console.error('❌ Error updating article:', updateErr);
+      return res.status(500).json({ error: 'Failed to update article', details: updateErr.message, stack: updateErr.stack });
     }
 
     res.json({
-      message: 'File uploaded, processed, and article updated',
+      message: 'File uploaded, processed, and article updated with tags',
       filename: req.file.filename,
       summary: result.summary,
-      hashtags: result.hashtags,
+      hashtags: result.hashtagsStr,
       pages: result.pages,
       info: result.info
     });
   } catch (err) {
-    console.error('Error in /pdf upload:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Error in /pdf upload:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
+  }
+});
+
+// ---- ADDITION: API for getting all hashtags ----
+router.get('/tags', async (req, res) => {
+  try {
+    const tags = await Tag.findAll({ attributes: ['id', 'name'], order: [['name', 'ASC']] });
+    res.json({ tags });
+  } catch (err) {
+    console.error('❌ Error fetching tags:', err);
+    res.status(500).json({ error: 'Failed to fetch tags', details: err.message });
   }
 });
 

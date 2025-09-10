@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import AuthSuccess from './pages/AuthSuccess';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import HashTags from './pages/hashTags';
 
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/auth/success" element={<AuthSuccess />} />
+          <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
