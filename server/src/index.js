@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
+import session from 'express-session';
+import passport from './config/passport.js';
 import { env } from './config/env.js';
 import { syncDb } from './models/index.js';
 import authRoutes from './routes/auth.js';
@@ -20,6 +22,18 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Session configuration for Passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false } // Set to true in production with HTTPS
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // CORS: allow dev web app + extension
 app.use(cors({
   origin: (origin, cb) => {
@@ -34,8 +48,8 @@ app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
 app.use('/v1/profile', profileRouter);
+app.use('/v1/authors', authorRoutes);
 app.use('/api/authors', authorRoutes);
-//app.use('/api/users', userRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', cors(), express.static('src/uploads'));
@@ -48,5 +62,3 @@ syncDb().then(() => {
   console.error('DB connect failed:', err);
   process.exit(1);
 });
-
-console.log('📋 Authors routes registered');
