@@ -3,7 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import session from 'express-session';
-import passport from './config/passport.js';
+//import passport from './config/passport.js';
 import { env } from './config/env.js';
 import { syncDb } from './models/index.js';
 import authRoutes from './routes/auth.js';
@@ -31,8 +31,8 @@ app.use(session({
 }));
 
 // Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.initialize());
+//app.use(passport.session());
 
 // CORS: allow dev web app + extension
 app.use(cors({
