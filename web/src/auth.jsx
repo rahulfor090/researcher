@@ -8,19 +8,39 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   useEffect(() => {
     const t = localStorage.getItem('token');
-    if (t) setAuthToken(t);
+    if (t && !isTokenExpired(t)) {
+      setAuthToken(t);
+      // Load profile once on app start so all components share the same user
+      api.get('/profile')
+        .then(res => setUser(res.data))
+        .catch(() => setUser(null));
+    } else if (t) {
+      // Clear expired token
+      setAuthToken(null);
+      setUser(null);
+    }
   }, []);
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
     localStorage.setItem('token', data.token);
     setAuthToken(data.token);
-    setUser(data.user);
+    try {
+      const { data: profile } = await api.get('/profile');
+      setUser(profile);
+    } catch {
+      setUser(null);
+    }
   };
   const register = async (name, email, password) => {
     const { data } = await api.post('/auth/register', { name, email, password });
     localStorage.setItem('token', data.token);
     setAuthToken(data.token);
-    setUser(data.user);
+    try {
+      const { data: profile } = await api.get('/profile');
+      setUser(profile);
+    } catch {
+      setUser(null);
+    }
   };
   const logout = () => { localStorage.removeItem('token'); setAuthToken(null); setUser(null); };
   return <AuthCtx.Provider value={{ user, setUser, login, register, logout }}>{children}</AuthCtx.Provider>;
@@ -41,7 +61,11 @@ export function Protected({ children }) {
     
     if (localToken) {
       setHasToken(true);
-      setIsChecking(false);
+      // Ensure profile is loaded on protected pages
+      api.get('/profile')
+        .then(res => setUser(res.data))
+        .catch(() => setUser(null))
+        .finally(() => setIsChecking(false));
       return;
     }
     
@@ -71,6 +95,11 @@ export function Protected({ children }) {
         }).catch(console.error);
       }
       
+      // Try to load full profile after setting token; fallback to basic info
+      api.get('/profile')
+        .then(res => setUser(res.data))
+        .catch(() => setUser({ name, email, plan: 'free' }));
+
       setHasToken(true);
       
       // Clean up URL parameters

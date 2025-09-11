@@ -79,21 +79,35 @@ export default function Library() {
 
   // Save new or edited article
   const handleSaveArticle = async (articleData) => {
-    if (!editArticle && articles.length >= 10) {
-      // Show upgrade modal before saving if limit is reached
+    if (!editArticle && user?.plan === "free" && articles.length >= 10) {
+      // Show upgrade modal before saving if limit is reached (only for free accounts)
       setShowLimitModal(true);
       setShowModal(false);
       setEditArticle(null);
       return;
     }
-    if (editArticle) {
-      await api.put(`/articles/${editArticle.id}`, articleData);
-    } else {
-      await api.post('/articles', articleData);
+    try {
+      if (editArticle) {
+        await api.put(`/articles/${editArticle.id}`, articleData);
+      } else {
+        await api.post('/articles', articleData);
+      }
+      setEditArticle(null);
+      setShowModal(false);
+      load();
+    } catch (err) {
+      // Handle article limit error from backend
+      if (
+        user?.plan === "free" &&
+        err?.response?.data?.message?.toLowerCase().includes("article limit")
+      ) {
+        setShowLimitModal(true);
+        setShowModal(false);
+        setEditArticle(null);
+      } else {
+        setShowLimitModal(true);
+      }
     }
-    setEditArticle(null);
-    setShowModal(false);
-    load();
   };
 
   // Delete article and update UI without reload
@@ -1399,29 +1413,29 @@ export default function Library() {
             position: 'relative'
           }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🚫</div>
-            <h2 style={{ margin: '0 0 10px 0', fontWeight: 700, fontSize: '1.5rem', color: colors.highlight }}>
-              Article Limit Reached
-            </h2>
-            <p style={{ fontSize: '1rem', marginBottom: '20px', color: colors.mutedText }}>
-              Free accounts can save up to <b>10 articles</b>.<br />
-              Upgrade to unlock unlimited articles and more features.
-            </p>
-            <button
-              style={{
-                ...primaryButtonStyle,
-                fontWeight: 700,
-                fontSize: '1.09rem',
-                padding: '12px 32px',
-                borderRadius: '10px',
-                marginBottom: '6px'
-              }}
-              onClick={() => {
-                setShowLimitModal(false);
-                nav('/upgrade');
-              }}
-            >
-              Upgrade for $49
-            </button>
+              <h2 style={{ margin: '0 0 10px 0', fontWeight: 700, fontSize: '1.5rem', color: colors.highlight }}>
+                Article Limit Reached
+              </h2>
+              <p style={{ fontSize: '1rem', marginBottom: '20px', color: colors.mutedText }}>
+                Free accounts can save up to <b>10 articles</b>.<br />
+                Upgrade to unlock unlimited articles and more features.
+              </p>
+              <button
+                style={{
+                  ...primaryButtonStyle,
+                  fontWeight: 700,
+                  fontSize: '1.09rem',
+                  padding: '12px 32px',
+                  borderRadius: '10px',
+                  marginBottom: '6px'
+                }}
+                onClick={() => {
+                  setShowLimitModal(false);
+                  nav('/upgrade');
+                }}
+              >
+                Upgrade for $49
+              </button>
             <div>
               <button
                 style={{

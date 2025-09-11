@@ -2,13 +2,16 @@
   background-color: #f7f9fc;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  width: 360px; /* Increased width to prevent content cutting */
+  width: 360px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
+  margin-bottom: 15px;
+  padding: 24px 24px 20px 24px;
+  position: relative;
 }
 
 body {
-  padding: 20px; /* Added padding to body instead */
+  padding: 20px;
 }
 
 .subtitle {
@@ -44,7 +47,7 @@ textarea {
   border-radius: 5px;
   font-size: 14px;
   transition: border-color 0.2s ease-in-out;
-  box-sizing: border-box; /* Include padding and border in the element's total width */
+  box-sizing: border-box;
 }
 
 input[type="text"]:focus,
@@ -90,7 +93,7 @@ textarea:focus {
 small {
   display: block;
   text-align: center;
-  margin-top: 25px; /* Increased margin-top for better spacing */
+  margin-top: 25px;
   color: #718096;
 }
 
@@ -102,4 +105,40 @@ a {
 a:hover {
   text-decoration: underline;
 }
-  
+
+/* ---- Limit Message Styles ---- */
+.limit-message-container {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fff8e1;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  color: #b45309;
+  text-align: center;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.08);
+}
+
+.limit-message-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-upgrade {
+  background-color: #f59e0b;
+  color: #fff;
+  width: auto;
+  padding: 8px 22px;
+  border-radius: 7px;
+  margin-top: 7px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.btn-upgrade:hover {
+  background-color: #d97706;
+}

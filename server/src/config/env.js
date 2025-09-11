@@ -3,6 +3,7 @@ import 'dotenv/config';
 export const env = {
   port: process.env.PORT || 5000,
   jwtSecret: process.env.JWT_SECRET,
+  webAppUrl: process.env.WEB_APP_URL || 'http://localhost:5173',
   db: {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -16,9 +17,12 @@ export const env = {
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET, // API Secret Key
     callbackURL: process.env.TWITTER_CALLBACK_URL || 'http://localhost:5000/v1/auth/twitter/callback'
   },
+      
   corsOrigins: (
-    process.env.CORS_ORIGINS
-      ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
-      : ['http://localhost:5173', 'chrome-extension://your-extension-id']
-  )
+    process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean) : ['https://researchlocker.co', 'chrome-extension://your-extension-id'],
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    redirectUri: process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || ''
+  }
 };
