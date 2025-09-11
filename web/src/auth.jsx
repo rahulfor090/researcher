@@ -45,7 +45,7 @@ export function Protected({ children }) {
       return;
     }
     
-    // Check for Google OAuth callback parameters
+    // Check for OAuth callback parameters (Google, Twitter, etc.)
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const name = urlParams.get('name');
@@ -53,17 +53,30 @@ export function Protected({ children }) {
     
     console.log('URL params - token:', token ? 'exists' : 'not found', 'name:', name, 'email:', email);
     
-    if (token && name && email) {
-      console.log('Processing Google OAuth callback...');
-      // Store the token and user info from Google OAuth
+    if (token) {
+      console.log('Processing OAuth callback...');
+      // Store the token from any OAuth provider
       localStorage.setItem('token', token);
-      setUser({ name, email, plan: 'free' });
+      setAuthToken(token);
+      
+      // For Google OAuth, we get user info from URL params
+      if (name && email) {
+        setUser({ name, email, plan: 'free' });
+      }
+      // For other OAuth providers like Twitter, we'll fetch user info from the server
+      else {
+        // Fetch user info using the token
+        api.get('/v1/auth/me').then(({ data }) => {
+          setUser(data.user);
+        }).catch(console.error);
+      }
+      
       setHasToken(true);
       
       // Clean up URL parameters
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
-      console.log('Google OAuth callback processed successfully');
+      console.log('OAuth callback processed successfully');
     }
     
     setIsChecking(false);

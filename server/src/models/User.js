@@ -26,10 +26,14 @@ export default (sequelize) => {
     orcid_id: { type: DataTypes.STRING(50), allowNull: true, defaultValue: '' },
     bio: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
     skills: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
-
-  }, { tableName: 'users' });
-  
+    // Twitter OAuth fields
+    twitterId: { type: DataTypes.STRING, allowNull: true, unique: true },
+    twitterToken: { type: DataTypes.STRING, allowNull: true },
+    twitterTokenSecret: { type: DataTypes.STRING, allowNull: true }
+  }, { 
+    tableName: 'users',
+    timestamps: true
+  });
 
   return User;
 };
-
