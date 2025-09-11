@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Sep 10, 2025 at 03:08 AM
+-- Generation Time: Sep 11, 2025 at 07:20 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -218,30 +218,35 @@ CREATE TABLE IF NOT EXISTS `users` (
   `phone_number` varchar(20) DEFAULT NULL,
   `google_id` varchar(255) DEFAULT NULL,
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `twitterId` varchar(512) DEFAULT NULL,
+  `twitterToken` varchar(512) DEFAULT NULL,
+  `twitterTokenSecret` varchar(512) DEFAULT NULL,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `twitterId` (`twitterId`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `plan`, `department_institution`, `biography_overview`, `profile_image`, `gender`, `bio`, `university`, `department`, `program`, `year_of_study`, `research_area`, `research_interests`, `publications`, `linkedin_url`, `google_scholar_url`, `orcid_id`, `skills`, `phone_number`, `google_id`, `createdAt`, `updatedAt`) VALUES
-(2, 'Ansh', 'ansh@itfosters.com', '$2b$10$eUz8.pnfDfuYPisUY2OUGOdQQc.dyq/Ba7WwHNZo8QtUdxX0Fq6Y2', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', '2025-08-29 14:57:13'),
-(3, 'Deepak', 'deepak@itfosters.com', '$2b$10$xLoKZ9/HpJf8F1tCcj.Wre1VXUTVzQiUo8Jq3BSbp.t6ggr7NGIFK', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', '2025-08-29 14:57:13'),
-(4, 'Ansh Kumar Pandey', 'ansh@gmailnew.com', '$2b$10$ZQAu1KSeejyIRGonfdA8l.XdhneeJEPvzZj8uwwKt70nT5y1RlIau', 'free', NULL, NULL, NULL, 'Male', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, '2025-08-29 14:57:13', '2025-09-02 14:31:19'),
-(5, 'Madhu', 'madhu@itfosters.com', '$2b$10$XYQFNxDBqIB/9vLDwjZm/em.JTVHWweDG59DbU9jVxisZ1kJNN9GO', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', '2025-08-29 14:57:13'),
-(6, 'new', 'new@gmail.com', '$2b$10$oceuTObVmR5OMzb0Y17K3uVCHgc9RD6SBiRyOoHOINHRL5z5wfG2O', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', '2025-08-29 14:57:13'),
-(7, 'Ameer', 'Ameer@itfosters.com', '$2b$10$ocjQx68TcSW.gUOdkiw0MeHLPlX.nwIfQC1FGRl84YYThxGer8ZXm', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', '2025-08-29 14:57:13'),
-(8, 'Munna Kumar', 'munna@itfosters.com', '$2b$10$awNWPvwTi66Zw8sA.8h4XOMDY5.LTy5a18WEmj9wLXMmUEO7FbhS2', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', '2025-08-29 14:57:13'),
-(9, 'testnew', 'testnew@gmail.com', '$2b$10$yBirg42XskL94kbmbNsP4ORBSvvtnCPKVUrjkGXTk.OEWKQhZkt7W', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 16:58:12', '2025-08-29 16:58:12'),
-(10, 'Developer', 'developer@gmail.com', '$2b$10$D1q6jytg8nrpRk6aF5xBAel6jeVOfxMKWEkhiuxd8DC04bGT3QLgq', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-03 10:16:11', '2025-09-03 10:16:11'),
-(11, 'New Test', 'newstudent@locker.com', '$2b$10$cNQNvGTFywADTtH8bQPkcOiPNHb1rSH/QKfndSXZguNSf0IeF.vSS', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-03 19:14:55', '2025-09-03 19:14:55'),
-(12, 'Ranu Kumar', 'ranu@itfosters.com', '$2b$10$pYNlqTbITbvyNcln4TgWm.Yk5KCY8bd4dyQkExPxRJNuWK5gSulnS', 'free', NULL, NULL, '12-1757010308493-259916675.png', 'Male', 'Thank you for test', 'yelle university', 'New Delhi', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'cancer star', NULL, NULL, '2025-09-04 17:53:50', '2025-09-04 19:44:51'),
-(13, 'Manu Kumar', 'manu@gmail.com', '$2b$10$kEYIxpaZJa8Hkwuu002oOu3qpnWO3EcmWbSknJBNOdy.mBPLQpPPC', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-07 12:53:27', '2025-09-07 12:53:27'),
-(14, 'Mukesh Kumar', 'mukesh@itfosters.com', '$2b$10$7WkO50lGotTvg2yNPE/h..V/N3mSr2VSVBjY77qO5g95tQZWQlx5K', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-07 12:57:28', '2025-09-07 12:57:28'),
-(15, 'Shubham Kumar', 'shubham@itfosters.com', '$2b$10$ksm3eMqWUZ6RH4Jk3UIfeeN7cGsL0gcSvZ48jpYQOl79mOxjsobFe', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-07 14:30:31', '2025-09-07 14:30:31');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `plan`, `department_institution`, `biography_overview`, `profile_image`, `gender`, `bio`, `university`, `department`, `program`, `year_of_study`, `research_area`, `research_interests`, `publications`, `linkedin_url`, `google_scholar_url`, `orcid_id`, `skills`, `phone_number`, `google_id`, `createdAt`, `twitterId`, `twitterToken`, `twitterTokenSecret`, `updatedAt`) VALUES
+(2, 'Ansh', 'ansh@itfosters.com', '$2b$10$eUz8.pnfDfuYPisUY2OUGOdQQc.dyq/Ba7WwHNZo8QtUdxX0Fq6Y2', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', NULL, NULL, NULL, '2025-08-29 14:57:13'),
+(3, 'Deepak', 'deepak@itfosters.com', '$2b$10$xLoKZ9/HpJf8F1tCcj.Wre1VXUTVzQiUo8Jq3BSbp.t6ggr7NGIFK', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', NULL, NULL, NULL, '2025-08-29 14:57:13'),
+(4, 'Ansh Kumar Pandey', 'ansh@gmailnew.com', '$2b$10$ZQAu1KSeejyIRGonfdA8l.XdhneeJEPvzZj8uwwKt70nT5y1RlIau', 'free', NULL, NULL, NULL, 'Male', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, '2025-08-29 14:57:13', NULL, NULL, NULL, '2025-09-02 14:31:19'),
+(5, 'Madhu', 'madhu@itfosters.com', '$2b$10$XYQFNxDBqIB/9vLDwjZm/em.JTVHWweDG59DbU9jVxisZ1kJNN9GO', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', NULL, NULL, NULL, '2025-08-29 14:57:13'),
+(6, 'new', 'new@gmail.com', '$2b$10$oceuTObVmR5OMzb0Y17K3uVCHgc9RD6SBiRyOoHOINHRL5z5wfG2O', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', NULL, NULL, NULL, '2025-08-29 14:57:13'),
+(7, 'Ameer', 'Ameer@itfosters.com', '$2b$10$ocjQx68TcSW.gUOdkiw0MeHLPlX.nwIfQC1FGRl84YYThxGer8ZXm', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', NULL, NULL, NULL, '2025-08-29 14:57:13'),
+(8, 'Munna Kumar', 'munna@itfosters.com', '$2b$10$awNWPvwTi66Zw8sA.8h4XOMDY5.LTy5a18WEmj9wLXMmUEO7FbhS2', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 14:57:13', NULL, NULL, NULL, '2025-08-29 14:57:13'),
+(9, 'testnew', 'testnew@gmail.com', '$2b$10$yBirg42XskL94kbmbNsP4ORBSvvtnCPKVUrjkGXTk.OEWKQhZkt7W', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-29 16:58:12', NULL, NULL, NULL, '2025-08-29 16:58:12'),
+(10, 'Developer', 'developer@gmail.com', '$2b$10$D1q6jytg8nrpRk6aF5xBAel6jeVOfxMKWEkhiuxd8DC04bGT3QLgq', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-03 10:16:11', NULL, NULL, NULL, '2025-09-03 10:16:11'),
+(11, 'New Test', 'newstudent@locker.com', '$2b$10$cNQNvGTFywADTtH8bQPkcOiPNHb1rSH/QKfndSXZguNSf0IeF.vSS', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-03 19:14:55', NULL, NULL, NULL, '2025-09-03 19:14:55'),
+(12, 'Ranu Kumar', 'ranu@itfosters.com', '$2b$10$pYNlqTbITbvyNcln4TgWm.Yk5KCY8bd4dyQkExPxRJNuWK5gSulnS', 'free', NULL, NULL, '12-1757010308493-259916675.png', 'Male', 'Thank you for test', 'yelle university', 'New Delhi', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'cancer star', NULL, NULL, '2025-09-04 17:53:50', NULL, NULL, NULL, '2025-09-04 19:44:51'),
+(13, 'Manu Kumar', 'manu@gmail.com', '$2b$10$kEYIxpaZJa8Hkwuu002oOu3qpnWO3EcmWbSknJBNOdy.mBPLQpPPC', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-07 12:53:27', NULL, NULL, NULL, '2025-09-07 12:53:27'),
+(14, 'Mukesh Kumar', 'mukesh@itfosters.com', '$2b$10$7WkO50lGotTvg2yNPE/h..V/N3mSr2VSVBjY77qO5g95tQZWQlx5K', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-07 12:57:28', NULL, NULL, NULL, '2025-09-07 12:57:28'),
+(15, 'Shubham Kumar', 'shubham@itfosters.com', '$2b$10$ksm3eMqWUZ6RH4Jk3UIfeeN7cGsL0gcSvZ48jpYQOl79mOxjsobFe', 'free', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-07 14:30:31', NULL, NULL, NULL, '2025-09-07 14:30:31'),
+(16, 'IT Fosters Web Solutions Pvt Ltd', 'itfosters@gmail.com', '', 'free', NULL, NULL, '', 'Other', '', '', '', '', '', '', '', '', '', '', '', '', '', NULL, '2025-09-11 18:56:58', NULL, NULL, NULL, '2025-09-11 18:56:58');
 
 -- --------------------------------------------------------
 

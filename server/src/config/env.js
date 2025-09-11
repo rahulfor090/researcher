@@ -17,9 +17,11 @@ export const env = {
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET, // API Secret Key
     callbackURL: process.env.TWITTER_CALLBACK_URL || 'http://localhost:5000/v1/auth/twitter/callback'
   },
-      
-  corsOrigins: (
-    process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean) : ['https://researchlocker.co', 'chrome-extension://your-extension-id'],
+
+  corsOrigins: process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
+    : ['https://researchlocker.co', 'chrome-extension://your-extension-id'],
+
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
