@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Authentication View -->
   <div id="authView" class="container">
     <h3>Login</h3>
     <p class="subtitle">Access your research locker</p>
@@ -13,7 +14,6 @@
       <label for="email">Email</label>
       <input id="email" type="text" placeholder="Enter your email" class="form-control" />
     </div>
-   
     <div class="form-group">
       <label for="password">Password</label>
       <input id="password" type="password" placeholder="Enter your password" class="form-control" />
@@ -22,6 +22,7 @@
     <small>Don’t have an account? <a href="http://localhost:5173/" target="_blank">Register on the web app.</a></small>
   </div>
 
+  <!-- Save Article View -->
   <div id="saveView" class="container hidden">
     <h3>Save Article</h3>
     <div class="form-group">
@@ -46,8 +47,17 @@
     </div>
     <button id="saveBtn" class="btn btn-primary">Save</button>
     <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+
+    <!-- 🚫 Article Limit Message (hidden by default) -->
+    <div id="limitMessage" class="limit-message-container hidden">
+      <div class="limit-message-text" id="limitMessageText">
+        🚫 <b>Article limit reached.</b> Free accounts can save up to <b>10 articles</b>.<br>
+        <button id="upgradeBtn" class="btn btn-upgrade">Upgrade</button>
+      </div>
+    </div>  
   </div>
 
+  <!-- Post Save View -->
   <div id="postSaveView" class="container hidden">
     <h3>Article Saved!</h3>
     <p>Do you want to go to your locker?</p>

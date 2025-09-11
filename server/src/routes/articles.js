@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Op } from 'sequelize';
-import { Article, Author, ArticleAuthor } from '../models/index.js';
+import { Article, Author, ArticleAuthor, User } from '../models/index.js'; // Ensure User model is imported!
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -57,6 +57,20 @@ async function getArticleAuthorsString(articleId) {
   return articleAuthors.map(aa => aa.Author.name).join(', ');
 }
 
+// LIBRARY INFO ENDPOINT (for extension and web app)
+router.get('/users/me/library-info', requireAuth, async (req, res) => {
+  try {
+    // Fetch user and article count
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const articleCount = await Article.count({ where: { userId: req.user.id } });
+    res.json({ plan: user.plan || 'free', articleCount });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get library info', error: String(err?.message || err) });
+  }
+});
+
 // CREATE
 router.post('/',
   requireAuth,
@@ -68,6 +82,17 @@ router.post('/',
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     try {
+      // Restrict free users to 10 articles; do not restrict pro or other non-free plans
+      const user = await User.findByPk(req.user.id);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+
+      // Only restrict if user.plan is 'free'
+      if (user.plan === 'free') {
+        const articleCount = await Article.count({ where: { userId: req.user.id } });
+        if (articleCount >= 10) {
+          return res.status(403).json({ message: 'Article limit reached. Upgrade to add more articles.' });
+        }
+      }
       // Check for existing article with same URL or DOI for this user
       const existing = await Article.findOne({
         where: {

@@ -1,4 +1,3 @@
-// background.js
 const API_BASE = "http://localhost:5000/v1"; // change in prod
 
 async function getToken() {
@@ -12,6 +11,7 @@ async function clearToken() {
   await chrome.storage.local.remove("token");
 }
 
+// Improved error handling: Always return just the message string, not a JSON blob
 async function apiFetch(path, opts = {}) {
   const token = await getToken();
   const headers = Object.assign(
@@ -22,8 +22,16 @@ async function apiFetch(path, opts = {}) {
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   if (res.status === 401) throw new Error("UNAUTHORIZED");
   if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(t || `HTTP ${res.status}`);
+    let errMsg = `HTTP ${res.status}`;
+    try {
+      const data = await res.json();
+      errMsg = data.message || JSON.stringify(data) || errMsg;
+    } catch {
+      // fallback to text if not JSON
+      const t = await res.text().catch(() => "");
+      if (t) errMsg = t;
+    }
+    throw new Error(errMsg);
   }
   return res.json();
 }
@@ -33,12 +41,16 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     try {
       switch (msg?.type) {
         case "LOGIN": {
-          const data = await apiFetch("/auth/login", {
-            method: "POST",
-            body: JSON.stringify({ email: msg.email, password: msg.password })
-          });
-          await setToken(data.token);
-          sendResponse({ ok: true, user: data.user });
+          try {
+            const data = await apiFetch("/auth/login", {
+              method: "POST",
+              body: JSON.stringify({ email: msg.email, password: msg.password })
+            });
+            await setToken(data.token);
+            sendResponse({ ok: true, user: data.user });
+          } catch (e) {
+            sendResponse({ ok: false, error: e.message });
+          }
           break;
         }
         case "LOGOUT": {
@@ -52,11 +64,31 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           break;
         }
         case "SAVE_ARTICLE": {
-          const saved = await apiFetch("/articles", {
-            method: "POST",
-            body: JSON.stringify(msg.article)
-          });
-          sendResponse({ ok: true, article: saved });
+          try {
+            const saved = await apiFetch("/articles", {
+              method: "POST",
+              body: JSON.stringify(msg.article)
+            });
+            sendResponse({ ok: true, article: saved });
+          } catch (e) {
+            sendResponse({ ok: false, error: e.message, message: e.message });
+          }
+          break;
+        }
+        case "GET_USER_LIBRARY_INFO": {
+          try {
+            const info = await apiFetch("/users/me/library-info");
+            sendResponse({
+              plan: info.plan,
+              articleCount: info.articleCount
+            });
+          } catch (e) {
+            sendResponse({
+              plan: "free",
+              articleCount: 0,
+              error: e.message
+            });
+          }
           break;
         }
         default:
