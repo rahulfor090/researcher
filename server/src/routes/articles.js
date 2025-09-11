@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Op } from 'sequelize';
-import { Article, Author, ArticleAuthor } from '../models/index.js';
+import { Article, Author, ArticleAuthor, User } from '../models/index.js'; // Ensure User model is imported!
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -54,6 +54,20 @@ async function getArticleAuthorsString(articleId) {
   return articleAuthors.map(aa => aa.Author.name).join(', ');
 }
 
+// LIBRARY INFO ENDPOINT (for extension and web app)
+router.get('/users/me/library-info', requireAuth, async (req, res) => {
+  try {
+    // Fetch user and article count
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const articleCount = await Article.count({ where: { userId: req.user.id } });
+    res.json({ plan: user.plan || 'free', articleCount });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get library info', error: String(err?.message || err) });
+  }
+});
+
 // CREATE
 router.post('/',
   requireAuth,
@@ -65,7 +79,20 @@ router.post('/',
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     try {
+      // Restrict free users to 10 articles; do not restrict pro or other non-free plans
+      const user = await User.findByPk(req.user.id);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+
+      // Only restrict if user.plan is 'free'
+      if (user.plan === 'free') {
+        const articleCount = await Article.count({ where: { userId: req.user.id } });
+        if (articleCount >= 10) {
+          return res.status(403).json({ message: 'Article limit reached. Upgrade to add more articles.' });
+        }
+      }
+      
       const { sequelize } = Article.sequelize; // guard not needed; kept local
+
       // Check for existing article with same URL or DOI for this user
       const existing = await Article.findOne({
         where: {
@@ -331,6 +358,120 @@ router.delete('/:id', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Failed to delete article:', err);
     res.status(500).json({ message: 'Failed to delete article', error: String(err?.message || err) });
+  }
+});
+
+// GET all authors for the authenticated user
+router.get('/authors/list', requireAuth, async (req, res) => {
+  try {
+    console.log('📋 Fetching authors for user:', req.user.id);
+    
+    // Simple approach: get all unique authors from articles for this user
+    const articles = await Article.findAll({
+      where: { 
+        userId: req.user.id,
+        authors: { [Op.not]: null, [Op.ne]: '' }
+      },
+      attributes: ['authors']
+    });
+
+    // Extract and count unique authors
+    const authorCounts = {};
+    
+    articles.forEach(article => {
+      if (article.authors) {
+        // Split authors by common delimiters
+        const authorNames = article.authors
+          .split(/[,;]|\s+and\s+|\s+&\s+/)
+          .map(name => name.trim())
+          .filter(name => name.length > 0);
+        
+        authorNames.forEach(name => {
+          authorCounts[name] = (authorCounts[name] || 0) + 1;
+        });
+      }
+    });
+
+    // Convert to array format
+    const authorsArray = Object.entries(authorCounts).map(([name, count], index) => ({
+      id: index + 1,
+      name,
+      articleCount: count
+    }));
+
+    // Sort by name
+    authorsArray.sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log('✅ Found authors:', authorsArray.length);
+    res.json(authorsArray);
+  } catch (err) {
+    console.error('❌ Failed to get authors:', err);
+    res.status(500).json({ 
+      message: 'Failed to get authors', 
+      error: String(err?.message || err) 
+    });
+  }
+});
+
+// GET articles by author ID (using the index as ID)
+router.get('/authors/:authorId/articles', requireAuth, async (req, res) => {
+  try {
+    const { authorId } = req.params;
+    console.log('📚 Fetching articles for author ID:', authorId, 'user:', req.user.id);
+
+    // First, get all authors to find the name by ID
+    const articles = await Article.findAll({
+      where: { 
+        userId: req.user.id,
+        authors: { [Op.not]: null, [Op.ne]: '' }
+      },
+      attributes: ['authors']
+    });
+
+    // Extract unique authors
+    const authorCounts = {};
+    articles.forEach(article => {
+      if (article.authors) {
+        const authorNames = article.authors
+          .split(/[,;]|\s+and\s+|\s+&\s+/)
+          .map(name => name.trim())
+          .filter(name => name.length > 0);
+        
+        authorNames.forEach(name => {
+          authorCounts[name] = (authorCounts[name] || 0) + 1;
+        });
+      }
+    });
+
+    const authorsArray = Object.keys(authorCounts).sort();
+    const authorIndex = parseInt(authorId) - 1;
+    
+    if (authorIndex < 0 || authorIndex >= authorsArray.length) {
+      return res.status(404).json({ message: 'Author not found' });
+    }
+
+    const authorName = authorsArray[authorIndex];
+    console.log('📚 Found author name:', authorName);
+
+    // Find all articles that contain this author name
+    const authorArticles = await Article.findAll({
+      where: { 
+        userId: req.user.id,
+        authors: { 
+          [Op.like]: `%${authorName}%`
+        }
+      },
+      order: [['id', 'DESC']]
+    });
+
+    console.log('✅ Found articles for author:', authorArticles.length);
+    res.json(authorArticles);
+  } catch (err) {
+    console.error('❌ Failed to get articles by author:', err);
+    res.status(500).json({ 
+      message: 'Failed to get articles by author', 
+      error: String(err?.message || err) 
+    });
   }
 });
 

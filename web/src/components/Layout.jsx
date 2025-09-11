@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { shadows, colors } from '../theme';
 import { api } from '../api';
+import { useAuth } from '../auth';
 import './layout.css';
 
 export default function Layout({ children }) {
   const nav = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
+  const { user, setUser } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const isActive = (path) => {
@@ -17,15 +18,15 @@ export default function Layout({ children }) {
   // Get user initials
   const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
 
-  // Load user data
+  // Ensure user profile exists if token is present
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !user) {
       api.get('/profile')
         .then(response => setUser(response.data))
-        .catch(err => console.error('Failed to load user:', err));
+        .catch(() => {});
     }
-  }, []);
+  }, [user, setUser]);
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function Layout({ children }) {
           }} 
           
         >
-          <div style={{ 
+          <div className="avatar-badge" style={{ 
             width: '40px', 
             height: '40px', 
             borderRadius: '50%', 
@@ -64,7 +65,8 @@ export default function Layout({ children }) {
             justifyContent: 'center',
             color: 'white',
             fontWeight: 'bold',
-            fontSize: '1.1rem'
+            fontSize: '1.1rem',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.3)'
           }}>
             {initials}
           </div>
@@ -171,15 +173,16 @@ export default function Layout({ children }) {
               📚 Library
             </li>
             <li 
+              className={`layout-nav-item ${isActive('/hashtags') ? 'active' : ''}`}
+              onClick={() => nav('/hashtags')}
+            >
+              🗂️ HashTags
+            </li>
+            <li 
               className={`layout-nav-item ${isActive('/authors') ? 'active' : ''}`}
               onClick={() => nav('/authors')}
             >
               👥 Authors
-            </li>
-            <li 
-              className="layout-nav-item"
-            >
-              🗂️ Collections
             </li>
             <li 
               className="layout-nav-item"

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api, isAuthenticated } from '../api';
+import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, gradients, shadows } from '../theme';
 
+const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000/v1';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,12 +12,11 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // If already authenticated, redirect to dashboard
-  useEffect(() => {
-    if (isAuthenticated()) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [navigate]);
+  // Twitter login handler
+  const handleTwitterLogin = () => {
+    const serverBase = import.meta.env.VITE_API_BASE?.replace('/v1', '') || 'http://localhost:5000';
+    window.location.href = `${serverBase}/v1/auth/twitter`;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,57 +28,9 @@ export default function Login() {
       localStorage.setItem('token', data.token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || err.response?.data?.error || 'Login failed');
     } finally {
-          setIsLoading(false);
-        }
-      };
-
-  const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000/v1';
-  const providers = [
-    { key: 'google', label: 'Continue with Google', icon: '🟢' },
-    { key: 'linkedin', label: 'Continue with LinkedIn', icon: '🔷' },
-    { key: 'twitter', label: 'Continue with X (Twitter)', icon: '✖️' },
-    { key: 'facebook', label: 'Continue with Facebook', icon: '🔵' }
-  ];
-  const redirectToProvider = (provider) => {
-    window.location.href = `${BASE_API_URL}/auth/oauth/${provider}`;
-  };
-
-  const ProviderIcon = ({ name }) => {
-    const size = 20;
-    switch (name) {
-      case 'google':
-        return (
-          <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden>
-            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c10.5 0 19.3-7.6 19.3-20 0-1.1-.1-2.3-.3-3.5z"/>
-            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16.6 18.9 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 16 4 9.1 8.6 6.3 14.7z"/>
-            <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.3-5.3l-6.2-5.1C29.1 35.8 26.7 37 24 37c-5.2 0-9.6-3.4-11.1-8.1l-6.6 5.1C9.1 39.4 16 44 24 44z"/>
-            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.3-3.5 5.8-6.2 7.6l.1.1 6.2 5.1c-.4.4 7.6-5.6 7.6-16.8 0-1.1-.1-2.3-.4-3.5z"/>
-          </svg>
-        );
-      case 'linkedin':
-        return (
-          <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-            <rect width="24" height="24" rx="4" fill="#0A66C2"/>
-            <path fill="#fff" d="M7 17H4.5V9.5H7V17zM5.7 8.3C4.9 8.3 4.3 7.7 4.3 7s.6-1.3 1.4-1.3c.8 0 1.4.6 1.4 1.3s-.6 1.3-1.4 1.3zM19.7 17H17.2v-3.9c0-1-.4-1.7-1.3-1.7-.7 0-1.1.5-1.3 1v4.6H12.1V9.5h2.5v1c.3-.5 1-1.2 2.3-1.2 1.7 0 2.8 1.1 2.8 3.3V17z"/>
-          </svg>
-        );
-      case 'twitter':
-        return (
-          <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-            <path fill="#000" d="M17.6 3H21l-7.1 8.1L22 21h-4.9l-5.3-6.2-6 6.2H2.3l7.6-8.3L2 3h5l4.8 5.6L17.6 3zM16.7 19.6h2.2L7.4 4.2H5.1l11.6 15.4z"/>
-          </svg>
-        );
-      case 'facebook':
-        return (
-          <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-            <rect width="24" height="24" rx="4" fill="#1877F2"/>
-            <path fill="#fff" d="M15.5 8H14c-1 0-1.2.5-1.2 1.1V10h2.6l-.3 2.2h-2.3V20h-2.3v-7.8H8.5V10h2V8.7C10.5 6.9 11.5 6 13.4 6c.8 0 1.5.1 2.1.2V8z"/>
-          </svg>
-        );
-      default:
-        return null;
+      setIsLoading(false);
     }
   };
 
@@ -219,64 +171,6 @@ export default function Login() {
               {error}
             </div>
           )}
-
-          {/* Twitter Login Button */}
-          <div style={{ marginBottom: '24px' }}>
-            <button
-              type="button"
-              onClick={() => {
-                                const baseUrl = 'http://localhost:5000/v1';
-                const url = `${baseUrl}/auth/twitter`;
-                console.log('Base URL:', baseUrl);
-                console.log('Full URL:', url);
-                console.log('Redirecting to:', url);
-                window.location.href = url;
-              }}
-              style={{
-                width: '100%',
-                padding: '16px 24px',
-                border: '2px solid #1DA1F2',
-                borderRadius: '12px',
-                backgroundColor: '#1DA1F2',
-                color: 'white',
-                fontSize: '1rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
-                marginBottom: '16px'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#1a91da';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 4px 12px rgba(29, 161, 242, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#1DA1F2';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
-              }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-              </svg>
-              Continue with X (Twitter)
-            </button>
-            
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              margin: '20px 0',
-              gap: '16px'
-            }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: colors.border }} />
-              <span style={{ color: colors.secondaryText, fontSize: '0.9rem' }}>or</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: colors.border }} />
-            </div>
-          </div>
 
           <div style={{ marginBottom: '24px' }}>
             <label style={{
@@ -425,48 +319,29 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Social Auth Divider */}
-        <div style={{ margin: '20px 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ flex: 1, height: 1, background: colors.border }} />
-          <div style={{ color: colors.mutedText, fontSize: '0.9rem' }}>or</div>
-          <div style={{ flex: 1, height: 1, background: colors.border }} />
-        </div>
-
-        {/* Social Auth Buttons (icons only) */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '14px' }}>
-          {providers.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              title={p.label}
-              aria-label={p.label}
-              onClick={() => redirectToProvider(p.key)}
-              style={{
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '12px',
-                background: 'white',
-                cursor: 'pointer',
-                color: colors.primaryText,
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = shadows.soft;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <ProviderIcon name={p.key} />
-            </button>
-          ))}
-        </div>
+        {/* Twitter Login Button */}
+        <button
+          onClick={handleTwitterLogin}
+          style={{
+            width: '100%',
+            padding: '14px 0',
+            backgroundColor: '#1DA1F2',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: 600,
+            fontSize: '1.05rem',
+            marginBottom: '18px',
+            cursor: 'pointer',
+            marginTop: '-12px',
+            boxShadow: '0 2px 8px rgba(29,161,242,0.08)',
+            transition: 'background 0.2s'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1681c2'; }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#1DA1F2'; }}
+        >
+          <span style={{ marginRight: 8 }}>🐦</span> Login with Twitter
+        </button>
 
         {/* Footer */}
         <div style={{ textAlign: 'center' }}>
