@@ -1,512 +1,271 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { colors, gradients, shadows, cardStyle, primaryButtonStyle, secondaryButtonStyle, radii } from '../theme';
-import './Home.css';
+import HeroSlider from '../components/HeroSlider';
+import VideoSection from '../components/VideoSection';
+import Navbar from '../components/Navbar';
 
 const Home = () => {
-  const rotatingWords = ['Save', 'Organize', 'Access'];
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setCurrentWordIndex((prev) => (prev + 1) % rotatingWords.length);
-    }, 2200);
-    return () => clearInterval(id);
-  }, []);
+  const slides = [
+    {
+      image: '/upload/slider/first_slider.png',
+      headline: 'Accelerate Your Research Workflow',
+      subheadline: 'Organize, collaborate, and discover with ease.',
+      link: '/register',
+      linkText: 'Join for Free',
+    },
+    {
+      image: '/upload/slider/second_slider.png',
+      headline: 'Never Lose a Valuable Insight Again',
+      subheadline: 'Securely store and access all your articles, anywhere.',
+      link: '/membership',
+      linkText: 'View Plans',
+    },
+    {
+      image: '/upload/slider/first_slider.png',
+      headline: 'Empowering Academics and Professionals',
+      subheadline: 'Your ultimate tool for research management and discovery.',
+      link: '#',
+      linkText: 'Learn More',
+    },
+  ];
 
   return (
-    <div
-      className="home-root"
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        padding: '24px',
-        paddingTop: '96px',
-        position: 'relative',
-        overflow: 'hidden',
-        ['--color-primary-text']: colors.primaryText,
-        ['--color-secondary-text']: colors.secondaryText,
-        ['--color-muted-text']: colors.mutedText,
-        ['--color-background']: colors.background,
-        ['--color-border']: colors.border,
-        ['--shadow-soft']: shadows.soft,
-        ['--shadow-glow']: shadows.glow,
-        ['--gradient-app']: gradients.app,
-        ['--gradient-primary']: gradients.primary
-      }}
-    >
-      {/* Header Navigation */}
-      <header className="header">
-        <div className="header-inner">
-          <Link to="/" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            fontWeight: 800,
-            color: colors.primaryText,
-            textDecoration: 'none'
-          }}>
-            <span className="brand-dot" />
-            Research Locker
-          </Link>
-          <nav className="nav">
-            <a className="nav-link" href="#features">Features</a>
-            <a className="nav-link" href="#pricing">Plans & Pricing</a>
-            <a className="nav-link" href="#extension">Extension</a>
-            <a className="nav-link" href="#support">Support</a>
-            <a className="nav-link" href="#about">About Us</a>
-          </nav>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <Link to="/login" style={{ color: colors.primaryText, textDecoration: 'none', fontWeight: 600 }}>Login</Link>
-            <Link to="/register" style={{
-              ...primaryButtonStyle,
-              borderRadius: '9999px',
-              padding: '10px 16px',
-              fontWeight: 700
-            }}>Get Started</Link>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 relative overflow-hidden pt-16">
+      <Navbar />
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 opacity-50 z-0"></div>
+      <div className="absolute -top-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob z-10"></div>
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 z-10"></div>
+
+      <HeroSlider slides={slides} />
+
+      {/* How It Works Section */}
+      <section className="relative z-20 bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-2xl rounded-3xl p-10 mb-20 max-w-5xl w-full animate-fade-in border border-gray-100 transform translate-y-0 hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+        <h2 className="text-4xl font-extrabold text-gray-900 text-center mb-10 leading-tight">How It Works</h2>
+        <div className="grid md:grid-cols-3 gap-10">
+          <div className="flex flex-col items-center text-center p-6 bg-gray-50 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            <div className="text-indigo-600 text-5xl mb-4 p-4 bg-indigo-100 rounded-full animate-bounce-slow">1️⃣</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Save Articles Easily</h3>
+            <p className="text-gray-600 text-lg">Save research articles directly from publishers using our powerful Chrome Extension.</p>
           </div>
-        </div>
-      </header>
-      {/* Decorative animated background accents */}
-      <div aria-hidden className="bg-blob bg-blob--1" style={{ background: `radial-gradient(closest-side, ${colors.accent}, transparent)` }} />
-      <div aria-hidden className="bg-blob bg-blob--2" style={{ background: `radial-gradient(closest-side, ${colors.link}, transparent)`, animationDelay: '0.6s' }} />
-      <div aria-hidden className="bg-blob bg-blob--3" style={{ background: `radial-gradient(closest-side, ${colors.highlight}, transparent)` }} />
-      {/* Hero Section */}
-      <section className="section card anim-slideUp" style={{ textAlign: 'center', padding: '36px' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 10px',
-          borderRadius: '9999px',
-          background: 'rgba(13,148,136,0.08)',
-          color: colors.link,
-          fontWeight: 700,
-          fontSize: '0.85rem',
-          border: `1px solid ${colors.border}`,
-          marginBottom: '12px'
-        }}>
-          <span aria-hidden>✨</span>
-          <span>New: Save research in one click</span>
-        </div>
-        <h1 className="hero-title anim-slideUp" style={{ color: colors.primaryText }}>
-          🚀 <span className="gradient-text" aria-live="polite">{rotatingWords[currentWordIndex]}</span> Your Research in One Place
-        </h1>
-        <p style={{
-          fontSize: '1.125rem',
-          color: colors.secondaryText,
-          marginBottom: '28px',
-          animation: 'slideUp 850ms ease both',
-          animationDelay: '140ms'
-        }}>
-          Research Locker helps you securely store, categorize, and manage your purchased research articles.
-          Stay organized, save time, and focus on discovery.
-        </p>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', animation: 'slideUp 900ms ease both', animationDelay: '200ms' }}>
-          <Link to="/register" style={{
-            ...primaryButtonStyle,
-            padding: '12px 20px',
-            borderRadius: '9999px',
-            fontSize: '1rem',
-            fontWeight: 700,
-            boxShadow: shadows.glow
-          }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = shadows.medium; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = shadows.glow; }}
-          >
-            Get Started Free
-          </Link>
-          <a href="#extension" style={{
-            ...secondaryButtonStyle,
-            backgroundColor: colors.background,
-            color: colors.primaryText,
-            border: `1px solid ${colors.border}`,
-            padding: '12px 20px',
-            borderRadius: '9999px',
-            fontSize: '1rem',
-            fontWeight: 700
-          }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = shadows.soft; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-          >
-            Extension
-          </a>
-        </div>
-        <div style={{
-          marginTop: '18px',
-          color: colors.mutedText,
-          fontSize: '0.95rem',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '14px',
-          flexWrap: 'wrap'
-        }}>
-          <span>Trusted by 1,200+ researchers</span>
-          <span style={{ opacity: 0.5 }}>•</span>
-          <span>5,800+ papers saved</span>
-          <span style={{ opacity: 0.5 }}>•</span>
-          <span>4.9/5 average rating</span>
-        </div>
-        <div style={{
-          marginTop: '16px',
-          display: 'flex',
-          gap: '18px',
-          justifyContent: 'center',
-          alignItems: 'center',
-          opacity: 0.9
-        }}>
-          {['arXiv', 'IEEE', 'ACM', 'Nature', 'Science'].map((brand, i) => (
-            <div key={i} style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: `1px solid ${colors.border}`,
-              color: colors.secondaryText,
-              background: colors.background,
-              transition: 'transform 200ms ease, color 200ms ease'
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.color = colors.primaryText; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.color = colors.secondaryText; }}
-            >{brand}</div>
-          ))}
+          <div className="flex flex-col items-center text-center p-6 bg-gray-50 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            <div className="text-indigo-600 text-5xl mb-4 p-4 bg-indigo-100 rounded-full animate-bounce-slow animation-delay-500">2️⃣</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Organize Smarter</h3>
+            <p className="text-gray-600 text-lg">Categorize, tag, and search across all your saved papers with intelligent tools.</p>
+          </div>
+          <div className="flex flex-col items-center text-center p-6 bg-gray-50 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            <div className="text-indigo-600 text-5xl mb-4 p-4 bg-indigo-100 rounded-full animate-bounce-slow animation-delay-1000">3️⃣</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Access Anywhere</h3>
+            <p className="text-gray-600 text-lg">Your complete research library is always available, securely stored and accessible on any device, anytime.</p>
+          </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section style={{
-        ...cardStyle,
-        width: '100%',
-        maxWidth: '980px',
-        marginBottom: '48px',
-        animation: 'slideUp 750ms ease both',
-        animationDelay: '120ms'
-      }}>
-        <h2 style={{
-          fontSize: '2rem',
-          fontWeight: 800,
-          color: colors.primaryText,
-          textAlign: 'center',
-          marginBottom: '24px'
-        }}>How It Works</h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-          gap: '24px'
-        }}>
-          {[{
-            icon: '1️⃣',
-            title: 'Save Articles Easily',
-            text: 'Save research articles directly from publishers using our Chrome Extension.'
-          }, {
-            icon: '2️⃣',
-            title: 'Organize Smarter',
-            text: 'Categorize, tag, and search across all your saved papers.'
-          }, {
-            icon: '3️⃣',
-            title: 'Access Anywhere',
-            text: 'Your library is always available, on any device.'
-          }].map((item, idx) => (
-            <div
-              key={idx}
-              style={{ textAlign: 'center', transition: 'transform 220ms ease, box-shadow 220ms ease', borderRadius: radii.md, padding: '8px' }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = shadows.soft;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <div style={{ color: colors.accent, fontSize: '2rem', marginBottom: '8px' }}>{item.icon}</div>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: colors.primaryText, marginBottom: '6px' }}>{item.title}</h3>
-              <p style={{ color: colors.mutedText }}>{item.text}</p>
-            </div>
-          ))}
-        </div>
+      {/* Video Section Placeholder */}
+      <section className="relative z-20 mb-20 max-w-5xl w-full">
+        <VideoSection
+          videoUrl="https://www.youtube.com/embed/3iMbMyKEDik" // Updated YouTube video URL
+        />
       </section>
 
       {/* Features Section */}
-      <section id="features" style={{ width: '100%', maxWidth: '980px', marginBottom: '48px', animation: 'slideUp 750ms ease both', animationDelay: '160ms' }}>
-        <h2 style={{
-          fontSize: '2rem',
-          fontWeight: 800,
-          color: colors.primaryText,
-          textAlign: 'center',
-          marginBottom: '24px'
-        }}>Features</h2>
-        <div style={{
-          ...cardStyle,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: '16px'
-        }}>
-          {[
-            'Store up to 10 free articles (upgrade anytime).',
-            'Secure cloud storage for research papers.',
-            'Chrome extension for one-click saving.',
-            'Advanced search & filters.',
-            'Membership plans with unlimited storage.'
-          ].map((text, idx) => (
-            <div
-              key={idx}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', transition: 'transform 200ms ease' }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'translateX(4px)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
-            >
-              <span style={{ color: colors.success, fontSize: '1.25rem' }}>✅</span>
-              <p style={{ color: colors.primaryText }}>{text}</p>
+      <section className="relative z-20 mb-20 max-w-5xl w-full animate-fade-in">
+        <h2 className="text-4xl font-extrabold text-gray-900 text-center mb-10 leading-tight">Powerful Features Designed for You</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-2xl rounded-3xl p-10 border border-gray-100">
+          <div className="flex items-start space-x-4 p-5 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <span className="text-green-500 text-3xl">✅</span>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">Free Article Storage</h3>
+              <p className="text-gray-600">Store up to 10 articles for free, upgrade anytime for more.</p>
             </div>
-          ))}
+          </div>
+          <div className="flex items-start space-x-4 p-5 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <span className="text-green-500 text-3xl">🔒</span>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">Secure Cloud Storage</h3>
+              <p className="text-gray-600">Your research papers are safely stored in our secure cloud.</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-4 p-5 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <span className="text-green-500 text-3xl">🖱️</span>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">One-Click Saving</h3>
+              <p className="text-gray-600">Our Chrome extension makes saving articles effortless.</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-4 p-5 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <span className="text-green-500 text-3xl">🔎</span>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">Advanced Search & Filters</h3>
+              <p className="text-gray-600">Quickly find what you need with powerful search capabilities.</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-4 p-5 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <span className="text-green-500 text-3xl">∞</span>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">Unlimited Storage Plans</h3>
+              <p className="text-gray-600">Upgrade for unlimited storage and premium features.</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-4 p-5 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+            <span className="text-green-500 text-3xl"> 📚 </span>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1"> Personal Research Library </h3>
+              <p className="text-gray-600"> Build and manage your personal collection of academic papers. </p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Membership Plans Preview */}
-      <section id="pricing" style={{ textAlign: 'center', marginBottom: '48px', width: '100%', maxWidth: '980px', animation: 'slideUp 750ms ease both', animationDelay: '200ms' }}>
-        <h2 style={{
-          fontSize: '2rem',
-          fontWeight: 800,
-          color: colors.primaryText,
-          marginBottom: '24px'
-        }}>Membership Plans Preview</h2>
-        <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <div style={{
-            ...cardStyle,
-            width: '320px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            transition: 'transform 220ms ease, box-shadow 220ms ease'
-          }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: colors.primaryText, marginBottom: '8px' }}>Free Plan</h3>
-            <p style={{ color: colors.mutedText, marginBottom: '16px' }}>Save up to 10 articles.</p>
-            <Link to="/register" style={{
-              ...secondaryButtonStyle,
-              backgroundColor: colors.background,
-              color: colors.primaryText,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '9999px',
-              padding: '10px 16px',
-              fontWeight: 700
-            }}>Sign Up Free</Link>
+      <section className="relative z-20 text-center mb-20 animate-fade-in max-w-5xl w-full">
+        <h2 className="text-4xl font-extrabold text-gray-900 mb-10 leading-tight">Flexible Membership Plans</h2>
+        <div className="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8 justify-center">
+          <div className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-2xl rounded-3xl p-10 flex flex-col items-center max-w-sm w-full border border-gray-100 transform translate-y-0 hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+            <h3 className="text-3xl font-bold text-gray-800 mb-4">Free Plan</h3>
+            <p className="text-gray-600 text-lg mb-6">Get started with Research Locker without any cost.</p>
+            <ul className="text-gray-700 text-left mb-8 space-y-2">
+              <li>✅ Store up to 10 articles</li>
+              <li>✅ Basic search functionality</li>
+              <li>✅ Standard support</li>
+            </ul>
+            <Link
+              to="/register"
+              className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition duration-300 transform hover:scale-105"
+            >
+              Sign Up Free
+            </Link>
           </div>
-          <div style={{
-            ...cardStyle,
-            width: '320px',
-            background: colors.accent,
-            color: 'white',
-            boxShadow: shadows.medium,
-            transform: 'scale(1.02)',
-            transition: 'transform 220ms ease, box-shadow 220ms ease',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '12px',
-              right: '12px',
-              padding: '6px 10px',
-              borderRadius: '9999px',
-              background: 'rgba(255,255,255,0.18)',
-              border: '1px solid rgba(255,255,255,0.28)',
-              fontSize: '0.75rem',
-              fontWeight: 700
-            }}>Most popular</div>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px' }}>Pro Plan</h3>
-            <p style={{ marginBottom: '16px' }}>Unlimited saves, 1-year subscription, premium features.</p>
-            <Link to="/membership" style={{
-              ...primaryButtonStyle,
-              background: 'white',
-              color: colors.accent,
-              borderRadius: '9999px'
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-            >Upgrade to Pro</Link>
+          <div className="bg-indigo-600 text-white shadow-2xl rounded-3xl p-10 flex flex-col items-center max-w-sm w-full transform scale-105 border border-indigo-700 relative overflow-hidden group hover:scale-10">
+            <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+            <h3 className="text-3xl font-bold mb-4">Pro Plan</h3>
+            <p className="text-indigo-100 text-lg mb-6">Unlock unlimited potential for your research.</p>
+            <ul className="text-indigo-100 text-left mb-8 space-y-2">
+              <li>✅ Unlimited article saves</li>
+              <li>✅ 1-year subscription</li>
+              <li>✅ Premium features & analytics</li>
+              <li>✅ Priority customer support</li>
+            </ul>
+            <Link
+              to="/membership"
+              className="bg-white text-indigo-700 px-8 py-3 rounded-full font-semibold hover:bg-indigo-100 transition duration-300 transform hover:scale-105"
+            >
+              Upgrade to Pro
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Who Is It For? */}
-      <section id="support" style={{ width: '100%', maxWidth: '980px', marginBottom: '48px' }}>
-        <h2 style={{
-          fontSize: '2rem',
-          fontWeight: 800,
-          color: colors.primaryText,
-          textAlign: 'center',
-          marginBottom: '24px'
-        }}>Support</h2>
-        <div style={{
-          ...cardStyle,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: '16px'
-        }}>
-          {[
-            { icon: '❓', text: 'FAQs – Common questions answered.' },
-            { icon: '📬', text: 'Contact – Email us for help.' },
-            { icon: '📄', text: 'Docs – Setup guides and tips.' },
-            { icon: '🔒', text: 'Privacy – How we protect your data.' }
-          ].map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: colors.accent, fontSize: '1.25rem' }}>{item.icon}</span>
-              <p style={{ color: colors.primaryText }}>{item.text}</p>
-            </div>
-          ))}
+      <section className="relative z-20 mb-20 max-w-5xl w-full animate-fade-in">
+        <h2 className="text-4xl font-extrabold text-gray-900 text-center mb-10 leading-tight">Who Benefits from Research Locker?</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-2xl rounded-3xl p-10 border border-gray-100">
+          <div className="flex flex-col items-center text-center p-6 bg-gray-50 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            <span className="text-indigo-600 text-5xl mb-4">🎓</span>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Students</h3>
+            <p className="text-gray-600">Keep all your assignments, references, and study materials organized.</p>
+          </div>
+          <div className="flex flex-col items-center text-center p-6 bg-gray-50 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            <span className="text-indigo-600 text-5xl mb-4">🔬</span>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Researchers</h3>
+            <p className="text-gray-600">Effortlessly organize experiments, studies, and citations in one place.</p>
+          </div>
+          <div className="flex flex-col items-center text-center p-6 bg-gray-50 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            <span className="text-indigo-600 text-5xl mb-4">📚</span>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Academics</h3>
+            <p className="text-gray-600">Build and manage a comprehensive personal library of published works.</p>
+          </div>
+          <div className="flex flex-col items-center text-center p-6 bg-gray-50 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            <span className="text-indigo-600 text-5xl mb-4">👩‍💻</span>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Professionals</h3>
+            <p className="text-gray-600">Access critical research anytime, anywhere for your projects and clients.</p>
+          </div>
         </div>
       </section>
 
       {/* Call to Action Section (Bottom) */}
-      <section id="extension" style={{
-        width: '100%',
-        maxWidth: '980px',
-        background: colors.secondary,
-        color: 'white',
-        padding: '32px',
-        borderRadius: radii.lg,
-        boxShadow: shadows.soft,
-        textAlign: 'center',
-        animation: 'slideUp 750ms ease both',
-        animationDelay: '240ms',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Subtle animated bar */}
-        <div aria-hidden style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: gradients.primary,
-          opacity: 0.9
-        }} />
-        <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '16px' }}>
-          “Start building your research library today.”
-        </h2>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="#" style={{
-            ...primaryButtonStyle,
-            background: 'white',
-            color: colors.secondary,
-            borderRadius: '9999px',
-            padding: '12px 20px',
-            fontWeight: 700
-          }}>👉 Install Chrome Extension</a>
-          <Link to="/register" style={{
-            ...primaryButtonStyle,
-            background: 'white',
-            color: colors.secondary,
-            borderRadius: '9999px',
-            padding: '12px 20px',
-            fontWeight: 700
-          }}>Sign Up Free</Link>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" style={{ width: '100%', maxWidth: '980px', marginTop: '24px', marginBottom: '48px' }}>
-        <h2 style={{
-          fontSize: '2rem',
-          fontWeight: 800,
-          color: colors.primaryText,
-          textAlign: 'center',
-          marginBottom: '12px'
-        }}>About Us</h2>
-        <div style={{ ...cardStyle }}>
-          <p style={{ color: colors.primaryText }}>
-            Research Locker’s mission is to make scholarly research effortless to save, organize, and revisit.
-            We’re a small team of engineers and researchers focused on building a delightful, secure library for your work.
-          </p>
+      <section className="relative z-20 text-center bg-indigo-700 text-white p-16 rounded-3xl max-w-5xl w-full animate-fade-in-up shadow-2xl">
+        <h2 className="text-5xl font-extrabold mb-8 leading-tight">“Start building your research library today.”</h2>
+        <p className="text-xl mb-10 max-w-3xl mx-auto opacity-90">Join thousands of users who are streamlining their research workflow with Research Locker. It's free to get started!</p>
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 justify-center">
+          <a
+            href="#"
+            className="inline-flex items-center justify-center bg-white text-indigo-700 px-10 py-4 rounded-full text-xl font-bold shadow-lg hover:bg-indigo-100 transition duration-300 transform hover:scale-105"
+          >
+            👉 Install Chrome Extension
+          </a>
+          <Link
+            to="/register"
+            className="inline-flex items-center justify-center bg-transparent text-white px-10 py-4 rounded-full text-xl font-bold border-2 border-white hover:bg-white hover:text-indigo-700 transition duration-300 transform hover:scale-105"
+          >
+            Sign Up Free
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        width: '100%',
-        marginTop: '48px',
-        background: colors.background,
-        borderTop: `1px solid ${colors.border}`,
-        animation: 'slideUp 700ms ease both',
-        animationDelay: '260ms'
-      }}>
-        <div style={{
-          maxWidth: '1100px',
-          margin: '0 auto',
-          padding: '32px 20px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '24px',
-          justifyContent: 'space-between'
-        }}>
-          {/* Brand removed as requested */}
-
-          {/* Product */}
-          <div style={{ minWidth: '180px', flex: '1 1 160px' }}>
-            <div style={{ fontWeight: 700, color: colors.primaryText, marginBottom: '10px' }}>Product</div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a href="#features" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Features</a>
-              <a href="#pricing" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Plans & Pricing</a>
-              <a href="#extension" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Install Extension</a>
-              <a href="#demo" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Demo Video</a>
-            </nav>
+      <footer className="relative z-20 mt-20 bg-gray-800 text-gray-300 py-12 px-4 w-full">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div className="col-span-full md:col-span-1 text-center md:text-left">
+            <Link to="/" className="text-indigo-400 text-3xl font-extrabold mb-4 block">
+              Research Locker 🚀
+            </Link>
+            <p className="text-sm text-gray-400 leading-relaxed mb-4">
+              Your ultimate platform for securely saving, organizing, and accessing all your academic and professional research in one intuitive place.
+            </p>
+            <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} Research Locker. All rights reserved.</p>
           </div>
 
-          {/* Company */}
-          <div style={{ minWidth: '180px', flex: '1 1 160px' }}>
-            <div style={{ fontWeight: 700, color: colors.primaryText, marginBottom: '10px' }}>Company</div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a href="#about" style={{ color: colors.secondaryText, textDecoration: 'none' }}>About Us</a>
-              <a href="#blog" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Blog / Updates</a>
-              <a href="#careers" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Careers</a>
-              <a href="#support" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Contact</a>
-            </nav>
+          {/* Quick Links */}
+          <div className="text-center md:text-left">
+            <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              <li><Link to="/" className="text-gray-400 hover:text-indigo-400 transition duration-300">Home</Link></li>
+              <li><Link to="/library" className="text-gray-400 hover:text-indigo-400 transition duration-300">My Library</Link></li>
+              <li><Link to="/membership" className="text-gray-400 hover:text-indigo-400 transition duration-300">Membership</Link></li>
+              <li><Link to="/register" className="text-gray-400 hover:text-indigo-400 transition duration-300">Sign Up</Link></li>
+              <li><Link to="/login" className="text-gray-400 hover:text-indigo-400 transition duration-300">Login</Link></li>
+            </ul>
           </div>
 
           {/* Support */}
-          <div style={{ minWidth: '180px', flex: '1 1 160px' }}>
-            <div style={{ fontWeight: 700, color: colors.primaryText, marginBottom: '10px' }}>Support</div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a href="#support" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Help Center / FAQ</a>
-              <a href="#features" style={{ color: colors.secondaryText, textDecoration: 'none' }}>How it Works</a>
-              <a href="#support" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Report an Issue</a>
-              <a href="mailto:support@researchlocker.app" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Email Support</a>
-            </nav>
+          <div className="text-center md:text-left">
+            <h3 className="text-lg font-semibold text-white mb-4">Support</h3>
+            <ul className="space-y-2">
+              <li><a href="#faq" className="text-gray-400 hover:text-indigo-400 transition duration-300">FAQ</a></li>
+              <li><a href="#help" className="text-gray-400 hover:text-indigo-400 transition duration-300">Help Center</a></li>
+              <li><a href="#contact" className="text-gray-400 hover:text-indigo-400 transition duration-300">Contact Us</a></li>
+              <li><a href="#extension" className="text-gray-400 hover:text-indigo-400 transition duration-300">Chrome Extension</a></li>
+            </ul>
           </div>
 
-          {/* Legal */}
-          <div style={{ minWidth: '180px', flex: '1 1 160px' }}>
-            <div style={{ fontWeight: 700, color: colors.primaryText, marginBottom: '10px' }}>Legal</div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a href="#privacy" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Privacy Policy</a>
-              <a href="#terms" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Terms of Service</a>
-              <a href="#cookies" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Cookie Policy</a>
-            </nav>
-          </div>
-
-          {/* Social */}
-          <div style={{ minWidth: '180px', flex: '1 1 160px' }}>
-            <div style={{ fontWeight: 700, color: colors.primaryText, marginBottom: '10px' }}>Social</div>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" style={{ color: colors.secondaryText, textDecoration: 'none' }}>LinkedIn</a>
-              <a href="https://twitter.com" target="_blank" rel="noreferrer" style={{ color: colors.secondaryText, textDecoration: 'none' }}>Twitter / X</a>
-              <a href="https://youtube.com" target="_blank" rel="noreferrer" style={{ color: colors.secondaryText, textDecoration: 'none' }}>YouTube</a>
-            </nav>
-          </div>
-        </div>
-        <div style={{ borderTop: `1px solid ${colors.border}`, padding: '14px 20px' }}>
-          <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <span style={{ color: colors.mutedText, fontSize: '0.9rem' }}>© {new Date().getFullYear()} Research Locker. All rights reserved.</span>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <a href="#privacy" style={{ color: colors.secondaryText, textDecoration: 'none', fontSize: '0.9rem' }}>Privacy</a>
-              <a href="#terms" style={{ color: colors.secondaryText, textDecoration: 'none', fontSize: '0.9rem' }}>Terms</a>
-              <a href="#cookies" style={{ color: colors.secondaryText, textDecoration: 'none', fontSize: '0.9rem' }}>Cookies</a>
+          {/* Legal & Social */}
+          <div className="text-center md:text-left">
+            <h3 className="text-lg font-semibold text-white mb-4">Legal</h3>
+            <ul className="space-y-2 mb-6">
+              <li><a href="#privacy" className="text-gray-400 hover:text-indigo-400 transition duration-300">Privacy Policy</a></li>
+              <li><a href="#terms" className="text-gray-400 hover:text-indigo-400 transition duration-300">Terms of Service</a></li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-4">Follow Us</h3>
+            <div className="flex justify-center md:justify-start space-x-4">
+              <a href="#facebook" className="text-gray-400 hover:text-indigo-400 transition duration-300">
+                <i className="fab fa-facebook-f"></i>{/* Replace with actual SVG or component */}
+                Facebook
+              </a>
+              <a href="#twitter" className="text-gray-400 hover:text-indigo-400 transition duration-300">
+                <i className="fab fa-twitter"></i>{/* Replace with actual SVG or component */}
+                Twitter
+              </a>
+              <a href="#linkedin" className="text-gray-400 hover:text-indigo-400 transition duration-300">
+                <i className="fab fa-linkedin-in"></i>{/* Replace with actual SVG or component */}
+                LinkedIn
+              </a>
             </div>
           </div>
         </div>
+        <p className="mt-8 text-center text-gray-500 text-sm">Crafted with ❤️ for researchers everywhere.</p>
       </footer>
     </div>
   );

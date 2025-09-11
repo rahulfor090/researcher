@@ -3,6 +3,7 @@ import 'dotenv/config';
 export const env = {
   port: process.env.PORT || 5000,
   jwtSecret: process.env.JWT_SECRET,
+  webAppUrl: process.env.WEB_APP_URL || 'http://localhost:5173',
   db: {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -10,5 +11,10 @@ export const env = {
     name: process.env.DB_NAME,
     port: process.env.DB_PORT || 3306
   },
-  corsOrigins: (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)
+  corsOrigins: (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean),
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    redirectUri: process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || ''
+  }
 };

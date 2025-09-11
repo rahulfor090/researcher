@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../api';
+import { api, isAuthenticated } from '../api';
 import { colors, cardStyle, primaryButtonStyle, gradients, shadows } from '../theme';
 
 
@@ -10,6 +10,13 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // If already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -212,6 +219,64 @@ export default function Login() {
               {error}
             </div>
           )}
+
+          {/* Twitter Login Button */}
+          <div style={{ marginBottom: '24px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                                const baseUrl = 'http://localhost:5000/v1';
+                const url = `${baseUrl}/auth/twitter`;
+                console.log('Base URL:', baseUrl);
+                console.log('Full URL:', url);
+                console.log('Redirecting to:', url);
+                window.location.href = url;
+              }}
+              style={{
+                width: '100%',
+                padding: '16px 24px',
+                border: '2px solid #1DA1F2',
+                borderRadius: '12px',
+                backgroundColor: '#1DA1F2',
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                marginBottom: '16px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#1a91da';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 4px 12px rgba(29, 161, 242, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#1DA1F2';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              Continue with X (Twitter)
+            </button>
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              margin: '20px 0',
+              gap: '16px'
+            }}>
+              <div style={{ flex: 1, height: '1px', backgroundColor: colors.border }} />
+              <span style={{ color: colors.secondaryText, fontSize: '0.9rem' }}>or</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: colors.border }} />
+            </div>
+          </div>
 
           <div style={{ marginBottom: '24px' }}>
             <label style={{
