@@ -1,5 +1,6 @@
 
 import React from 'react';
+import './home.css';
 import { Link } from 'react-router-dom';
 import HeroSlider from '../components/HeroSlider';
 import VideoSection from '../components/VideoSection';
@@ -18,7 +19,7 @@ const Home = () => {
       image: '/upload/slider/second_slider.png',
       headline: 'Never Lose a Valuable Insight Again',
       subheadline: 'Securely store and access all your articles, anywhere.',
-      link: '/membership',
+      link: '/upgrade',
       linkText: 'View Plans',
     },
     {
@@ -31,12 +32,16 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 relative overflow-hidden pt-16">
+    <div className="home-root min-h-screen bg-gray-50 flex flex-col items-center p-4 relative overflow-hidden pt-16">
       <Navbar />
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 opacity-50 z-0"></div>
       <div className="absolute -top-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob z-10"></div>
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 z-10"></div>
+      {/* Theme background blobs (additional, non-destructive) */}
+      <div className="bg-blob bg-blob--1"></div>
+      <div className="bg-blob bg-blob--2"></div>
+      <div className="bg-blob bg-blob--3"></div>
 
       <HeroSlider slides={slides} />
 
@@ -148,7 +153,7 @@ const Home = () => {
               <li>✅ Priority customer support</li>
             </ul>
             <Link
-              to="/membership"
+              to="/upgrade"
               className="bg-white text-indigo-700 px-8 py-3 rounded-full font-semibold hover:bg-indigo-100 transition duration-300 transform hover:scale-105"
             >
               Upgrade to Pro
@@ -224,7 +229,7 @@ const Home = () => {
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-400 hover:text-indigo-400 transition duration-300">Home</Link></li>
               <li><Link to="/library" className="text-gray-400 hover:text-indigo-400 transition duration-300">My Library</Link></li>
-              <li><Link to="/membership" className="text-gray-400 hover:text-indigo-400 transition duration-300">Membership</Link></li>
+              <li><Link to="/upgrade" className="text-gray-400 hover:text-indigo-400 transition duration-300">View Plans</Link></li>
               <li><Link to="/register" className="text-gray-400 hover:text-indigo-400 transition duration-300">Sign Up</Link></li>
               <li><Link to="/login" className="text-gray-400 hover:text-indigo-400 transition duration-300">Login</Link></li>
             </ul>
