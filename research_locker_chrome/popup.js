@@ -72,8 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     a.authors = $("articleAuthors").value.trim();
     a.doi = $("articleDoi").value.trim();
     a.url = $("articleUrl").value.trim();
-    a.notes = $("notes").value.trim();
-
+    
     const info = await getUserLibraryInfo();
 
     // Only allow save if plan is "pro" or free has <10 articles
@@ -149,7 +148,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   $("goToLockerBtn").onclick = () => {
-    chrome.tabs.create({ url: "http://localhost:5173/" });
+    chrome.tabs.create({ url: "http://localhost:5173/dashboard" });
     window.close();
   };
 
