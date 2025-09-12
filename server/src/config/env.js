@@ -26,5 +26,11 @@ export const env = {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     redirectUri: process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || ''
+  },
+
+  paypal: {
+    api: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com',
+    clientId: process.env.PAYPAL_CLIENT_ID || '',
+    secret: process.env.PAYPAL_SECRET || ''
   }
 };

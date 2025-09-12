@@ -6,6 +6,11 @@ import makeTag from './tag.js';
 import makeArticleTag from './articletag.js';
 import makeAuthor from './Author.js';
 import makeArticleAuthor from './ArticleAuthor.js';
+// Add the import for UserPlan
+import makeUserPlan from './UserPlan.js';
+
+// Add UserPlan model
+export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
 
 export const Author = makeAuthor(sequelize);
 export const ArticleAuthor = makeArticleAuthor(sequelize);
@@ -13,7 +18,6 @@ export const User = makeUser(sequelize, Sequelize.DataTypes);
 export const Article = makeArticle(sequelize, Sequelize.DataTypes);
 export const Tag = makeTag(sequelize, Sequelize.DataTypes);
 export const ArticleTag = makeArticleTag(sequelize, Sequelize.DataTypes);
-
 
 // User-Article associations
 User.hasMany(Article, { foreignKey: 'userId' });
@@ -39,7 +43,6 @@ ArticleAuthor.belongsTo(Article, { foreignKey: 'article_id' });
 Author.hasMany(ArticleAuthor, { foreignKey: 'author_id' });
 ArticleAuthor.belongsTo(Author, { foreignKey: 'author_id' });
 
-
 // Many-to-many association between Article and Tag using article_tags join table
 Article.belongsToMany(Tag, {
   through: ArticleTag,
@@ -52,8 +55,20 @@ Tag.belongsToMany(Article, {
   otherKey: 'article_id',
 });
 
-
 export const syncDb = async () => {
   await sequelize.authenticate();
   await sequelize.sync(); // For MVP, not for production migrations
+};
+
+// Default export for ES module compatibility, now with UserPlan
+export default {
+  Author,
+  ArticleAuthor,
+  User,
+  Article,
+  Tag,
+  ArticleTag,
+  UserPlan, // <-- Add this line
+  syncDb,
+  sequelize
 };

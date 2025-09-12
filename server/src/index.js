@@ -13,6 +13,7 @@ import uploadRoutes from './routes/uploads.js';
 import profileRouter from './routes/profile.js';
 import authorRoutes from './routes/authors.js';
 import tagRouter from './routes/tag.js';
+import paypalRoutes from './routes/paypal.js'; // <--- Use REST API integration route
 
 const app = express();
 
@@ -64,6 +65,9 @@ app.use('/v1/profile', profileRouter);
 app.use('/v1/authors', authorRoutes);
 app.use('/api/authors', authorRoutes); // For backward compatibility if needed
 app.use('/v1/tag', tagRouter);
+
+// PayPal REST API endpoints (create-order and capture-order)
+app.use('/v1/paypal', paypalRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', cors(), express.static('src/uploads'));

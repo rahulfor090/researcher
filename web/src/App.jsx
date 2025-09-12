@@ -15,6 +15,8 @@ import Privacy from './pages/Privacy';
 import HashTags from './pages/hashTags';
 import ArticlesByTag from './components/ArticlesByTag';
 import Upgrade from './pages/upgrade';
+import PremiumPayment from './pages/PremiumPayment';
+import ThankYou from './pages/ThankYou';
 
 export default function App() {
   return (
@@ -36,6 +38,8 @@ export default function App() {
           <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
           <Route path="/hashtags/:id" element={<Protected><ArticlesByTag/></Protected>} />
           <Route path="/upgrade" element={<Protected><Upgrade/></Protected>} />
+          <Route path="/premium-payment" element={<Protected><PremiumPayment/></Protected>} />
+          <Route path="/thank-you" element={<Protected><ThankYou/></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
