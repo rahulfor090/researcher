@@ -35,6 +35,7 @@ export default function ArticleDetails() {
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
       [{ 'color': ['#000000', '#ff0000', '#00ff00', '#0000ff'] }],
       ['clean'],
     ],
@@ -46,6 +47,8 @@ export default function ArticleDetails() {
     'italic',
     'underline',
     'color',
+    'list',
+    'bullet'
   ];
 
   useEffect(() => {
@@ -55,9 +58,19 @@ export default function ArticleDetails() {
         const { data } = await api.get(`/articles/${id}`);
         setArticle(data);
         let initialContent = data.summary || '';
-        // If initial content is plain text, convert newlines to HTML for better structure in Quill
+        
+        // If initial content is plain text, convert to bullet points
         if (!initialContent.startsWith('<')) {
-          initialContent = initialContent.replace(/\n/g, '<br>');
+          const lines = initialContent.split('\n').filter(line => line.trim() !== '');
+          if (lines.length > 1) {
+            // Convert to bullet points if multiple lines
+            initialContent = '<ul>' + 
+              lines.map(line => `<li>${line.trim()}</li>`).join('') + 
+              '</ul>';
+          } else {
+            // Single line, just wrap in paragraph
+            initialContent = `<p>${initialContent}</p>`;
+          }
         }
         setEditorContent(initialContent);
       } catch (err) {
@@ -104,21 +117,34 @@ export default function ArticleDetails() {
           const data = await response.json();
           setUploadStatus('Upload and processing successful.');
           if (data.summary) {
-            // Convert plain summary from PDF to HTML for Quill to preserve structure
-            const htmlSummary = data.summary.replace(/\n/g, '<br>');
+            // Convert plain summary from PDF to bullet points HTML format
+            const lines = data.summary.split('\n').filter(line => line.trim() !== '');
+            const bulletPointsHtml = '<ul>' + 
+              lines.map(line => `<li>${line.trim()}</li>`).join('') + 
+              '</ul>';
+            
             setArticle(prev => ({
               ...prev,
-              summary: data.summary,
+              summary: bulletPointsHtml,
               file_name: data.filename || prev.file_name,
               hashtags: data.hashtags || prev.hashtags,
             }));
-            setEditorContent(htmlSummary);
+            setEditorContent(bulletPointsHtml);
           } else {
             const refreshed = await api.get(`/articles/${id}`);
             setArticle(refreshed.data);
             let newContent = refreshed.data.summary || '';
             if (!newContent.startsWith('<')) {
-              newContent = newContent.replace(/\n/g, '<br>');
+              const lines = newContent.split('\n').filter(line => line.trim() !== '');
+              if (lines.length > 1) {
+                // Convert to bullet points if multiple lines
+                newContent = '<ul>' + 
+                  lines.map(line => `<li>${line.trim()}</li>`).join('') + 
+                  '</ul>';
+              } else {
+                // Single line, just wrap in paragraph
+                newContent = `<p>${newContent}</p>`;
+              }
             }
             setEditorContent(newContent);
           }
@@ -184,7 +210,16 @@ export default function ArticleDetails() {
     setIsEditing(false);
     let originalContent = article.summary || '';
     if (!originalContent.startsWith('<')) {
-      originalContent = originalContent.replace(/\n/g, '<br>');
+      const lines = originalContent.split('\n').filter(line => line.trim() !== '');
+      if (lines.length > 1) {
+        // Convert to bullet points if multiple lines
+        originalContent = '<ul>' + 
+          lines.map(line => `<li>${line.trim()}</li>`).join('') + 
+          '</ul>';
+      } else {
+        // Single line, just wrap in paragraph
+        originalContent = `<p>${originalContent}</p>`;
+      }
     }
     setEditorContent(originalContent);
     setSaveStatus(null);
