@@ -68,10 +68,162 @@ router.get('/twitter/callback',
   }
 );
 
+// LinkedIn authentication routes - force fresh login each time
+router.get('/linkedin', (req, res) => {
+  // Generate unique state and add timestamp to force fresh auth
+  const timestamp = Date.now();
+  const randomState = Math.random().toString(36).substring(7);
+  
+  // Build LinkedIn authorization URL manually with force re-auth parameters
+  const authUrl = new URL('https://www.linkedin.com/oauth/v2/authorization');
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('client_id', process.env.LINKEDIN_CLIENT_ID);
+  authUrl.searchParams.set('redirect_uri', process.env.LINKEDIN_CALLBACK_URL);
+  authUrl.searchParams.set('scope', 'openid profile email');
+  authUrl.searchParams.set('state', `${randomState}_${timestamp}`);
+  authUrl.searchParams.set('prompt', 'login'); // Force login
+  authUrl.searchParams.set('max_age', '0'); // Force fresh authentication
+  
+  res.redirect(authUrl.toString());
+});
+router.get('/linkedin/callback', async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    
+    if (!code) {
+      console.error('No authorization code received');
+      return res.redirect('http://localhost:5173/login?error=no_code');
+    }
+    
+    console.log('LinkedIn callback received code:', code);
+    console.log('State:', state);
+    
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: process.env.LINKEDIN_CALLBACK_URL,
+        client_id: process.env.LINKEDIN_CLIENT_ID,
+        client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+      }),
+    });
+    
+    if (!tokenResponse.ok) {
+      console.error('Token exchange failed:', tokenResponse.status, await tokenResponse.text());
+      return res.redirect('http://localhost:5173/login?error=token_exchange_failed');
+    }
+    
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+    
+    console.log('LinkedIn Access Token received');
+    
+    // Use the same profile fetching logic from passport strategy
+    const profileResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    let linkedinId, name, userEmail, profileImage;
+    
+    if (!profileResponse.ok) {
+      console.error('Profile fetch failed:', profileResponse.status, await profileResponse.text());
+      // Fallback to token-based ID
+      linkedinId = Buffer.from(accessToken.substring(0, 20)).toString('base64').replace(/[^a-zA-Z0-9]/g, '');
+      name = 'LinkedIn User';
+      userEmail = `linkedin_${linkedinId}@linkedin.local`;
+      profileImage = null;
+    } else {
+      const profileData = await profileResponse.json();
+      console.log('LinkedIn Profile Data:', profileData);
+      
+      linkedinId = profileData.sub || profileData.id;
+      name = profileData.name || `${profileData.given_name || ''} ${profileData.family_name || ''}`.trim() || 'LinkedIn User';
+      userEmail = profileData.email || `${linkedinId}@linkedin.local`;
+      profileImage = profileData.picture;
+    }
+    
+    // Find or create user
+    const { User } = await import('../models/index.js');
+    const bcrypt = await import('bcryptjs');
+    
+    let user = await User.findOne({ where: { linkedinId } });
+    if (!user) {
+      const password = await bcrypt.default.hash(Math.random().toString(36).slice(-8), 10);
+      user = await User.create({
+        name,
+        email: userEmail,
+        password,
+        linkedinId,
+        linkedinToken: accessToken,
+        profile_image: profileImage || null
+      });
+    } else {
+      await user.update({ 
+        linkedinToken: accessToken,
+        name: name,
+        email: userEmail,
+        profile_image: profileImage || user.profile_image
+      });
+    }
+    
+    // Generate JWT token for the authenticated user
+    const jwt = await import('jsonwebtoken');
+    const token = jwt.default.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    console.log('LinkedIn authentication successful for user:', user.name);
+    
+    // Redirect to dashboard with token as query parameter
+    res.redirect(`http://localhost:5173/dashboard?token=${token}`);
+    
+  } catch (error) {
+    console.error('LinkedIn callback error:', error);
+    res.redirect('http://localhost:5173/login?error=callback_failed');
+  }
+});
+
 // Logout
+router.post('/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    // Clear session
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Session destruction failed' });
+      }
+      // Clear session cookie
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+});
+
+// GET logout for backward compatibility
 router.get('/logout', (req, res) => {
-  req.logout(() => {
-    res.json({ message: 'Logged out' });
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Session destruction failed' });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logged out successfully' });
+    });
   });
 });
 

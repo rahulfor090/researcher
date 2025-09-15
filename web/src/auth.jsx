@@ -42,7 +42,18 @@ export function AuthProvider({ children }) {
       setUser(null);
     }
   };
-  const logout = () => { localStorage.removeItem('token'); setAuthToken(null); setUser(null); };
+  const logout = async () => { 
+    try {
+      // Call server logout endpoint to clear session
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Server logout failed:', error);
+    }
+    // Clear local storage and state regardless of server response
+    localStorage.removeItem('token'); 
+    setAuthToken(null); 
+    setUser(null); 
+  };
   return <AuthCtx.Provider value={{ user, setUser, login, register, logout }}>{children}</AuthCtx.Provider>;
 }
 export const useAuth = () => useContext(AuthCtx);

@@ -18,6 +18,12 @@ export default function Login() {
     window.location.href = `${serverBase}/v1/auth/twitter`;
   };
 
+  // LinkedIn login handler
+  const handleLinkedInLogin = () => {
+    const serverBase = import.meta.env.VITE_API_BASE?.replace('/v1', '') || 'http://localhost:5000';
+    window.location.href = `${serverBase}/v1/auth/linkedin`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -319,29 +325,52 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Twitter Login Button */}
-        <button
-          onClick={handleTwitterLogin}
-          style={{
-            width: '100%',
-            padding: '14px 0',
-            backgroundColor: '#1DA1F2',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            fontWeight: 600,
-            fontSize: '1.05rem',
-            marginBottom: '18px',
-            cursor: 'pointer',
-            marginTop: '-12px',
-            boxShadow: '0 2px 8px rgba(29,161,242,0.08)',
-            transition: 'background 0.2s'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1681c2'; }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#1DA1F2'; }}
-        >
-          <span style={{ marginRight: 8 }}>🐦</span> Login with Twitter
-        </button>
+        {/* Social Login Buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '-12px', marginBottom: '18px' }}>
+          {/* Twitter Login Button */}
+          <button
+            onClick={handleTwitterLogin}
+            style={{
+              width: '100%',
+              padding: '14px 0',
+              backgroundColor: '#1DA1F2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontWeight: 600,
+              fontSize: '1.05rem',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(29,161,242,0.08)',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1681c2'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#1DA1F2'; }}
+          >
+            <span style={{ marginRight: 8 }}>🐦</span> Login with Twitter
+          </button>
+
+          {/* LinkedIn Login Button */}
+          <button
+            onClick={handleLinkedInLogin}
+            style={{
+              width: '100%',
+              padding: '14px 0',
+              backgroundColor: '#0077B5',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontWeight: 600,
+              fontSize: '1.05rem',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,119,181,0.08)',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#005885'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#0077B5'; }}
+          >
+            <span style={{ marginRight: 8 }}>💼</span> Login with LinkedIn
+          </button>
+        </div>
 
         {/* Footer */}
         <div style={{ textAlign: 'center' }}>

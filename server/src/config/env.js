@@ -26,5 +26,11 @@ export const env = {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     redirectUri: process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || ''
+  },
+
+  linkedin: {
+    clientId: process.env.LINKEDIN_CLIENT_ID || '',
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
+    callbackURL: process.env.LINKEDIN_CALLBACK_URL || 'http://localhost:5000/v1/auth/linkedin/callback'
   }
 };
