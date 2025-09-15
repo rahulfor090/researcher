@@ -35,7 +35,7 @@ export default function App() {
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
           <Route path="/hashtags/:id" element={<Protected><ArticlesByTag/></Protected>} />
-          <Route path="/upgrade" element={<Protected><Upgrade/></Protected>} />
+          <Route path="/upgrade" element={<Upgrade/>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

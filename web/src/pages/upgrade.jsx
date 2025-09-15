@@ -6,7 +6,6 @@ export default function Upgrade() {
   const nav = useNavigate();
   const initials = 'RL';
   const [openFaq, setOpenFaq] = useState(null);
-  const [billingPeriod, setBillingPeriod] = useState('monthly'); // 'monthly' | 'yearly'
 
   return (
     <div className="upgrade-page">
@@ -28,22 +27,9 @@ export default function Upgrade() {
             <div className="hero-card">
               <div className="badge" style={{ marginBottom: 8 }}>🚀 Research Plus</div>
               <div className="price">
-                {billingPeriod === 'monthly' ? '$9.99' : '$99'} <small>/ {billingPeriod === 'monthly' ? 'month' : 'year'}</small>
-                {billingPeriod === 'yearly' && <div className="price-equivalent">$8.25/mo billed yearly</div>}
+                $9 <small>/ year</small>
               </div>
-              <div className="billing-toggle" title="UI-only demo">
-                <div className="toggle-pill">
-                  <span
-                    className={billingPeriod === 'monthly' ? 'active' : ''}
-                    onClick={() => setBillingPeriod('monthly')}
-                  >Monthly</span>
-                  <span
-                    className={billingPeriod === 'yearly' ? 'active' : ''}
-                    onClick={() => setBillingPeriod('yearly')}
-                  >Yearly</span>
-                </div>
-                <span className="save-badge">Save 20% — $99/year</span>
-              </div>
+              
               <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 12px 0' }}>
                 <li>📚 Unlimited article & PDF storage</li>
                 <li>🔍 Advanced tagging + blazing-fast search</li>
@@ -51,40 +37,14 @@ export default function Upgrade() {
                 <li>📌 Clean imports from web</li>
                 <li>⚡ Priority human support</li>
               </ul>
-              <button className="btn-trial" onClick={() => nav('/membership')}>
-                <span className="trial-icon">🎁</span>
-                Start 7-Day Free Trial — No card required
-          </button>
+             
               <div className="payments">
-                <button className="pay-btn" onClick={() => nav('/membership')}>💳 Pay with Card</button>
-                <button className="pay-btn" onClick={() => nav('/membership')}>🟦 PayPal</button>
-                <button className="pay-btn" onClick={() => nav('/membership')}>📱 UPI</button>
+                <button className="pay-btn" onClick={() => nav('/membership')}>🟦 Pay with PayPal</button>
               </div>
             </div>
           </section>
 
-          <section className="pricing">
-            {[{
-              name: 'Starter', price: '$0', sub: 'Free forever', features: ['10 articles', 'Basic search', 'Community support'], cta: 'Current Plan'
-            }, {
-              name: 'Research Plus', price: billingPeriod === 'monthly' ? '$9.99' : '$99', sub: billingPeriod === 'monthly' ? 'per month' : 'per year', features: ['Unlimited articles & PDFs', 'Advanced tagging + fast search', 'AI summaries & insights', 'Priority human support'], cta: 'Upgrade', popular: true
-            }].map((plan) => (
-              <div key={plan.name} className={`plan ${plan.popular ? 'popular' : ''}`}>
-                <h3>{plan.name} {plan.popular ? '🏆 Most Popular' : ''}</h3>
-                <div className="price">{plan.price} <small>{plan.sub}</small></div>
-                {plan.popular && billingPeriod === 'yearly' && <div className="price-equivalent">$8.25/mo billed yearly</div>}
-                <ul>
-                  {plan.features.map(f => (
-                    <li key={f}><span className="icon">✅</span>{f}</li>
-                  ))}
-                </ul>
-                <div className="actions">
-                  <button className="btn-primary" onClick={() => nav('/membership')}>{plan.cta}</button>
-                  <button className="btn-secondary" onClick={() => nav('/membership')}>Details</button>
-                </div>
-              </div>
-            ))}
-          </section>
+         
 
           <section className="features">
             {[

@@ -10,7 +10,7 @@
   --text-invert: #F8FAFC;
   --primary: #0D9488; /* colors.link used for primary CTAs */
   --primary-600: #0b7f73; /* derived hover shade */
-  --accent: #F97316; /* colors.highlight */
+  --accent: #0D9488; /* unify to teal */
   --success: #22c55e; /* colors.success */
   --warn: #f59e0b; /* colors.warning */
   --border: #E5E7EB; /* colors.border */
