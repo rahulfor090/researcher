@@ -12,7 +12,8 @@ export const requireAuth = async (req, res, next) => {
     if (!user) return res.status(401).json({ message: 'User not found' });
     req.user = user;
     next();
-  } catch {
+  } catch (err) {
+    console.error('JWT auth error:', err);
     res.status(401).json({ message: 'Invalid token' });
   }
 };

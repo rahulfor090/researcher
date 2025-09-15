@@ -1,87 +1,55 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 const PremiumPayment = () => {
-  const paypalRef = useRef();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Fetch user on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    axios.get(`${API_BASE}/profile/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => setUser(res.data))
-    .catch(() => setUser(null));
+    axios
+      .get(`${API_BASE}/profile/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null));
   }, []);
 
-  useEffect(() => {
-    if (!user) return; // Only render button if user exists
+  const handlePayNow = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        `${API_BASE}/paypal/create-order`,
+        {},
+        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+      );
 
-    // Clean up container before rendering button
-    if (paypalRef.current) {
-      paypalRef.current.innerHTML = "";
-    }
-
-    let isMounted = true;
-
-    if (window.paypal && paypalRef.current) {
-      window.paypal
-        .Buttons({
-          createOrder: async () => {
-            const token = localStorage.getItem("token");
-            const res = await axios.post(
-              `${API_BASE}/paypal/create-order`,
-              {},
-              token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
-            );
-            return res.data.id;
-          },
-          onApprove: async (data) => {
-            const token = localStorage.getItem("token");
-            await axios.post(
-              `${API_BASE}/paypal/capture-order`,
-              { orderID: data.orderID },
-              token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
-            );
-            window.location.href = "/thank-you";
-          },
-          style: {
-            layout: "vertical",
-            color: "gold",
-            shape: "rect",
-            label: "paypal",
-          },
-        })
-        .render(paypalRef.current)
-        .catch((err) => {
-          // Prevent error if component was unmounted
-          if (isMounted) {
-            // Optionally handle PayPal render errors
-            // console.error('PayPal Button Render Error:', err);
-          }
-        });
-    }
-
-    return () => {
-      isMounted = false;
-      if (paypalRef.current) {
-        paypalRef.current.innerHTML = "";
+      if (res.data.approvalUrl) {
+        window.location.href = res.data.approvalUrl; // ✅ redirect in same tab
+      } else {
+        console.error("No approvalUrl returned from backend:", res.data);
       }
-    };
-  }, [user]);
+    } catch (err) {
+      console.error("❌ Error creating order:", err);
+    }
+  };
+
 
   return (
     <div style={{ textAlign: "center", marginTop: "60px" }}>
       <h2>Premium Plan - $10</h2>
       <p>Unlock all premium features of our website!</p>
+
       {!user ? (
         <div>Please log in to purchase premium.</div>
       ) : (
-        <div ref={paypalRef}></div>
+        <button onClick={handlePayNow} style={{ padding: "10px 20px", fontSize: "16px" }}>
+          Pay with PayPal
+        </button>
       )}
     </div>
   );

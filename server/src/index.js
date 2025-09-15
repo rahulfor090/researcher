@@ -48,12 +48,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // CORS configuration
+console.log('Allowed CORS origins:', env.corsOrigins);
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true); // Postman / curl
     if (origin.startsWith('chrome-extension://')) return cb(null, true);
     if (env.corsOrigins.includes(origin)) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
+    cb(new Error('Not allowed by CORS. Origin was: ' + origin));
   }
 }));
 
