@@ -30,6 +30,7 @@
     "multer": "^2.0.2",
     "mysql2": "^3.14.3",
     "passport": "^0.7.0",
+    "passport-linkedin-oauth2": "^2.0.0",
     "passport-twitter": "^1.0.4",
     "pdf-parse": "^1.1.1",
     "sequelize": "^6.37.7"

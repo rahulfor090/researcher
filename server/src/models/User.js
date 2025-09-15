@@ -29,7 +29,10 @@ export default (sequelize) => {
     // Twitter OAuth fields
     twitterId: { type: DataTypes.STRING, allowNull: true, unique: true },
     twitterToken: { type: DataTypes.STRING, allowNull: true },
-    twitterTokenSecret: { type: DataTypes.STRING, allowNull: true }
+    twitterTokenSecret: { type: DataTypes.STRING, allowNull: true },
+    // LinkedIn OAuth fields
+    linkedinId: { type: DataTypes.STRING, allowNull: true, unique: true },
+    linkedinToken: { type: DataTypes.STRING, allowNull: true }
   }, { 
     tableName: 'users',
     timestamps: true
