@@ -19,6 +19,18 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+// GET /v1/profile/me - return current user's profile (conventional)
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    console.error('Profile GET /me Error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // OPTIONS preflight for CORS
 router.options('/image/:filename', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -99,7 +111,5 @@ router.put('/', requireAuth, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
-
 
 export default router;

@@ -126,25 +126,10 @@ const Home = () => {
       {/* Membership Plans Preview */}
       <section className="relative z-20 text-center mb-20 animate-fade-in max-w-5xl w-full">
         <h2 className="text-4xl font-extrabold text-gray-900 mb-10 leading-tight">Flexible Membership Plans</h2>
-        <div className="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8 justify-center">
-          <div className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-2xl rounded-3xl p-10 flex flex-col items-center max-w-sm w-full border border-gray-100 transform translate-y-0 hover:-translate-y-2 transition-transform duration-300 ease-in-out">
-            <h3 className="text-3xl font-bold text-gray-800 mb-4">Free Plan</h3>
-            <p className="text-gray-600 text-lg mb-6">Get started with Research Locker without any cost.</p>
-            <ul className="text-gray-700 text-left mb-8 space-y-2">
-              <li>✅ Store up to 10 articles</li>
-              <li>✅ Basic search functionality</li>
-              <li>✅ Standard support</li>
-            </ul>
-            <Link
-              to="/register"
-              className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition duration-300 transform hover:scale-105"
-            >
-              Sign Up Free
-            </Link>
-          </div>
+        <div className="flex flex-col md:flex-row justify-center">
           <div className="bg-indigo-600 text-white shadow-2xl rounded-3xl p-10 flex flex-col items-center max-w-sm w-full transform scale-105 border border-indigo-700 relative overflow-hidden group hover:scale-10">
             <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
-            <h3 className="text-3xl font-bold mb-4">Pro Plan</h3>
+            <h3 className="text-3xl font-bold mb-4">Membership </h3>
             <p className="text-indigo-100 text-lg mb-6">Unlock unlimited potential for your research.</p>
             <ul className="text-indigo-100 text-left mb-8 space-y-2">
               <li>✅ Unlimited article saves</li>
@@ -277,3 +262,6 @@ const Home = () => {
 };
 
 export default Home;
+
+
+
