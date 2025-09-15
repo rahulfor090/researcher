@@ -39,11 +39,11 @@ export default function App() {
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
           <Route path="/hashtags/:id" element={<Protected><ArticlesByTag/></Protected>} />
-          <Route path="/upgrade" element={<Protected><Upgrade/></Protected>} />
           <Route path="/premium-payment" element={<Protected><PremiumPayment/></Protected>} />
           <Route path="/thank-you" element={<Protected><ThankYou/></Protected>} />
           <Route path="/paypal-success" element={<Protected><PaypalSuccess/></Protected>} />  
           <Route path="/paypal-cancel" element={<Protected><PaypalCancel/></Protected>} />
+          <Route path="/upgrade" element={<Upgrade/>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
