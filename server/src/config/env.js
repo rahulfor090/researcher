@@ -38,7 +38,8 @@ export const env = {
     clientId: process.env.LINKEDIN_CLIENT_ID || '',
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
     callbackURL: process.env.LINKEDIN_CALLBACK_URL || 'http://localhost:5000/v1/auth/linkedin/callback'
-
+  },
+  
   paypal: {
     api: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com',
     clientId: process.env.PAYPAL_CLIENT_ID || '',
