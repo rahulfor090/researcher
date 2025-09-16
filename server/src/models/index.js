@@ -8,6 +8,9 @@ import makeAuthor from './Author.js';
 import makeArticleAuthor from './ArticleAuthor.js';
 // Add the import for UserPlan
 import makeUserPlan from './UserPlan.js';
+// Import new collection models
+import makeCollection from './Collection.js';
+import makeCollectionMaster from './CollectionMaster.js';
 
 // Add UserPlan model
 export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
@@ -18,6 +21,10 @@ export const User = makeUser(sequelize, Sequelize.DataTypes);
 export const Article = makeArticle(sequelize, Sequelize.DataTypes);
 export const Tag = makeTag(sequelize, Sequelize.DataTypes);
 export const ArticleTag = makeArticleTag(sequelize, Sequelize.DataTypes);
+
+// Initialize collection models
+export const Collection = makeCollection(sequelize, Sequelize.DataTypes);
+export const CollectionMaster = makeCollectionMaster(sequelize, Sequelize.DataTypes);
 
 // User-Article associations
 User.hasMany(Article, { foreignKey: 'userId' });
@@ -55,12 +62,37 @@ Tag.belongsToMany(Article, {
   otherKey: 'article_id',
 });
 
+// Collection associations
+User.hasMany(Collection, { foreignKey: 'userId' });
+Collection.belongsTo(User, { foreignKey: 'userId' });
+
+// Collection-Article many-to-many through CollectionMaster
+Collection.belongsToMany(Article, {
+  through: CollectionMaster,
+  foreignKey: 'collection_id',
+  otherKey: 'article_id',
+  as: 'articles'
+});
+Article.belongsToMany(Collection, {
+  through: CollectionMaster,
+  foreignKey: 'article_id',
+  otherKey: 'collection_id',
+  as: 'collections'
+});
+
+// Direct associations for junction table
+Collection.hasMany(CollectionMaster, { foreignKey: 'collection_id' });
+CollectionMaster.belongsTo(Collection, { foreignKey: 'collection_id' });
+Article.hasMany(CollectionMaster, { foreignKey: 'article_id' });
+CollectionMaster.belongsTo(Article, { foreignKey: 'article_id' });
+
 export const syncDb = async () => {
   await sequelize.authenticate();
-  await sequelize.sync(); // For MVP, not for production migrations
+  // Auto-alter in dev to add missing columns (e.g., linkedinId, twitterId)
+  await sequelize.sync({ alter: true });
 };
 
-// Default export for ES module compatibility, now with UserPlan
+// Default export for ES module compatibility, now with UserPlan and Collections
 export default {
   Author,
   ArticleAuthor,
@@ -69,6 +101,8 @@ export default {
   Tag,
   ArticleTag,
   UserPlan, // <-- Add this line
+  Collection,
+  CollectionMaster,
   syncDb,
   sequelize
 };
