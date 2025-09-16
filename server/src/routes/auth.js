@@ -285,6 +285,10 @@ const callbackGoogle = async (req, res) => {
     const clientSecret = env.google?.clientSecret;
     const redirectUri = env.google?.redirectUri || `${req.protocol}://${req.get('host')}/v1/auth/oauth/google/callback`;
 
+    if (!clientId || !clientSecret) {
+      return res.status(500).json({ error: 'Server misconfigured: Google OAuth env missing', missing: { clientId: !clientId, clientSecret: !clientSecret } });
+    }
+
     // Exchange code for tokens
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -317,6 +321,9 @@ const callbackGoogle = async (req, res) => {
       user = await User.create({ name, email, password: '' });
     }
 
+    if (!env.jwtSecret) {
+      return res.status(500).json({ error: 'Server misconfigured: JWT_SECRET missing' });
+    }
     const token = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: '7d' });
 
     const redirect = new URL(env.webAppUrl + '/dashboard');

@@ -4,6 +4,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Library from './pages/Library';
+import Collection from './pages/Collection';
+import CollectionDetail from './pages/CollectionDetail';
+import CollectionAssign from './pages/CollectionAssign';
 import Settings from './pages/Settings'
 import ArticleDetails from './pages/ArticleDetails';
 import Authors from './pages/Authors';
@@ -30,8 +33,12 @@ export default function App() {
           <Route path="/dashboard" element={<Protected><Dashboard/></Protected>} />
           <Route path="/" element={<Home />} />
           <Route path="/library" element={<Protected><Library/></Protected>} />
+          <Route path="/collection" element={<Protected><Collection/></Protected>} />
+          <Route path="/collection/:id" element={<Protected><CollectionDetail/></Protected>} />
+          <Route path="/collection/:id/assign" element={<Protected><CollectionAssign/></Protected>} />
           <Route path="/authors" element={<Protected><Authors/></Protected>} />
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
+          <Route path="/article/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />
           <Route path="/about" element={<About />} />
           <Route path="/terms" element={<Terms />} />

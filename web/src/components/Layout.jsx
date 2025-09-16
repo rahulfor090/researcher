@@ -185,6 +185,12 @@ export default function Layout({ children }) {
               👥 Authors
             </li>
             <li 
+              className={`layout-nav-item ${isActive('/collection') ? 'active' : ''}`}
+              onClick={() => nav('/collection')}
+            >
+              📂 Collection
+            </li>
+            <li 
               className="layout-nav-item"
             >
               📈 All insights

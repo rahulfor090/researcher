@@ -27,11 +27,11 @@ export default (sequelize) => {
     bio: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
     skills: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
     // Twitter OAuth fields
-    twitterId: { type: DataTypes.STRING, allowNull: true, unique: true },
+    twitterId: { type: DataTypes.STRING(191), allowNull: true, unique: true },
     twitterToken: { type: DataTypes.STRING, allowNull: true },
     twitterTokenSecret: { type: DataTypes.STRING, allowNull: true },
     // LinkedIn OAuth fields
-    linkedinId: { type: DataTypes.STRING, allowNull: true, unique: true },
+    linkedinId: { type: DataTypes.STRING(191), allowNull: true, unique: true },
     linkedinToken: { type: DataTypes.STRING, allowNull: true }
   }, { 
     tableName: 'users',
