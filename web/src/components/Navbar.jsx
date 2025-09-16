@@ -80,8 +80,9 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 text-teal-600 text-2xl font-bold">
-              Research Locker 🚀
+            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
+              <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-gray-200 object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <span className="text-teal-600 text-2xl font-bold group-hover:text-teal-700 transition-colors">Research Locker</span>
             </Link>
           </div>
           <div className="hidden md:block">

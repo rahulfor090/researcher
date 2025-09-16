@@ -24,6 +24,18 @@ export default function Login() {
     window.location.href = `${serverBase}/v1/auth/linkedin`;
   };
 
+  // Google login handler
+  const handleGoogleLogin = () => {
+    const serverBase = import.meta.env.VITE_API_BASE?.replace('/v1', '') || 'http://localhost:5000';
+    window.location.href = `${serverBase}/v1/auth/google`;
+  };
+
+  // Facebook login handler
+  const handleFacebookLogin = () => {
+    const serverBase = import.meta.env.VITE_API_BASE?.replace('/v1', '') || 'http://localhost:5000';
+    window.location.href = `${serverBase}/v1/auth/facebook`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -325,50 +337,139 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Social Login Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '-12px', marginBottom: '18px' }}>
-          {/* Twitter Login Button */}
+        {/* Social Auth Divider */}
+        <div style={{ margin: '20px 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ flex: 1, height: 1, background: colors.border }} />
+          <div style={{ color: colors.mutedText, fontSize: '0.9rem' }}>or</div>
+          <div style={{ flex: 1, height: 1, background: colors.border }} />
+        </div>
+
+        {/* Social Auth Buttons (icons only) - match Register styling */}
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '14px' }}>
           <button
+            type="button"
+            title="Sign in with Google"
+            aria-label="Sign in with Google"
+            onClick={handleGoogleLogin}
+            style={{
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '12px',
+              background: 'white',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = shadows.soft;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 48 48" aria-hidden>
+              <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c10.5 0 19.3-7.6 19.3-20 0-1.1-.1-2.3-.3-3.5z"/>
+              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16.6 18.9 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 16 4 9.1 8.6 6.3 14.7z"/>
+              <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.3-5.3l-6.2-5.1C29.1 35.8 26.7 37 24 37c-5.2 0-9.6-3.4-11.1-8.1l-6.6 5.1C9.1 39.4 16 44 24 44z"/>
+              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.3-3.5 5.8-6.2 7.6l.1.1 6.2 5.1c-.4.4 7.6-5.6 7.6-16.8 0-1.1-.1-2.3-.4-3.5z"/>
+            </svg>
+          </button>
+          <button
+            type="button"
+            title="Sign in with Facebook"
+            aria-label="Sign in with Facebook"
+            onClick={handleFacebookLogin}
+            style={{
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '12px',
+              background: 'white',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = shadows.soft;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+              <rect width="24" height="24" rx="4" fill="#1877F2"/>
+              <path fill="#fff" d="M15.5 8H14c-1 0-1.2.5-1.2 1.1V10h2.6l-.3 2.2h-2.3V20h-2.3v-7.8H8.5V10h2V8.7C10.5 6.9 11.5 6 13.4 6c.8 0 1.5.1 2.1.2V8z"/>
+            </svg>
+          </button>
+          <button
+            type="button"
+            title="Sign in with Twitter"
+            aria-label="Sign in with Twitter"
             onClick={handleTwitterLogin}
             style={{
-              width: '100%',
-              padding: '14px 0',
-              backgroundColor: '#1DA1F2',
-              color: 'white',
-              border: 'none',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1px solid ${colors.border}`,
               borderRadius: '12px',
-              fontWeight: 600,
-              fontSize: '1.05rem',
+              background: 'white',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(29,161,242,0.08)',
-              transition: 'background 0.2s'
+              transition: 'all 0.2s ease'
             }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1681c2'; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#1DA1F2'; }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = shadows.soft;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
-            <span style={{ marginRight: 8 }}>🐦</span> Login with Twitter
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+              <path fill="#000" d="M17.6 3H21l-7.1 8.1L22 21h-4.9l-5.3-6.2-6 6.2H2.3l7.6-8.3L2 3h5l4.8 5.6L17.6 3zM16.7 19.6h2.2L7.4 4.2H5.1l11.6 15.4z"/>
+            </svg>
           </button>
-
-          {/* LinkedIn Login Button */}
           <button
+            type="button"
+            title="Sign in with LinkedIn"
+            aria-label="Sign in with LinkedIn"
             onClick={handleLinkedInLogin}
             style={{
-              width: '100%',
-              padding: '14px 0',
-              backgroundColor: '#0077B5',
-              color: 'white',
-              border: 'none',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1px solid ${colors.border}`,
               borderRadius: '12px',
-              fontWeight: 600,
-              fontSize: '1.05rem',
+              background: 'white',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,119,181,0.08)',
-              transition: 'background 0.2s'
+              transition: 'all 0.2s ease'
             }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#005885'; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#0077B5'; }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = shadows.soft;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
-            <span style={{ marginRight: 8 }}>💼</span> Login with LinkedIn
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+              <rect width="24" height="24" rx="4" fill="#0A66C2"/>
+              <path fill="#fff" d="M7 17H4.5V9.5H7V17zM5.7 8.3C4.9 8.3 4.3 7.7 4.3 7s.6-1.3 1.4-1.3c.8 0 1.4.6 1.4 1.3s-.6 1.3-1.4 1.3zM19.7 17H17.2v-3.9c0-1-.4-1.7-1.3-1.7-.7 0-1.1.5-1.3 1v4.6H12.1V9.5h2.5v1c.3-.5 1-1.2 2.3-1.2 1.7 0 2.8 1.1 2.8 3.3V17z"/>
+            </svg>
           </button>
         </div>
 
