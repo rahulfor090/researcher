@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, gradients, shadows } from '../theme';
+import Layout from '../components/Layout';
 import { useAuth } from '../auth';
 
 export default function Dashboard() {
