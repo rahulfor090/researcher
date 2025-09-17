@@ -76,13 +76,13 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-md fixed w-full z-50 top-0 left-0 animate-fade-in-down">
+    <nav className="bg-white/90 backdrop-blur-md shadow-md fixed w-full z-50 top-0 left-0 animate-fade-in-down border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
               <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-gray-200 object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              <span className="text-teal-600 text-2xl font-bold group-hover:text-teal-700 transition-colors">Research Locker</span>
+              <span className="text-gray-800 text-2xl font-bold group-hover:text-gray-900 transition-colors">Research Locker</span>
             </Link>
           </div>
           <div className="hidden md:block">
@@ -91,7 +91,7 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="text-gray-700 hover:bg-teal-50 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300"
+                  className="text-gray-700 hover:bg-gray-50 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300"
                 >
                   {item.name}
                 </Link>
@@ -111,8 +111,8 @@ const Navbar = () => {
                         {user.name?.slice(0,1)?.toUpperCase() || 'U'}
                       </div>
                     )}
-                    <span className="text-sm font-semibold text-gray-800 group-hover:text-teal-700">{user.name}</span>
-                    <svg className="w-4 h-4 text-gray-500 group-hover:text-teal-700" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd"/></svg>
+              <span className="text-sm font-semibold text-gray-800 group-hover:text-indigo-700">{user.name}</span>
+                    <svg className="w-4 h-4 text-gray-500 group-hover:text-indigo-700" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd"/></svg>
                   </button>
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50">

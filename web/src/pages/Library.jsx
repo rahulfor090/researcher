@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, secondaryButtonStyle, gradients, shadows } from '../theme';
 import { useAuth } from '../auth';
@@ -10,6 +10,7 @@ import Layout from '../components/Layout';
 export default function Library() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();
   const [articles, setArticles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editArticle, setEditArticle] = useState(null);
@@ -19,6 +20,7 @@ export default function Library() {
   const [search, setSearch] = useState(''); // Add search state
   const [uploadingArticleId, setUploadingArticleId] = useState(null);
   const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState(new Set());
+  const [onlyMissingPdf, setOnlyMissingPdf] = useState(false);
   const [showSummary, setShowSummary] = useState(null); // { id, summary }
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
   const [showLimitModal, setShowLimitModal] = useState(false);
@@ -28,6 +30,15 @@ export default function Library() {
     const { data } = await api.get('/articles');
     setArticles(data);
     setTimeout(() => setIsLoaded(true), 100);
+  };
+
+  const fetchArticleById = async (id) => {
+    try {
+      const { data } = await api.get(`/articles/${id}`);
+      return data;
+    } catch {
+      return null;
+    }
   };
 
   // Upload PDF for an article and refresh
@@ -50,7 +61,21 @@ export default function Library() {
           if (data?.summary) {
             setShowSummary({ id: article.id, summary: data.summary });
           } else {
-            setShowSummary({ id: article.id, summary: 'Summary generation queued or skipped. Open details to view when ready.' });
+            // Poll for summary a few times (background generation)
+            let found = null;
+            for (let i = 0; i < 5; i++) {
+              await new Promise(r => setTimeout(r, 3000));
+              const latest = await fetchArticleById(article.id);
+              if (latest && (latest.summary || latest.ai_summary || latest.summary_text)) {
+                found = latest.summary || latest.ai_summary || latest.summary_text;
+                break;
+              }
+            }
+            if (found) {
+              setShowSummary({ id: article.id, summary: found });
+            } else {
+              setShowSummary({ id: article.id, summary: 'No summary available yet. Try opening details to refresh.' });
+            }
           }
           // Mark as recently updated for UX feedback
           setRecentlyUpdatedIds(prev => {
@@ -151,6 +176,12 @@ export default function Library() {
 
   useEffect(() => { load(); }, []);
 
+  // Read URL filter (?missing=1)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setOnlyMissingPdf(params.get('missing') === '1');
+  }, [location.search]);
+
   // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -169,7 +200,7 @@ export default function Library() {
   }, [showProfileMenu]);
 
   // Filtered articles based on search
-  const filteredArticles = articles.filter(a => {
+  let filteredArticles = articles.filter(a => {
     const q = search.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -178,6 +209,12 @@ export default function Library() {
       (a.authors && a.authors.toLowerCase().includes(q))
     );
   });
+  if (onlyMissingPdf) {
+    filteredArticles = filteredArticles.filter(a => {
+      const hasPdf = !!(a.file_name || a.pdf || a.pdfUrl || a.pdf_url);
+      return !hasPdf;
+    });
+  }
 
   return (
     <Layout>
@@ -315,6 +352,36 @@ export default function Library() {
               ✖
             </button>
           )}
+          {onlyMissingPdf && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: '10px',
+              color: '#ef4444'
+            }}>
+              <span>📄</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Showing articles without uploaded PDF</span>
+              <button
+                onClick={() => nav('/library')}
+                style={{
+                  marginLeft: '6px',
+                  background: 'transparent',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  color: colors.primaryText,
+                  fontSize: '0.8rem'
+                }}
+              >
+                Clear
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Library Statistics */}
@@ -354,13 +421,13 @@ export default function Library() {
               description: 'Accessible online'
             },
             {
-              count: Math.round((articles.filter(a => a.doi && a.authors).length / Math.max(articles.length, 1)) * 100),
+              count: Math.round((articles.filter(a => a.file_name).length / Math.max(articles.length, 1)) * 100),
               label: 'Complete %',
               icon: '🎯',
               color: '#f59e0b',
               bgColor: 'rgba(245, 158, 11, 0.1)',
               borderColor: 'rgba(245, 158, 11, 0.2)',
-              description: 'Fully documented',
+              description: 'PDFs uploaded',
               isPercentage: true
             }
           ].map((stat, index) => (
@@ -386,6 +453,11 @@ export default function Library() {
                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
                 e.currentTarget.style.boxShadow = 'none';
                 e.currentTarget.style.border = `1px solid ${stat.borderColor}`;
+              }}
+              onClick={() => {
+                if (stat.label === 'Complete %') {
+                  nav('/library?missing=1');
+                }
               }}
             >
               <div style={{
@@ -428,7 +500,11 @@ export default function Library() {
             marginBottom: '24px',
             animation: `fadeInUp 0.8s ease-out ${isLoaded ? '1.1s' : '0s'} both`,
             transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
-            opacity: isLoaded ? 1 : 0
+            opacity: isLoaded ? 1 : 0,
+            background: 'rgba(255,255,255,0.95)',
+            border: `1px solid ${colors.border}`,
+            borderRadius: '16px',
+            overflow: 'hidden'
           }}
           onMouseEnter={e => {
             e.currentTarget.style.boxShadow = shadows.medium;
@@ -458,6 +534,15 @@ export default function Library() {
                 gap: '8px'
               }}>
                 🗃️ My Articles Collection
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: '#2563eb',
+                  background: 'rgba(37, 99, 235, 0.08)',
+                  border: '1px solid rgba(37,99,235,0.2)',
+                  padding: '4px 8px',
+                  borderRadius: '9999px'
+                }}>Theme</span>
               </h3>
               <p style={{
                 color: colors.mutedText,
@@ -638,10 +723,10 @@ export default function Library() {
               </button>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowX: 'auto', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
-                  <tr style={{ background: 'rgba(0,0,0,0.02)' }}>
+                  <tr style={{ background: 'rgba(37,99,235,0.06)' }}>
                     <th
                       style={{
                         textAlign: 'center',
@@ -729,6 +814,8 @@ export default function Library() {
                 </thead>
                 <tbody>
                   {filteredArticles.map((a, idx) => {
+                    const hasPdf = !!(a.file_name || a.pdf || a.pdfUrl || a.pdf_url);
+                    const hasSummary = !!(a.summary || a.ai_summary || a.summary_text);
                     const isSelected = selectedRows.has(a.id);
                     return (
                     <tr 
@@ -737,12 +824,12 @@ export default function Library() {
                         transition: 'all 0.2s ease',
                         cursor: 'pointer',
                         animation: `fadeInUp 0.4s ease-out ${idx * 0.05}s both`,
-                        background: isSelected ? 'rgba(13, 148, 136, 0.1)' : 'transparent',
+                        background: isSelected ? 'rgba(13, 148, 136, 0.1)' : (idx % 2 === 1 ? 'rgba(0,0,0,0.02)' : 'transparent'),
                         borderLeft: isSelected ? `4px solid ${colors.highlight}` : '4px solid transparent'
                       }}
                       onMouseEnter={e => {
                         if (!isSelected) {
-                          e.currentTarget.style.background = 'rgba(13, 148, 136, 0.04)';
+                          e.currentTarget.style.background = idx % 2 === 1 ? 'rgba(13, 148, 136, 0.04)' : 'rgba(13, 148, 136, 0.03)';
                         }
                         e.currentTarget.style.transform = 'translateX(4px)';
                         // Animate the number badge
@@ -754,7 +841,7 @@ export default function Library() {
                       }}
                       onMouseLeave={e => {
                         if (!isSelected) {
-                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.background = idx % 2 === 1 ? 'rgba(0,0,0,0.02)' : 'transparent';
                         }
                         e.currentTarget.style.transform = 'translateX(0)';
                         // Reset the number badge
@@ -989,7 +1076,7 @@ export default function Library() {
                         )}
 
                         {/* Upload PDF CTA when missing */}
-                        {uploadingArticleId !== a.id && !recentlyUpdatedIds.has(a.id) && (!a.file_name || !a.summary) && (
+                        {uploadingArticleId !== a.id && !recentlyUpdatedIds.has(a.id) && (!hasPdf) && (
                           <button
                             onClick={(e) => { e.stopPropagation(); handleUploadPdf(a); }}
                             style={{
@@ -1020,7 +1107,7 @@ export default function Library() {
                         )}
 
                         {/* PDF present indicator */}
-                        {a.file_name && a.summary && (
+                        {hasPdf && (
                           <div style={{
                             padding: '6px 10px',
                             background: 'rgba(34,197,94,0.12)',
@@ -1033,7 +1120,7 @@ export default function Library() {
                             alignItems: 'center',
                             gap: '6px'
                           }}>
-                            <span>📄</span> PDF ready
+                            <span>📄</span> {hasSummary ? 'PDF & Summary ready' : 'PDF ready'}
                           </div>
                         )}
 
