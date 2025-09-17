@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, Protected } from './auth';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Library from './pages/Library';
 import Collection from './pages/Collection';
@@ -48,6 +50,8 @@ export default function App() {
           {/* Standalone routes without shared header/footer */}
           <Route path="/login" element={<Login/>} />
           <Route path="/register" element={<Register/>} />
+          <Route path="/forgot-password" element={<ForgotPassword/>} />
+          <Route path="/reset-password" element={<ResetPassword/>} />
 
           {/* Protected app sections (custom internal layouts) */}
           <Route path="/dashboard" element={<Protected><Dashboard/></Protected>} />

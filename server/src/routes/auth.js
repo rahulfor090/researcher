@@ -6,6 +6,7 @@ import passport from '../config/passport.js';
 import { User } from '../models/index.js';
 import { env } from '../config/env.js';
 import { requireAuth } from '../middleware/auth.js';
+import emailService from '../services/emailService.js';
 
 const router = Router();
 
@@ -338,5 +339,120 @@ const callbackGoogle = async (req, res) => {
 };
 router.get('/oauth/google/callback', callbackGoogle);
 router.get('/google/callback', callbackGoogle);
+
+// Forgot Password
+router.post('/forgot-password',
+  body('email').isEmail(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const { email } = req.body;
+    
+    try {
+      const user = await User.findOne({ where: { email } });
+      if (!user) {
+        return res.status(404).json({ message: 'Email does not match for the existing user' });
+      }
+
+      // Generate reset token
+      const resetToken = jwt.sign({ id: user.id, email: user.email }, env.jwtSecret, { expiresIn: '1h' });
+      
+      // Create reset URL
+      const resetUrl = `${env.webAppUrl}/reset-password?token=${resetToken}`;
+      
+      console.log('=== PASSWORD RESET REQUEST ===');
+      console.log(`User: ${user.name} (${user.email})`);
+      console.log(`Reset URL: ${resetUrl}`);
+      console.log('============================');
+      
+      // Send password reset email
+      const emailResult = await emailService.sendPasswordResetEmail(user.email, user.name, resetUrl);
+      
+      if (!emailResult.success) {
+        console.error('Email sending failed:', emailResult.error);
+        return res.status(500).json({ 
+          message: 'Failed to send password reset email. Please try again later.' 
+        });
+      }
+      
+      console.log(`✅ Password reset email sent to ${user.email}`);
+      
+      res.json({ 
+        message: 'Password reset link has been sent to your email address. Please check your inbox.',
+        // For development - include the reset URL in response (remove in production)
+        resetUrl: env.nodeEnv === 'development' ? resetUrl : undefined
+      });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// Reset Password
+router.post('/reset-password',
+  body('token').notEmpty(),
+  body('password').isLength({ min: 6 }),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const { token, password } = req.body;
+    
+    try {
+      // Verify the reset token
+      const decoded = jwt.verify(token, env.jwtSecret);
+      const user = await User.findByPk(decoded.id);
+      
+      if (!user) {
+        return res.status(400).json({ message: 'Invalid or expired reset token' });
+      }
+      
+      // Hash the new password
+      const hash = await bcrypt.hash(password, 10);
+      
+      // Update user's password
+      await user.update({ password: hash });
+      
+      res.json({ message: 'Password has been reset successfully' });
+    } catch (error) {
+      if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        return res.status(400).json({ message: 'Invalid or expired reset token' });
+      }
+      console.error('Reset password error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// Test Email Endpoint (for development only)
+router.post('/test-email', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ message: 'Endpoint not available in production' });
+  }
+
+  try {
+    const result = await emailService.testEmail();
+    
+    if (result.success) {
+      res.json({ 
+        message: 'Test email sent successfully!',
+        messageId: result.messageId
+      });
+    } else {
+      res.status(500).json({ 
+        message: 'Failed to send test email',
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Test email error:', error);
+    res.status(500).json({ 
+      message: 'Test email failed',
+      error: error.message
+    });
+  }
+});
 
 export default router;
