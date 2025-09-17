@@ -45,250 +45,10 @@ export default function Dashboard() {
   }, [showProfileMenu]);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      background: gradients.app, 
-      fontFamily: 'Inter, sans-serif',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Enhanced Background decorative elements */}
-      <div style={{
-        position: 'absolute',
-        top: '-50%',
-        left: '-50%',
-        width: '200%',
-        height: '200%',
-        background: `radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%)`,
-        animation: 'dashboardFloat 25s ease-in-out infinite',
-        zIndex: 0
-      }} />
-      
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        right: '8%',
-        width: '220px',
-        height: '220px',
-        background: `linear-gradient(45deg, ${colors.link}, ${colors.highlight})`,
-        borderRadius: '50%',
-        opacity: 0.06,
-        animation: 'dashboardPulse 8s ease-in-out infinite',
-        zIndex: 0
-      }} />
-
-      <div style={{
-        position: 'absolute',
-        bottom: '15%',
-        left: '12%',
-        width: '180px',
-        height: '180px',
-        background: `linear-gradient(45deg, ${colors.highlight}, ${colors.accent || colors.link})`,
-        borderRadius: '50%',
-        opacity: 0.04,
-        animation: 'dashboardPulse 10s ease-in-out infinite reverse',
-        zIndex: 0
-      }} />
-
-      {/* Left Navigation Sidebar */}
-      <div 
-        style={{ 
-          width: '280px', 
-          background: gradients.sidebar, 
-          color: 'white', 
-          padding: '32px', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          boxShadow: shadows.medium, 
-          borderTopLeftRadius: '16px', 
-          borderBottomLeftRadius: '16px', 
-          position: 'relative',
-          animation: 'slideInLeft 0.6s ease-out'
-        }}
-      >
-        <h1 style={{ 
-          fontSize: '2rem', 
-          fontWeight: '700', 
-          marginBottom: '16px', 
-          color: '#e5e7eb',
-          animation: 'fadeInDown 0.8s ease-out 0.2s both'
-        }}>Research Locker</h1>
-        
-        <div 
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowProfileMenu(v => !v);
-          }} 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '12px', 
-            padding: '12px', 
-            borderRadius: '12px', 
-            background: 'rgba(255,255,255,0.06)', 
-            marginBottom: '16px', 
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            animation: 'fadeInUp 0.8s ease-out 0.4s both'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-            e.currentTarget.style.transform = 'scale(1.02)';
-            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          <div style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: '50%', 
-            background: 'linear-gradient(135deg, #0ea5e9, #22c55e)', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            fontWeight: 700,
-            animation: 'pulse 2s infinite'
-          }}>
-            {initials}
-          </div>
-          <div>
-            <div style={{ fontWeight: 600 }}>{user?.name || 'You'}</div>
-            <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>{user?.email || ''}</div>
-          </div>
-        </div>
-        
-        {showProfileMenu && (
-  <div 
-    className="profile-menu"
-    onClick={(e) => e.stopPropagation()}
-    style={{ 
-      position: 'relative',
-      background: 'white', 
-      color: colors.primaryText, 
-      border: `1px solid ${colors.border}`, 
-      borderRadius: '12px', 
-      boxShadow: shadows.soft, 
-      overflow: 'hidden', 
-      zIndex: 30, 
-      marginBottom: '16px'
-    }}
-  >
-    <div style={{ padding: '12px', borderBottom: `1px solid ${colors.border}` }}>
-      <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{user?.name || 'User'}</div>
-      <div style={{ fontSize: '0.8rem', color: colors.secondaryText }}>{user?.email || ''}</div>
-    </div>
-    <div style={{ padding: '8px 0' }}>
-      <div 
-        onClick={() => nav('/settings')}
-        style={{ 
-          padding: '8px 12px', 
-          cursor: 'pointer',
-          transition: 'background 0.2s ease',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
-        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-      >
-        <span>⚙️</span> Settings
-      </div>
-      <div 
-        onClick={() => nav('/about')}
-        style={{ 
-          padding: '8px 12px', 
-          cursor: 'pointer',
-          transition: 'background 0.2s ease',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
-        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-      >
-        <span>ℹ️</span> About
-      </div>
-      <div 
-        onClick={() => {
-          localStorage.removeItem('token');
-          nav('/login');
-        }}
-        style={{ 
-          padding: '8px 12px', 
-          cursor: 'pointer',
-          transition: 'background 0.2s ease',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          borderTop: `1px solid ${colors.border}`
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
-        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-      >
-        <span>🚪</span> Logout
-      </div>
-    </div>
-  </div>
-)}
-        
-        <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {[
-              { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
-              { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'Authors', icon: '✍️', path: '/authors' },
-              { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
-              { label: 'All insights', icon: '📈', path: null },
-              
-            ].map(({ label, icon, path }, index) => (
-              <li
-                key={label}
-                style={{
-                  padding: '10px 12px',
-                  color: '#cbd5e1',
-                  borderRadius: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  animation: `fadeInLeft 0.6s ease-out ${0.8 + index * 0.1}s both`
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                  e.currentTarget.style.transform = 'translateX(8px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                onClick={() => { if (path) nav(path); }}
-              >
-                <span style={{
-                  width: 20,
-                  textAlign: 'center',
-                  transition: 'transform 0.3s ease'
-                }}>{icon}</span>
-                <span>{label}</span>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-      <div>
-        
-      </div>
-
-      {/* Main Content Area */}
+    <Layout>
+      {/* Main content + Right sidebar row */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px', padding: '0 0 0 0' }}>
+      {/* Main Content Area (kept intact) */}
       <div style={{ 
         flexGrow: 1, 
         padding: '40px', 
@@ -429,16 +189,6 @@ export default function Dashboard() {
                   }}>
                     <span style={{ fontSize: '1.5rem' }}>{stat.icon}</span>
                     {stat.count}
-                  </div>
-                  <div style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: stat.trend.startsWith('+') ? '#22c55e' : '#ef4444',
-                    background: stat.trend.startsWith('+') ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    padding: '2px 6px',
-                    borderRadius: '8px'
-                  }}>
-                    {stat.trend}
                   </div>
                 </div>
                 <div style={{ marginBottom: '8px' }}>
@@ -610,11 +360,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Right Sidebar (Filters & Recent Activity) */}
+      {/* Right Sidebar (Filters, Insights, Quick Actions) */}
       <div style={{ 
         width: '420px', 
         backgroundColor: 'transparent', 
-        padding: '40px 20px 40px 20px',
+        padding: '40px 20px 40px 0',
         animation: 'fadeInRight 0.6s ease-out 0.5s both'
       }}>
         <div style={{ 
@@ -828,6 +578,7 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
+          </div>
         </div>
       </div>
       
@@ -997,6 +748,6 @@ export default function Dashboard() {
           }
         `}
       </style>
-    </div>
+    </Layout>
   );
 }
