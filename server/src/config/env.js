@@ -44,6 +44,15 @@ export const env = {
     api: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com',
     clientId: process.env.PAYPAL_CLIENT_ID || '',
     secret: process.env.PAYPAL_SECRET || ''
+  },
 
+  email: {
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: process.env.EMAIL_SECURE === 'true',
+    user: process.env.EMAIL_USER || '',
+    pass: process.env.EMAIL_PASS || '',
+    fromName: process.env.EMAIL_FROM_NAME || 'Research Locker',
+    fromAddress: process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER || ''
   }
 };
