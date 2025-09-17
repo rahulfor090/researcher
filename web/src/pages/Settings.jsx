@@ -34,6 +34,14 @@ export default function Settings() {
   const [saveMessage, setSaveMessage] = useState('');
   const [error, setError] = useState('');
 
+  // Change Password State
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
   // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -57,8 +65,6 @@ export default function Settings() {
       try {
         const { data } = await api.get('/profile');
         if (data) {
-          console.log('Profile data received:', data);
-          console.log('Profile image from server:', data.profile_image);
           setName(data.name || '');
           setEmail(data.email || '');
           setPhoneNumber(data.phone_number || '');
@@ -74,7 +80,6 @@ export default function Settings() {
               console.error('Failed to load profile image:', imgErr);
             }
           }
-          console.log('Constructed image URL:', imageUrl);
           setProfileImage(imageUrl);
           setGender(data.gender || '');
           setUniversity(data.university || '');
@@ -144,7 +149,6 @@ export default function Settings() {
     } catch (err) {
       console.error('Error uploading image:', err);
       setError(err.response?.data?.message || 'Failed to upload image');
-      // Revert to previous image on error
       if (profile_image && typeof profile_image === 'object' && profile_image.previewUrl) {
         setProfileImage(profile_image.previewUrl);
       }
@@ -207,6 +211,45 @@ export default function Settings() {
     } catch (err) {
       console.error('Save error:', err);
       setError('Failed to save profile.');
+    }
+  };
+
+  // Change Password Handler
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordMessage('');
+    setPasswordError('');
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordError('Please fill all the fields.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('Password should be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    try {
+      const response = await api.post('/profile/change-password', {
+        oldPassword,
+        newPassword,
+        confirmPassword,
+      });
+      if (response.data.success) {
+        setPasswordMessage('Password updated successfully!');
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setPasswordMessage(''), 3000);
+      } else {
+        setPasswordError(response.data.message || 'Failed to update password.');
+      }
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || 'Failed to update password.');
     }
   };
 
@@ -583,6 +626,54 @@ export default function Settings() {
             {saveMessage && <div style={{ color: 'green', marginTop: 8 }}>{saveMessage}</div>}
             {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
           </form>
+
+          {/* Change Password Section */}
+          <button
+            type="button"
+            style={{
+              ...saveButtonStyle,
+              backgroundColor: '#f59e42',
+              color: 'white',
+              marginTop: 20,
+              marginBottom: 8
+            }}
+            onClick={() => setShowPasswordForm(v => !v)}
+          >
+            Change Password
+          </button>
+          {showPasswordForm && (
+            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 400, marginTop: 16 }}>
+              <input
+                type="password"
+                placeholder="Previous Password"
+                value={oldPassword}
+                onChange={e => setOldPassword(e.target.value)}
+                style={inputStyle}
+                required
+              />
+              <input
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                style={inputStyle}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Re-enter New Password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                style={inputStyle}
+                required
+              />
+              <button type="submit" style={{ ...saveButtonStyle, backgroundColor: '#10b981' }}>
+                Update Password
+              </button>
+              {passwordMessage && <div style={{ color: 'green', marginTop: 8 }}>{passwordMessage}</div>}
+              {passwordError && <div style={{ color: 'red', marginTop: 8 }}>{passwordError}</div>}
+            </form>
+          )}
         </div>
       </div>
 
