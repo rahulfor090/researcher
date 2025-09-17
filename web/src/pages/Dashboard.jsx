@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { colors, cardStyle, gradients, shadows } from '../theme';
+import { colors, cardStyle, gradients, shadows, primaryButtonStyle } from '../theme';
 import Layout from '../components/Layout';
 import { useAuth } from '../auth';
 
@@ -19,7 +19,12 @@ export default function Dashboard() {
     (async () => {
       try {
         const { data } = await api.get('/articles');
-        setArticles(data);
+        const sorted = [...data].sort((a, b) => {
+          const ad = new Date(a.createdAt || a.created_at || a.updatedAt || a.updated_at || 0).getTime();
+          const bd = new Date(b.createdAt || b.created_at || b.updatedAt || b.updated_at || 0).getTime();
+          return bd - ad;
+        });
+        setArticles(sorted);
         setTimeout(() => setIsLoaded(true), 100);
       } catch (error) {
         console.error('Failed to load articles:', error);
@@ -75,6 +80,29 @@ export default function Dashboard() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }}>Dashboard</h2>
+          <button
+            onClick={() => nav('/')}
+            style={{
+              ...primaryButtonStyle,
+              background: '#16a34a',
+              padding: '10px 16px',
+              borderRadius: '12px',
+              fontSize: '0.95rem',
+              boxShadow: '0 6px 18px rgba(22, 163, 74, 0.25)'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 10px 24px rgba(22, 163, 74, 0.35)';
+              e.currentTarget.style.background = '#15803d';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(22, 163, 74, 0.25)';
+              e.currentTarget.style.background = '#16a34a';
+            }}
+          >
+            ⤶ Go to Home
+          </button>
         </div>
         
         {/* Stats Overview */}
@@ -279,7 +307,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {articles.slice(0, 5).map((article, index) => (
+              {articles.slice(0, Math.min(articles.length, 20)).map((article, index) => (
                 <div 
                   key={article.id}
                   style={{
@@ -333,6 +361,21 @@ export default function Dashboard() {
                     }}>
                       {article.authors || 'Unknown authors'} • {article.doi ? 'With DOI' : 'No DOI'}
                     </div>
+                    <div style={{ 
+                      color: colors.mutedText, 
+                      fontSize: '0.72rem',
+                      marginTop: '4px'
+                    }}>
+                      <span style={{marginRight: 6}}>🗓️</span>
+                      {(() => {
+                        const created = article.createdAt || article.created_at || article.created || article.updatedAt || article.updated_at || null;
+                        try {
+                          return created ? new Date(created).toLocaleDateString() : '—';
+                        } catch {
+                          return '—';
+                        }
+                      })()}
+                    </div>
                   </div>
                   <div style={{ 
                     color: colors.mutedText, 
@@ -344,7 +387,7 @@ export default function Dashboard() {
                 </div>
               ))}
               
-              {articles.length > 5 && (
+              {articles.length > 20 && (
                 <div style={{
                   textAlign: 'center',
                   padding: '12px',
@@ -352,7 +395,7 @@ export default function Dashboard() {
                   fontSize: '0.85rem',
                   fontStyle: 'italic'
                 }}>
-                  +{articles.length - 5} more articles in your library
+                  +{articles.length - 20} more articles in your library • <span style={{ color: colors.link, cursor: 'pointer', fontStyle: 'normal', fontWeight: 600 }} onClick={() => nav('/library')}>View all</span>
                 </div>
               )}
             </div>
