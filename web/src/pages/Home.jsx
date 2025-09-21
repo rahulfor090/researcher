@@ -199,7 +199,7 @@ const Home = () => {
               </Link>
             </div>
           ) : (
-            <div className="mt-10 animate-slide-up animation-delay-400">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up animation-delay-400">
               <Link to="/register" className="group relative inline-flex min-w-[200px] max-w-[500px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-10 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
                 background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
                 boxShadow: `0 20px 40px -10px ${colors.link}90`
@@ -214,6 +214,21 @@ const Home = () => {
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               </Link>
+              
+              <a 
+                href="https://chromewebstore.google.com/detail/research-locker/fgnfgifnggpfbmconkhcdjhdjdnnomfd?authuser=0&hl=en" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group relative inline-flex min-w-[180px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-2 border-white/40 text-white/90 hover:text-white hover:bg-white/20 hover:border-white/60 backdrop-blur-sm"
+              >
+                <span className="relative z-[1] flex items-center gap-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  <span>Download Extension</span>
+                  <span className="group-hover:translate-x-1 transition-transform duration-300">⬇️</span>
+                </span>
+              </a>
             </div>
           )}
         </div>
@@ -308,6 +323,112 @@ const Home = () => {
         {/* Decorative elements */}
         <div className="absolute top-20 left-10 w-16 h-16 rounded-full blur-lg opacity-20 animate-float-slow" style={{ background: colors.link }} />
         <div className="absolute bottom-20 right-10 w-12 h-12 rounded-full blur-md opacity-25 animate-float-slower" style={{ background: colors.highlight }} />
+      </section>
+
+      {/* Chrome Extension Download Section */}
+      <section ref={addToRefs} className="py-20 sm:py-28 w-full relative overflow-hidden" style={{ backgroundColor: '#fefcf3' }}>
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl mb-6 animate-on-scroll" style={{ color: '#2d1b0e' }}>Get the Chrome Extension</h2>
+            <p className="text-xl max-w-3xl mx-auto animate-on-scroll" style={{ color: '#6b5b47' }}>
+              Save research articles with a single click directly from any website. Our browser extension makes it effortless to capture and organize your research.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-br from-[#f5f1e8] to-[#fefcf3] rounded-3xl p-8 md:p-12 border border-[#e8ddd4] shadow-xl" style={{ 
+              boxShadow: '0 20px 40px -10px rgba(45, 27, 14, 0.15)'
+            }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                  <h3 className="text-2xl font-bold mb-4" style={{ color: '#2d1b0e' }}>One-Click Research Saving</h3>
+                  <ul className="space-y-3 mb-6">
+                    <li className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span style={{ color: '#6b5b47' }}>Save articles from any website</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span style={{ color: '#6b5b47' }}>Automatic metadata extraction</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span style={{ color: '#6b5b47' }}>Instant sync with your library</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span style={{ color: '#6b5b47' }}>Works on all major research sites</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="text-center">
+                  <div className="mb-6">
+                    <div className="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#0D9488] to-[#F97316] flex items-center justify-center shadow-lg">
+                      <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                    </div>
+                    <h4 className="text-xl font-bold mb-2" style={{ color: '#2d1b0e' }}>Research Locker Extension</h4>
+                    <p className="text-sm mb-4" style={{ color: '#6b5b47' }}>Available on Chrome Web Store</p>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <span className="text-sm font-medium" style={{ color: '#6b5b47' }}>5.0 (2 ratings)</span>
+                    </div>
+                  </div>
+                  
+                  <a 
+                    href="https://chromewebstore.google.com/detail/research-locker/fgnfgifnggpfbmconkhcdjhdjdnnomfd?authuser=0&hl=en" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group relative inline-flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
+                      background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+                      boxShadow: `0 15px 35px -10px ${colors.link}80`
+                    }} onMouseEnter={(e) => {
+                      e.target.style.boxShadow = `0 20px 45px -10px ${colors.highlight}90`;
+                    }} onMouseLeave={(e) => {
+                      e.target.style.boxShadow = `0 15px 35px -10px ${colors.link}80`;
+                    }}>
+                    <span className="relative z-[1] flex items-center gap-3">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                      <span>Add to Chrome</span>
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-10 right-10 w-20 h-20 rounded-full blur-xl opacity-15 animate-float-slow" style={{ background: colors.accent }} />
+        <div className="absolute bottom-10 left-10 w-16 h-16 rounded-full blur-lg opacity-20 animate-float-slower" style={{ background: colors.success }} />
       </section>
 
       {/* Features Section */}

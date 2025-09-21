@@ -88,20 +88,61 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={`backdrop-blur-md fixed w-full z-50 top-0 left-0 animate-fade-in-down border-b transition-all duration-500 ${isScrolled ? 'shadow-xl border-[#e8ddd4]' : 'shadow-lg border-[#e8ddd4]/50'}`} style={{ 
-      background: isScrolled 
-        ? 'linear-gradient(135deg, rgba(254, 252, 243, 0.98) 0%, rgba(245, 241, 232, 0.98) 100%)'
-        : 'linear-gradient(135deg, rgba(254, 252, 243, 0.95) 0%, rgba(245, 241, 232, 0.95) 100%)',
-      boxShadow: isScrolled 
-        ? '0 8px 32px -8px rgba(45, 27, 14, 0.15)'
-        : '0 4px 20px -2px rgba(45, 27, 14, 0.1)'
-    }}>
+    <nav 
+      className={`backdrop-blur-md fixed w-full z-50 top-0 left-0 animate-fade-in-down border-b transition-all duration-500 group ${isScrolled ? 'shadow-xl border-[#e8ddd4]' : 'shadow-lg border-[#e8ddd4]/50'}`} 
+      style={{ 
+        background: isScrolled 
+          ? 'linear-gradient(135deg, rgba(254, 252, 243, 0.98) 0%, rgba(245, 241, 232, 0.98) 100%)'
+          : 'linear-gradient(135deg, rgba(254, 252, 243, 0.95) 0%, rgba(245, 241, 232, 0.95) 100%)',
+        boxShadow: isScrolled 
+          ? '0 8px 32px -8px rgba(45, 27, 14, 0.15)'
+          : '0 4px 20px -2px rgba(45, 27, 14, 0.1)'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(254, 252, 243, 1) 0%, rgba(245, 241, 232, 1) 100%)';
+        e.currentTarget.style.boxShadow = '0 12px 40px -8px rgba(45, 27, 14, 0.2)';
+        e.currentTarget.style.transform = 'translateY(2px)';
+        e.currentTarget.style.borderBottom = '2px solid rgba(13, 148, 136, 0.3)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = isScrolled 
+          ? 'linear-gradient(135deg, rgba(254, 252, 243, 0.98) 0%, rgba(245, 241, 232, 0.98) 100%)'
+          : 'linear-gradient(135deg, rgba(254, 252, 243, 0.95) 0%, rgba(245, 241, 232, 0.95) 100%)';
+        e.currentTarget.style.boxShadow = isScrolled 
+          ? '0 8px 32px -8px rgba(45, 27, 14, 0.15)'
+          : '0 4px 20px -2px rgba(45, 27, 14, 0.1)';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderBottom = isScrolled ? '1px solid #e8ddd4' : '1px solid rgba(232, 221, 212, 0.5)';
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
-              <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-transform duration-300 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#1a0f08] transition-colors duration-300">Research Locker</span>
+            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group" onMouseEnter={(e) => {
+              const logo = e.currentTarget.querySelector('img');
+              const text = e.currentTarget.querySelector('span');
+              if (logo) {
+                logo.style.transform = 'scale(1.1) rotate(5deg)';
+                logo.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.3)';
+              }
+              if (text) {
+                text.style.transform = 'translateX(2px)';
+                text.style.textShadow = '0 2px 8px rgba(13, 148, 136, 0.2)';
+              }
+            }} onMouseLeave={(e) => {
+              const logo = e.currentTarget.querySelector('img');
+              const text = e.currentTarget.querySelector('span');
+              if (logo) {
+                logo.style.transform = 'scale(1) rotate(0deg)';
+                logo.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+              }
+              if (text) {
+                text.style.transform = 'translateX(0)';
+                text.style.textShadow = 'none';
+              }
+            }}>
+              <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">Research Locker</span>
             </Link>
           </div>
           <div className="hidden md:block">
@@ -110,16 +151,35 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="text-[#6b5b47] hover:bg-[#f5f1e8] hover:text-[#0D9488] px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:shadow-sm"
+                  className="text-[#6b5b47] hover:bg-[#f5f1e8] hover:text-[#0D9488] px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:shadow-sm relative overflow-hidden group"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.2)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 241, 232, 0.8) 0%, rgba(254, 252, 243, 0.8) 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.background = 'transparent';
+                  }}
                 >
-                  {item.name}
+                  <span className="relative z-10">{item.name}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#0D9488]/10 via-transparent to-[#F97316]/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500"></div>
                 </Link>
               ))}
               {user ? (
                 <div className="relative ml-4" ref={menuRef}>
                   <button
                     onClick={() => setIsMenuOpen(v => !v)}
-                    className="flex items-center space-x-2 group"
+                    className="flex items-center space-x-2 group relative overflow-hidden"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
                   >
                     {avatarSrc ? (
                       <div className="w-8 h-8 rounded-full overflow-hidden border border-[#e8ddd4] shadow-sm">
@@ -198,9 +258,17 @@ const Navbar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className="bg-[#f5f1e8] inline-flex items-center justify-center p-2 rounded-lg text-[#6b5b47] hover:text-[#0D9488] hover:bg-[#fefcf3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#f5f1e8] focus:ring-[#0D9488] transition-all duration-300"
+              className="bg-[#f5f1e8] inline-flex items-center justify-center p-2 rounded-lg text-[#6b5b47] hover:text-[#0D9488] hover:bg-[#fefcf3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#f5f1e8] focus:ring-[#0D9488] transition-all duration-300 relative overflow-hidden group"
               aria-controls="mobile-menu"
               aria-expanded="false"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1) rotate(5deg)';
+                e.currentTarget.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+                e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+              }}
             >
               <span className="sr-only">Open main menu</span>
               {!isOpen ? (

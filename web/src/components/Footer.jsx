@@ -40,7 +40,12 @@ const Footer = () => {
               <li><a href="/faq" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">FAQ</a></li>
               <li><Link to="/help-center" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">Help Center</Link></li>
               <li><a href="#contact" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">Contact Us</a></li>
-              <li><a href="#extension" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">Chrome Extension</a></li>
+              <li><a href="https://chromewebstore.google.com/detail/research-locker/fgnfgifnggpfbmconkhcdjhdjdnnomfd?authuser=0&hl=en" target="_blank" rel="noopener noreferrer" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block flex items-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                Chrome Extension
+              </a></li>
             </ul>
           </div>
 
@@ -97,7 +102,7 @@ const Footer = () => {
           </div>
           <div className="text-center md:text-right">
             <p className="text-sm text-[#8b7d6b] mb-2">&copy; {new Date().getFullYear()} Research Locker. All rights reserved.</p>
-            <p className="text-xs text-[#8b7d6b]">Made with ❤️ for researchers worldwide</p>
+           
           </div>
         </div>
       </div>
