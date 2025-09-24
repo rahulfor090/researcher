@@ -781,8 +781,8 @@ export default function Dashboard() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
-              { label: 'Add New Article', icon: '➕', path: '/library', color: '#22c55e' },
-              { label: 'Export Data', icon: '📤', path: null, color: '#8b5cf6' },
+              { label: 'Add New Article', icon: '➕', path: '/library?openModal=true', color: '#22c55e' },
+              { label: 'Export Data', icon: '📤', path: '/library?export=true', color: '#8b5cf6' },
               { label: 'Import Articles', icon: '📥', path: null, color: '#f97316' }
             ].map((action, index) => (
               <button
