@@ -116,6 +116,7 @@
 
   .layout-main {
     padding: 16px;
+    overflow-x: hidden;
   }
 
   .mobile-toggle {

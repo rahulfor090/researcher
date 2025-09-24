@@ -15,10 +15,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-full md:col-span-1 text-center md:text-left">
           <Link to="/" className="mb-4 block hover:text-[#0D9488] transition-colors duration-300">
-            <span className="flex items-center gap-3">
-              <img src="/unnamed-removebg-preview.png" alt="ResearchLocker" className="h-10 w-10 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              <span className="text-[#2d1b0e] text-3xl font-extrabold">ResearchLocker</span>
-            </span>
+            <span className="text-[#2d1b0e] text-3xl font-extrabold">ResearchLocker</span>
           </Link>
           <p className="text-sm text-[#6b5b47] leading-relaxed mb-4">
             Your ultimate platform for securely saving, organizing, and accessing all your academic and professional research in one intuitive place.

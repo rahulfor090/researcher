@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { api } from '../api';
@@ -126,10 +127,12 @@ export default function Authors() {
     return pages;
   };
 
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+
   if (loading) {
     return (
       <Layout>
-        <div style={{ ...cardStyle, padding: '40px', textAlign: 'center' }}>
+        <div style={{ ...cardStyle, padding: isMobile ? '20px' : '40px', textAlign: 'center' }}>
           Loading authors...
         </div>
       </Layout>
@@ -138,7 +141,7 @@ export default function Authors() {
 
   return (
     <Layout>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '16px' : '0' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ 

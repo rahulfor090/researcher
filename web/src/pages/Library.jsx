@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, secondaryButtonStyle, gradients, shadows } from '../theme';
@@ -216,12 +217,14 @@ export default function Library() {
     });
   }
 
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+
   return (
     <Layout>
       <div
         style={{
           flexGrow: 1,
-          padding: '40px',
+          padding: isMobile ? '16px' : '40px',
           display: 'flex',
           flexDirection: 'column',
           borderTopRightRadius: '16px',
