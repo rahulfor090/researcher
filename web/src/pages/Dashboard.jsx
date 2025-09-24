@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, gradients, shadows, primaryButtonStyle } from '../theme';
@@ -12,6 +13,7 @@ export default function Dashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const initials = (user?.name || 'User').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
 
   // Load articles for overview
@@ -52,11 +54,11 @@ export default function Dashboard() {
   return (
     <Layout>
       {/* Main content + Right sidebar row */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px', padding: '0 0 0 0' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? '12px' : '24px', padding: '0 0 0 0', flexDirection: isMobile ? 'column' : 'row', width: '100%' }}>
       {/* Main Content Area (kept intact) */}
       <div style={{ 
         flexGrow: 1, 
-        padding: '40px', 
+        padding: isMobile ? '16px' : '40px', 
         display: 'flex', 
         flexDirection: 'column', 
         borderTopRightRadius: '16px', 
@@ -405,9 +407,9 @@ export default function Dashboard() {
 
       {/* Right Sidebar (Filters, Insights, Quick Actions) */}
       <div style={{ 
-        width: '420px', 
+        width: isMobile ? '100%' : '420px', 
         backgroundColor: 'transparent', 
-        padding: '40px 20px 40px 0',
+        padding: isMobile ? '16px 0 0 0' : '40px 20px 40px 0',
         animation: 'fadeInRight 0.6s ease-out 0.5s both'
       }}>
         <div style={{ 

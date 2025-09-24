@@ -10,6 +10,7 @@ export default function Layout({ children }) {
   const location = useLocation();
   const { user, setUser } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -43,7 +44,7 @@ export default function Layout({ children }) {
   return (
     <div className="layout">
       {/* Left Navigation Sidebar */}
-      <div className="layout-sidebar" style={{ boxShadow: shadows.medium }}>
+      <div className={`layout-sidebar${isSidebarOpen ? ' open' : ''}`} style={{ boxShadow: shadows.medium }}>
         <h1 className="layout-title">Research Locker</h1>
         
         {/* User Profile Section */}
@@ -201,6 +202,21 @@ export default function Layout({ children }) {
 
       {/* Main Content Area */}
       <div className="layout-main">
+        {/* Mobile sidebar toggle */}
+        <button 
+          className="mobile-toggle"
+          aria-label="Open navigation"
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          ☰ Menu
+        </button>
+        {isSidebarOpen && (
+          <div 
+            className="sidebar-overlay" 
+            onClick={() => { setIsSidebarOpen(false); setShowProfileMenu(false); }}
+            aria-hidden="true"
+          />
+        )}
         {children}
       </div>
     </div>

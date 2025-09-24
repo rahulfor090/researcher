@@ -14,13 +14,13 @@ const Footer = () => {
         {/* Main footer content */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-full md:col-span-1 text-center md:text-left">
-          <Link to="/" className="text-[#2d1b0e] text-3xl font-extrabold mb-4 block hover:text-[#0D9488] transition-colors duration-300">
-            Research Locker 🚀
+          <Link to="/" className="mb-4 block hover:text-[#0D9488] transition-colors duration-300">
+            <span className="text-[#2d1b0e] text-3xl font-extrabold">ResearchLocker</span>
           </Link>
           <p className="text-sm text-[#6b5b47] leading-relaxed mb-4">
             Your ultimate platform for securely saving, organizing, and accessing all your academic and professional research in one intuitive place.
           </p>
-            <p className="text-sm text-[#8b7d6b]">&copy; {new Date().getFullYear()} Research Locker. All rights reserved.</p>
+            <p className="text-sm text-[#8b7d6b]">&copy; {new Date().getFullYear()} ResearchLocker. All rights reserved.</p>
           </div>
 
           <div className="text-center md:text-left">
@@ -101,8 +101,7 @@ const Footer = () => {
             </div>
           </div>
           <div className="text-center md:text-right">
-            <p className="text-sm text-[#8b7d6b] mb-2">&copy; {new Date().getFullYear()} Research Locker. All rights reserved.</p>
-           
+            <p className="text-sm text-[#8b7d6b] mb-2">&copy; {new Date().getFullYear()} ResearchLocker. All rights reserved.</p>
           </div>
         </div>
       </div>
