@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs'; // Use bcryptjs for consistency
 import jwt from 'jsonwebtoken';
 import passport from '../config/passport.js';
-import { User } from '../models/index.js';
+import { User, TempUser, TempArticle, Article, Author, ArticleAuthor } from '../models/index.js';
 import { env } from '../config/env.js';
 import { requireAuth } from '../middleware/auth.js';
 import emailService from '../services/emailService.js';
@@ -15,16 +15,72 @@ router.post('/register',
   body('name').notEmpty(),
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
+  body('tempUserId').optional().isString(),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-    const { name, email, password } = req.body;
+    const { name, email, password, tempUserId } = req.body;
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ message: 'Email in use' });
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hash });
     const token = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, name, email, plan: user.plan } });
+
+    // If tempUserId provided, migrate temp articles
+    let migratedTemp = false;
+    if (tempUserId) {
+      try {
+        // Migrate temp articles to the new user
+        const tempArticles = await TempArticle.findAll({ where: { tempUserId } });
+        let migratedCount = 0;
+        for (const tempArt of tempArticles) {
+          // Check for duplicate by URL/DOI for this user
+          const existingArt = await Article.findOne({
+            where: {
+              userId: user.id,
+              [Op.or]: [
+                { url: tempArt.url },
+                tempArt.doi ? { doi: tempArt.doi } : null
+              ].filter(Boolean)
+            }
+          });
+          if (!existingArt) {
+            // Normalize authors for real articles
+            const names = tempArt.authors ? tempArt.authors.split(',').map(a => a.trim()) : [];
+            const authorsStringForLegacy = names.join(', ');
+
+            // Create Article
+            const created = await Article.create({
+              ...tempArt.toJSON(),
+              authors: authorsStringForLegacy,
+              userId: user.id,
+              tempUserId: undefined,
+              id: undefined
+            });
+
+            // Upsert authors and link without duplicates
+            if (names.length > 0) {
+              for (const name of names) {
+                const [author] = await Author.findOrCreate({ where: { name }, defaults: { name } });
+                await ArticleAuthor.findOrCreate({ where: { article_id: created.id, author_id: author.id } });
+              }
+            }
+            migratedCount++;
+          }
+        }
+        await TempArticle.destroy({ where: { tempUserId } });
+        await TempUser.destroy({ where: { tempUserId } });
+        migratedTemp = migratedCount > 0;
+      } catch (err) {
+        console.error("Failed to migrate temp articles after registration:", err);
+      }
+    }
+
+    res.json({
+      token,
+      user: { id: user.id, name, email, plan: user.plan },
+      migratedTemp
+    });
   }
 );
 
@@ -32,22 +88,80 @@ router.post('/register',
 router.post('/login',
   body('email').isEmail(),
   body('password').notEmpty(),
+  body('tempUserId').optional().isString(),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-    const { email, password } = req.body;
+    const { email, password, tempUserId } = req.body;
     const user = await User.findOne({ where: { email } });
     if (user && (await bcrypt.compare(password, user.password))) {
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) return res.status(500).json({ error: 'Login failed' });
         const token = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: '7d' });
-        res.json({ message: 'Logged in', token, user: { id: user.id, name: user.name, email, plan: user.plan } });
+
+        // If tempUserId provided, migrate temp articles
+        let migratedTemp = false;
+        if (tempUserId) {
+          try {
+            // Migrate temp articles to the main user
+            const tempArticles = await TempArticle.findAll({ where: { tempUserId } });
+            let migratedCount = 0;
+            for (const tempArt of tempArticles) {
+              // Check for duplicate by URL/DOI for this user
+              const existingArt = await Article.findOne({
+                where: {
+                  userId: user.id,
+                  [Op.or]: [
+                    { url: tempArt.url },
+                    tempArt.doi ? { doi: tempArt.doi } : null
+                  ].filter(Boolean)
+                }
+              });
+              if (!existingArt) {
+                // Normalize authors for real articles
+                const names = tempArt.authors ? tempArt.authors.split(',').map(a => a.trim()) : [];
+                const authorsStringForLegacy = names.join(', ');
+
+                // Create Article
+                const created = await Article.create({
+                  ...tempArt.toJSON(),
+                  authors: authorsStringForLegacy,
+                  userId: user.id,
+                  tempUserId: undefined,
+                  id: undefined
+                });
+
+                // Upsert authors and link without duplicates
+                if (names.length > 0) {
+                  for (const name of names) {
+                    const [author] = await Author.findOrCreate({ where: { name }, defaults: { name } });
+                    await ArticleAuthor.findOrCreate({ where: { article_id: created.id, author_id: author.id } });
+                  }
+                }
+                migratedCount++;
+              }
+            }
+            await TempArticle.destroy({ where: { tempUserId } });
+            await TempUser.destroy({ where: { tempUserId } });
+            migratedTemp = migratedCount > 0;
+          } catch (err) {
+            console.error("Failed to migrate temp articles after login:", err);
+          }
+        }
+
+        res.json({
+          message: 'Logged in',
+          token,
+          user: { id: user.id, name: user.name, email, plan: user.plan },
+          migratedTemp
+        });
       });
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
   }
 );
+
 
 // Twitter authentication routes
 router.get('/twitter', passport.authenticate('twitter'));
