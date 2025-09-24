@@ -6,11 +6,12 @@ import makeTag from './tag.js';
 import makeArticleTag from './articletag.js';
 import makeAuthor from './Author.js';
 import makeArticleAuthor from './ArticleAuthor.js';
-// Add the import for UserPlan
 import makeUserPlan from './UserPlan.js';
-// Import new collection models
 import makeCollection from './Collection.js';
 import makeCollectionMaster from './CollectionMaster.js';
+// TEMP MODELS
+import makeTempUser from './TempUser.js';
+import makeTempArticle from './TempArticle.js';
 
 // Add UserPlan model
 export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
@@ -25,6 +26,10 @@ export const ArticleTag = makeArticleTag(sequelize, Sequelize.DataTypes);
 // Initialize collection models
 export const Collection = makeCollection(sequelize, Sequelize.DataTypes);
 export const CollectionMaster = makeCollectionMaster(sequelize, Sequelize.DataTypes);
+
+// TEMP MODELS
+export const TempUser = makeTempUser(sequelize, Sequelize.DataTypes);
+export const TempArticle = makeTempArticle(sequelize, Sequelize.DataTypes);
 
 // User-Article associations
 User.hasMany(Article, { foreignKey: 'userId' });
@@ -86,13 +91,16 @@ CollectionMaster.belongsTo(Collection, { foreignKey: 'collection_id' });
 Article.hasMany(CollectionMaster, { foreignKey: 'article_id' });
 CollectionMaster.belongsTo(Article, { foreignKey: 'article_id' });
 
+// TEMP MODELS associations (if needed, you can add them here, for now just basic models)
+
+// Sync function
 export const syncDb = async () => {
   await sequelize.authenticate();
   // Auto-alter in dev to add missing columns (e.g., linkedinId, twitterId)
   await sequelize.sync({ alter: true });
 };
 
-// Default export for ES module compatibility, now with UserPlan and Collections
+// Default export for ES module compatibility, now with UserPlan, Collections, and Temp models
 export default {
   Author,
   ArticleAuthor,
@@ -100,9 +108,11 @@ export default {
   Article,
   Tag,
   ArticleTag,
-  UserPlan, // <-- Add this line
+  UserPlan,
   Collection,
   CollectionMaster,
+  TempUser,
+  TempArticle,
   syncDb,
   sequelize
 };

@@ -7,7 +7,7 @@
 </head>
 <body>
   <!-- Authentication View -->
-  <div id="authView" class="container">
+  <div id="authView" class="container hidden">
     <h3>Login</h3>
     <p class="subtitle">Access your research locker</p>
     <div class="form-group">
@@ -18,12 +18,13 @@
       <label for="password">Password</label>
       <input id="password" type="password" placeholder="Enter your password" class="form-control" />
     </div>
-    <button id="loginBtn" class="btn btn-primary">Login</button>
+    <button id="loginBtn" class="btn btn-primary" style="display:none;">Login</button>
+    <button id="registerBtn" class="btn btn-secondary" style="display:none;">Register</button>
     <small>Don’t have an account? <a href="http://localhost:5173/" target="_blank">Register on the web app.</a></small>
   </div>
 
   <!-- Save Article View -->
-  <div id="saveView" class="container hidden">
+  <div id="saveView" class="container">
     <h3>Save Article</h3>
     <div class="form-group">
       <label for="articleTitle">Title</label>
@@ -42,15 +43,15 @@
       <input id="articleUrl" type="text" class="form-control" readonly />
     </div>
     <button id="saveBtn" class="btn btn-primary">Save</button>
-    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+    <button id="logoutBtn" class="btn btn-secondary" style="display:none;">Logout</button>
 
     <!-- 🚫 Article Limit Message (hidden by default) -->
     <div id="limitMessage" class="limit-message-container hidden">
-      <div class="limit-message-text" id="limitMessageText">
-        🚫 <b>Article limit reached.</b> Free accounts can save up to <b>10 articles</b>.<br>
-        <button id="upgradeBtn" class="btn btn-upgrade">Upgrade</button>
-      </div>
-    </div>  
+      <div class="limit-message-text" id="limitMessageText"></div>
+      <button id="loginLimitBtn" class="btn btn-primary" style="display:none; margin-top:8px;">Login</button>
+      <button id="registerLimitBtn" class="btn btn-secondary" style="display:none; margin-top:8px;">Register</button>
+      <button id="upgradeBtn" class="btn btn-upgrade" style="display:none;">Upgrade</button>
+    </div> 
   </div>
 
   <!-- Post Save View -->

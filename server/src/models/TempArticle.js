@@ -1,9 +1,9 @@
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
-  const Article = sequelize.define('Article', {
+  const TempArticle = sequelize.define('TempArticle', {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    userId: { type: DataTypes.INTEGER, allowNull: false },
+    tempUserId: { type: DataTypes.STRING(255), allowNull: false },
     title: { type: DataTypes.STRING(500), allowNull: false },
     authors: { type: DataTypes.STRING(500) },
     journal: { type: DataTypes.STRING(255) },
@@ -15,7 +15,7 @@ export default (sequelize) => {
     file_name: { type: DataTypes.STRING(255)},
     summary: { type: DataTypes.TEXT},
     hashtags: { type: DataTypes.TEXT}
-  }, { tableName: 'articles' });
+  }, { tableName: 'temp_articles' });
 
-  return Article;
+  return TempArticle;
 };
