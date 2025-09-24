@@ -7,6 +7,60 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
   const [doi, setDoi] = useState('');
   const [authors, setAuthors] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Function to fetch article data from DOI
+  const fetchArticleData = async (doi) => {
+    // Show loading state
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Make API call to Crossref
+      const response = await fetch(`https://api.crossref.org/works/${doi}`);
+      const data = await response.json();
+
+      if (data.status === 'ok' && data.message) {
+        // Extract article details from the response
+        const article = data.message;
+        
+        // Update title
+        if (article.title && article.title[0]) {
+          setTitle(article.title[0]);
+        }
+
+        // Update authors
+        if (article.author) {
+          const authorNames = article.author
+            .map(author => `${author.given} ${author.family}`)
+            .join(', ');
+          setAuthors(authorNames);
+        }
+
+        // Update URL if available
+        if (article.URL) {
+          setUrl(article.URL);
+        }
+      }
+    } catch (err) {
+      setError('Failed to fetch article details. Please enter manually.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle DOI input and fetch data
+  const handleDoiChange = async (e) => {
+    const newDoi = e.target.value;
+    setDoi(newDoi);
+  };
+
+  // Handle when user leaves DOI field or presses Tab
+  const handleDoiBlur = async () => {
+    if (doi.trim()) {
+      await fetchArticleData(doi.trim());
+    }
+  };
 
   // Pre-fill form fields if editing
   useEffect(() => {
@@ -45,6 +99,31 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
       <div style={modalContentStyle}>
         <h3>{initialData ? 'Edit Article' : 'Add New Article'}</h3>
         <form onSubmit={handleSubmit} style={formStyle}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="DOI (press Tab to auto-fill)"
+              value={doi}
+              onChange={handleDoiChange}
+              onBlur={handleDoiBlur}
+              style={{
+                ...inputStyle,
+                paddingRight: isLoading ? '30px' : '10px'
+              }}
+              required
+            />
+            {isLoading && (
+              <div style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                animation: 'spin 1s linear infinite'
+              }}>
+                ⌛
+              </div>
+            )}
+          </div>
           <input
             type="text"
             placeholder="Title"
@@ -58,14 +137,6 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
             placeholder="Authors"
             value={authors}
             onChange={(e) => setAuthors(e.target.value)}
-            style={inputStyle}
-            required
-          />
-          <input
-            type="text"
-            placeholder="DOI"
-            value={doi}
-            onChange={(e) => setDoi(e.target.value)}
             style={inputStyle}
             required
           />
@@ -152,3 +223,16 @@ const errorMessageStyle = {
   fontSize: '0.9rem',
   textAlign: 'center',
 };
+
+// Add spinning animation
+const spinAnimation = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+
+// Add style tag for animation
+const styleTag = document.createElement('style');
+styleTag.innerHTML = spinAnimation;
+document.head.appendChild(styleTag);

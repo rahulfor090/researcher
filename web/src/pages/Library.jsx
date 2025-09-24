@@ -13,9 +13,24 @@ export default function Library() {
   const nav = useNavigate();
   const location = useLocation();
   const [articles, setArticles] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('openModal') === 'true';
+  });
   const [editArticle, setEditArticle] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  
+  // Handle export parameter from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('export') === 'true') {
+      handleExportCSV();
+      // Clean up URL parameter
+      const url = new URL(window.location.href);
+      url.searchParams.delete('export');
+      window.history.replaceState({}, '', url);
+    }
+  }, []);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [search, setSearch] = useState(''); // Add search state
@@ -33,6 +48,16 @@ export default function Library() {
     setTimeout(() => setIsLoaded(true), 100);
   };
 
+
+  // Clean up URL parameter after modal is opened
+  useEffect(() => {
+    if (showModal) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('openModal');
+      window.history.replaceState({}, '', url);
+    }
+  }, [showModal]);
+
   const fetchArticleById = async (id) => {
     try {
       const { data } = await api.get(`/articles/${id}`);
@@ -41,6 +66,7 @@ export default function Library() {
       return null;
     }
   };
+
 
   // Upload PDF for an article and refresh
   const handleUploadPdf = async (article) => {
@@ -177,6 +203,41 @@ export default function Library() {
 
   useEffect(() => { load(); }, []);
 
+
+  // Export articles to CSV
+  const handleExportCSV = () => {
+    // Define CSV headers
+    const headers = ['Title', 'Authors', 'DOI', 'Publication Date', 'Notes', 'Tags'];
+    
+    // Convert articles to CSV rows
+    const csvRows = [
+      headers.join(','), // Header row
+      ...filteredArticles.map(article => {
+        return [
+          article.title ? `"${article.title.replace(/"/g, '""')}"` : '',
+          article.authors ? `"${article.authors.replace(/"/g, '""')}"` : '',
+          article.doi || '',
+          article.publicationDate || '',
+          article.notes ? `"${article.notes.replace(/"/g, '""')}"` : '',
+          article.tags ? `"${article.tags.join(', ').replace(/"/g, '""')}"` : ''
+        ].join(',');
+      })
+    ];
+
+    // Create CSV content
+    const csvContent = csvRows.join('\n');
+    
+    // Create blob and download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `research-articles-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Read URL filter (?missing=1)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -281,29 +342,51 @@ export default function Library() {
                 {articles.length} Total Articles
               </span>
             </div>
-            <button
-              style={{ 
-                ...primaryButtonStyle,
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={() => {
-                setEditArticle(null);
-                setShowModal(true);
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(249, 115, 22, 0.3)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <span>+</span> Add New Article
-            </button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                style={{ 
+                  ...secondaryButtonStyle,
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={handleExportCSV}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(79, 70, 229, 0.2)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span>📥</span> Export to CSV
+              </button>
+              <button
+                style={{ 
+                  ...primaryButtonStyle,
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => {
+                  setEditArticle(null);
+                  setShowModal(true);
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(249, 115, 22, 0.3)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span>+</span> Add New Article
+              </button>
+            </div>
           </div>
         </div>
 
