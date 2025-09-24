@@ -1,23 +1,61 @@
 (function () {
-  // Helper to get meta content by name or property
+  function getCookie(name) {
+    const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+    const match = cookies.find(cookie => cookie.startsWith(`${name}=`));
+    return match ? match.split('=')[1] : null;
+  }
+
+  function hasLoggedInBefore(cookieName = 'mainUserId') {
+    const mainUserId = getCookie(cookieName) || localStorage.getItem('mainUserId');
+    return !!mainUserId;
+  }
+
+  function getTempUserId() {
+    return getCookie('tempUserId') || localStorage.getItem('tempUserId') || null;
+  }
+
+  function setTempUserId(tempUserId) {
+    document.cookie = `tempUserId=${tempUserId}; path=/;`;
+    localStorage.setItem('tempUserId', tempUserId);
+    return tempUserId;
+  }
+
+  function clearTempUserId() {
+    document.cookie = "tempUserId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    localStorage.removeItem('tempUserId');
+  }
+
+  function generateUUIDv4() {
+    if (window.crypto && window.crypto.getRandomValues) {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = crypto.getRandomValues(new Uint8Array(1))[0] % 16;
+        var v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    } else {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+          v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+  }
+
   function getMeta(name, prop = "name") {
     return document.querySelector(`meta[${prop}="${name}"]`)?.content || "";
   }
 
-  // Helper to robustly extract title
   function getTitle() {
     return (
       getMeta("citation_title") ||
       getMeta("dc.title") ||
-      document.querySelector("h1")?.textContent.trim() ||
+      document.querySelector("h1")?.textContent?.trim() ||
       document.title ||
       ""
     );
   }
 
-  // Robust author extraction logic
   function getAuthors() {
-    // Try meta tags first
     const metaAuthors = Array.from(
       document.querySelectorAll('meta[name="citation_author"], meta[name="dc.creator"]')
     )
@@ -26,10 +64,7 @@
 
     if (metaAuthors.length) return metaAuthors.join(", ");
 
-    // Set unwanted string
     const unwantedString = "Author links open overlay panel";
-
-    // Try common selectors for author names
     const authorSelectors = [
       '.author-list .author-name',
       '[data-author-name]',
@@ -44,7 +79,7 @@
         const authors = [];
         block.querySelectorAll('a, span, .author-name').forEach(el => {
           let name = el.textContent.replace(/[, ]+$/, '').trim();
-          name = name.replace(/\s+/g, ' '); // normalize whitespace
+          name = name.replace(/\s+/g, ' ');
           if (
             name &&
             name.length > 2 &&
@@ -61,7 +96,6 @@
       }
     }
 
-    // Fallback: grab from anywhere on page (may be noisy)
     const wildAuthors = Array.from(
       document.querySelectorAll('.author, .authors, a[title*="Author"]')
     )
@@ -69,7 +103,6 @@
       .filter(Boolean);
     if (wildAuthors.length) return wildAuthors.join(", ");
 
-    // NEW fallback: detect semicolon-separated plain text authors
     const bodyText = document.body.innerText;
     const semicolonMatch = bodyText.match(
       /([A-Z][a-z]+,\s*[A-Z][a-z]+[^;]+(?:;\s*[A-Z][a-z]+,\s*[A-Z][a-z]+[^;]+)+)/
@@ -80,12 +113,10 @@
         .map(a => cleanAuthorName(a))
         .filter(Boolean);
 
-      // stop if something looks like "Author Information" sneaks in
       const cleaned = rawAuthors.filter(a => !/author information|abstract|doi|buy|erratum/i.test(a));
       if (cleaned.length) return cleaned.join(", ");
     }
 
-    // Final fallback
     return Array.from(
       document.querySelectorAll('.author-list .author-name, [data-author-name]')
     )
@@ -94,27 +125,23 @@
       .join(", ");
   }
 
-  // Clean unwanted numbers/hashtags/symbols from author names
   function cleanAuthorName(name) {
     if (!name) return "";
     let cleaned = name
-      .replace(/#\s*\d+/g, "")         // remove things like "# 1"
-      .replace(/\d+/g, "")             // remove all standalone numbers
-      .replace(/[†*]/g, "")            // remove symbols like † and *
-      .replace(/\s+/g, " ")            // normalize spaces
-      .replace(/[, ]+$/, "")           // trim trailing commas/spaces
+      .replace(/#\s*\d+/g, "")
+      .replace(/\d+/g, "")
+      .replace(/[†*]/g, "")
+      .replace(/\s+/g, " ")
+      .replace(/[, ]+$/, "")
       .trim();
 
-    // If format is "Lastname, Firstname" → flip to "Firstname Lastname"
     const m = cleaned.match(/^([^,]+),\s*(.+)$/);
     if (m) {
       cleaned = `${m[2]} ${m[1]}`.trim();
     }
-
     return cleaned;
   }
 
-  // Robust journal extraction
   function getJournal() {
     return (
       getMeta("citation_journal_title") ||
@@ -124,7 +151,6 @@
     );
   }
 
-  // Robust DOI extraction
   function getDOI() {
     return (
       getMeta("citation_doi") ||
@@ -133,7 +159,6 @@
     );
   }
 
-  // Robust abstract extraction
   function getAbstract() {
     return (
       getMeta("citation_abstract") ||
@@ -144,19 +169,48 @@
     );
   }
 
-  const articleData = {
-    title: getTitle(),
-    authors: getAuthors(),
-    journal: getJournal(),
-    doi: getDOI(),
-    url: location.href,
-    abstract: getAbstract(),
-    purchaseDate: new Date().toISOString().slice(0, 10),
-    price: null,
-    tags: []
-  };
+  function getArticleData() {
+    const loggedIn = hasLoggedInBefore();
+    const mainUserId = loggedIn ? getCookie('mainUserId') || localStorage.getItem('mainUserId') : null;
+    const tempUserId = (!loggedIn) ? getTempUserId() : null;
+    return {
+      title: getTitle(),
+      authors: getAuthors(),
+      journal: getJournal(),
+      doi: getDOI(),
+      url: location.href,
+      abstract: getAbstract(),
+      purchaseDate: new Date().toISOString().slice(0, 10),
+      price: null,
+      tags: [],
+      mainUserId,
+      tempUserId
+    };
+  }
 
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-    if (msg?.type === "GET_ARTICLE_DATA") sendResponse(articleData);
+    if (msg?.type === "GET_ARTICLE_DATA") {
+      sendResponse(getArticleData());
+    }
+    if (msg?.type === "GET_USER_INFO") {
+      const loggedIn = hasLoggedInBefore();
+      sendResponse({
+        loggedIn,
+        mainUserId: getCookie('mainUserId') || localStorage.getItem('mainUserId'),
+        tempUserId: getTempUserId()
+      });
+    }
+    if (msg?.type === "CREATE_TEMP_USER") {
+      let tempUserId = getTempUserId();
+      if (!tempUserId) {
+        tempUserId = "temp_" + generateUUIDv4();
+        setTempUserId(tempUserId);
+      }
+      sendResponse({ tempUserId });
+    }
+    if (msg?.type === "CLEAR_TEMP_USER") {
+      clearTempUserId();
+      sendResponse({ ok: true });
+    }
   });
 })();
