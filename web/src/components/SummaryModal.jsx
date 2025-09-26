@@ -1,8 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 export default function SummaryModal({ summary, onClose, onViewDetails }) {
   const [copied, setCopied] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (isGenerating) {
+      setProgress(0);
+      const durationMs = 2500; // total animation time
+      const stepMs = 100;
+      const steps = Math.ceil(durationMs / stepMs);
+      let tick = 0;
+      timer = setInterval(() => {
+        tick += 1;
+        const next = Math.min(99, Math.round((tick / steps) * 100));
+        setProgress(next);
+        if (next >= 99) {
+          clearInterval(timer);
+          // Slight delay to feel complete
+          setTimeout(() => {
+            setProgress(100);
+            // Trigger print after reaching 100%
+            try { window.print(); } catch {}
+            // Reset after print dialog opens
+            setTimeout(() => {
+              setIsGenerating(false);
+              setProgress(0);
+            }, 400);
+          }, 200);
+        }
+      }, stepMs);
+    }
+    return () => { if (timer) clearInterval(timer); };
+  }, [isGenerating]);
+
+  const handleGeneratePdf = () => {
+    if (!isGenerating) {
+      setIsGenerating(true);
+    }
+  };
 
   const handleCopy = async () => {
     try {
@@ -21,6 +60,17 @@ export default function SummaryModal({ summary, onClose, onViewDetails }) {
         </div>
 
         <div style={modalBodyStyle}>
+          {isGenerating && (
+            <div style={progressWrapStyle} aria-live="polite" aria-label="Generating PDF summary">
+              <div style={progressTrackStyle}>
+                <div style={{ ...progressBarStyle, width: `${progress}%` }} />
+              </div>
+              <div style={progressTextRowStyle}>
+                <span>Generating PDF summary…</span>
+                <span>{progress}%</span>
+              </div>
+            </div>
+          )}
           <h3 style={titleStyle}>Article Summary</h3>
           <div style={metaRowStyle}>
             <span style={metaPillStyle}>AI-generated</span>
@@ -80,7 +130,9 @@ export default function SummaryModal({ summary, onClose, onViewDetails }) {
             <button onClick={onViewDetails} style={primaryButtonStyle}>View full insights →</button>
           )}
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => window.print()} style={secondaryButtonStyle}>Download PDF</button>
+            <button onClick={handleGeneratePdf} style={{ ...secondaryButtonStyle, opacity: isGenerating ? 0.7 : 1, cursor: isGenerating ? 'not-allowed' : 'pointer' }} disabled={isGenerating}>
+              {isGenerating ? 'Generating…' : 'Download PDF'}
+            </button>
             <button onClick={handleCopy} style={secondaryButtonStyle}>{copied ? 'Copied ✓' : 'Copy summary'}</button>
             <button onClick={onClose} style={ghostButtonStyle}>Close</button>
           </div>
@@ -226,6 +278,34 @@ const buttonBarStyle = {
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: '16px 20px 20px 20px'
+};
+
+const progressWrapStyle = {
+  marginBottom: 12
+};
+
+const progressTrackStyle = {
+  width: '100%',
+  height: 10,
+  background: '#f3f4f6',
+  borderRadius: 9999,
+  overflow: 'hidden',
+  border: '1px solid #e5e7eb'
+};
+
+const progressBarStyle = {
+  height: '100%',
+  background: 'linear-gradient(90deg, #0D9488, #F97316)',
+  transition: 'width 120ms ease',
+};
+
+const progressTextRowStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginTop: 6,
+  color: '#6b7280',
+  fontSize: '0.85rem'
 };
 
 const closeButtonStyle = {

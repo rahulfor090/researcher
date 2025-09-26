@@ -59,7 +59,7 @@ export const cardStyle = {
 
 export const primaryButtonStyle = {
   padding: '10px 16px',
-  background: '#0D9488',
+  background: colors.link,
   color: 'white',
   border: 'none',
   borderRadius: '8px',

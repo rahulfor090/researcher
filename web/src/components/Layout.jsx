@@ -45,7 +45,7 @@ export default function Layout({ children }) {
     <div className="layout">
       {/* Left Navigation Sidebar */}
       <div className={`layout-sidebar${isSidebarOpen ? ' open' : ''}`} style={{ boxShadow: shadows.medium }}>
-        <h1 className="layout-title">Research Locker</h1>
+        <h1 className="layout-title">ResearchLocker</h1>
         
         {/* User Profile Section */}
         <div 

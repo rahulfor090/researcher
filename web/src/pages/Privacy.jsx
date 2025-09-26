@@ -31,7 +31,7 @@ export default function Privacy() {
           <p className="mt-1 text-gray-500"><strong>Last updated:</strong> {new Date().toLocaleDateString()}</p>
 
       <p>
-        This Privacy Policy describes how Research Locker ("we", "us", or "our") collects, uses,
+        This Privacy Policy describes how ResearchLocker ("we", "us", or "our") collects, uses,
         discloses, and safeguards personal information when you use our website and services
         (collectively, the "Services"). By using the Services, you agree to the practices described
         in this policy.

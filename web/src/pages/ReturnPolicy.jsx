@@ -38,7 +38,7 @@ export default function ReturnPolicy() {
               </p>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">Return & Refund Policy</h1>
               <p className="mt-2 text-gray-600 max-w-2xl">
-                We want you to love Research Locker. If something isn’t right, here’s how returns and refunds work.
+                We want you to love ResearchLocker. If something isn’t right, here’s how returns and refunds work.
               </p>
             </div>
           </div>
