@@ -205,7 +205,7 @@ export default function CollectionAssign() {
               onClick={handleSaveAssignments}
               disabled={isSaving}
               style={{
-                background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+                background: colors.link,
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -245,9 +245,9 @@ export default function CollectionAssign() {
             ...cardStyle,
             padding: '20px 24px',
             marginBottom: '24px',
-            background: `linear-gradient(135deg, #10b981, #059669)`,
-            color: 'white',
-            border: '2px solid #059669',
+            background: `${colors.link}15`,
+            color: colors.primaryText,
+            border: `1px solid ${colors.link}40`,
             position: 'relative'
           }}>
             <div style={{
@@ -269,7 +269,7 @@ export default function CollectionAssign() {
                     fontWeight: 600,
                     marginBottom: '4px'
                   }}>
-                    Success!
+                    Assignments Saved
                   </div>
                   <div style={{ fontSize: '0.95rem', opacity: 0.9 }}>
                     {successMessage}
@@ -278,7 +278,7 @@ export default function CollectionAssign() {
               </div>
               <div style={{
                 fontSize: '0.9rem',
-                opacity: 0.8,
+                color: colors.mutedText,
                 textAlign: 'right'
               }}>
                 <div>🔄 Redirecting in 3 seconds...</div>
@@ -286,9 +286,9 @@ export default function CollectionAssign() {
                   <button
                     onClick={() => navigate(`/collection/${id}`)}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.2)',
+                      background: colors.link,
                       color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      border: 'none',
                       borderRadius: '6px',
                       padding: '6px 12px',
                       fontSize: '0.85rem',
@@ -309,9 +309,9 @@ export default function CollectionAssign() {
             ...cardStyle,
             padding: '16px 24px',
             marginBottom: '24px',
-            background: `linear-gradient(135deg, #ef4444, #dc2626)`,
-            color: 'white',
-            border: '2px solid #dc2626'
+            background: `${colors.highlight}15`,
+            color: colors.primaryText,
+            border: `1px solid ${colors.highlight}40`
           }}>
             <div style={{
               display: 'flex',
@@ -320,7 +320,7 @@ export default function CollectionAssign() {
             }}>
               <span style={{ fontSize: '1.5rem' }}>❌</span>
               <div>
-                <div style={{ fontWeight: 600, marginBottom: '2px' }}>Error</div>
+                <div style={{ fontWeight: 600, marginBottom: '2px', color: colors.highlight }}>Error</div>
                 <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>{error}</div>
               </div>
             </div>
@@ -463,8 +463,8 @@ export default function CollectionAssign() {
                     width: '32px',
                     height: '32px',
                     borderRadius: '50%',
-                    background: isSelected ? colors.accent : 'transparent',
-                    border: `2px solid ${isSelected ? colors.accent : colors.border}`,
+                    background: isSelected ? colors.link : 'transparent',
+                    border: `2px solid ${isSelected ? colors.link : colors.border}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

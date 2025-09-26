@@ -143,7 +143,7 @@ export default function Collection() {
           <button
             onClick={() => setShowCollectionModal(true)}
             style={{
-              background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+              background: colors.link,
               color: 'white',
               border: 'none',
               borderRadius: '12px',
@@ -350,7 +350,7 @@ export default function Collection() {
                   </h3>
 
                   <div style={{
-                    background: colors.accent,
+                    background: colors.link,
                     color: 'white',
                     padding: '8px 12px',
                     borderRadius: '8px',

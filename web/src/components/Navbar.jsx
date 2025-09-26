@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { api } from '../api';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
   const { user, logout, setUser } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -76,12 +77,13 @@ const Navbar = () => {
     }
   };
 
+  const isHome = location.pathname === '/';
   const navItems = user ? [
-    { name: 'Home', path: '/' },
-    { name: 'Library', path: '/library' },
+    ...(!isHome ? [{ name: 'Home', path: '/' }] : []),
+    ...(!isHome ? [{ name: 'Library', path: '/library' }] : []),
     { name: 'Upgrade', path: '/upgrade' },
   ] : [
-    { name: 'Home', path: '/' },
+    ...(!isHome ? [{ name: 'Home', path: '/' }] : []),
     { name: 'Membership', path: '/upgrade' },
     { name: 'Login', path: '/login' },
     { name: 'Register', path: '/register' },
@@ -141,11 +143,12 @@ const Navbar = () => {
                 text.style.textShadow = 'none';
               }
             }}>
-              <span className="text-[#2d1b0e] text-xl md:text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">ResearchLocker</span>
+              <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">Research Locker</span>
             </Link>
           </div>
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="flex items-baseline space-x-4">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
@@ -215,6 +218,7 @@ const Navbar = () => {
                           </div>
                           <button onClick={() => setIsEditing(true)} className="w-full bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] text-white text-sm font-semibold py-2 rounded-lg transition-all duration-300 shadow-sm">Edit Profile</button>
                           <div className="flex gap-2">
+                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex-1 text-center border border-[#e8ddd4] hover:border-[#0D9488] text-[#6b5b47] hover:text-[#0D9488] text-sm py-2 rounded-lg transition-all duration-300">Back to Home</Link>
                             <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="flex-1 text-center border border-[#e8ddd4] hover:border-[#0D9488] text-[#6b5b47] hover:text-[#0D9488] text-sm py-2 rounded-lg transition-all duration-300">Settings</Link>
                             <button onClick={logout} className="flex-1 text-center border border-[#e8ddd4] hover:border-red-300 text-[#6b5b47] hover:text-red-600 text-sm py-2 rounded-lg transition-all duration-300">Logout</button>
                           </div>

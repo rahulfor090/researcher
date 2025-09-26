@@ -102,50 +102,13 @@ const Home = () => {
           ref={scrollProgressRef}
           className="h-full transition-all duration-300 ease-out"
           style={{ 
-            background: `linear-gradient(90deg, ${colors.link}, ${colors.highlight})`,
+            background: colors.link,
             width: '0%'
           }}
         />
       </div>
 
-      {/* Enhanced Animated Background Mesh with Parallax */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        {/* Animated grid pattern */}
-        <div className="absolute inset-0 opacity-[0.08] animate-grid-shift" style={{ 
-          backgroundImage: 'linear-gradient(rgba(0,0,0,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.15) 1px, transparent 1px)', 
-          backgroundSize: '60px 60px', 
-          backgroundPosition: '0 0, 0 0' 
-        }} />
-        
-        {/* Floating orbs with enhanced animations and parallax */}
-        <div ref={addParallaxRef} className="absolute -top-40 -left-40 h-[32rem] w-[32rem] rounded-full blur-3xl opacity-35 animate-float-orb-1" style={{ 
-          background: `radial-gradient(circle at 30% 30%, ${colors.link}, transparent 60%)` 
-        }} />
-        <div ref={addParallaxRef} className="absolute -bottom-48 -right-40 h-[36rem] w-[36rem] rounded-full blur-3xl opacity-30 animate-float-orb-2" style={{ 
-          background: `radial-gradient(circle at 70% 70%, ${colors.highlight}, transparent 60%)` 
-        }} />
-        <div ref={addParallaxRef} className="absolute top-1/3 -right-24 h-[20rem] w-[20rem] rounded-full blur-2xl opacity-25 animate-float-orb-3" style={{ 
-          background: `radial-gradient(circle at 50% 50%, ${colors.accent}, transparent 60%)` 
-        }} />
-        
-        {/* Additional floating elements with parallax */}
-        <div ref={addParallaxRef} className="absolute top-1/4 left-1/4 h-[16rem] w-[16rem] rounded-full blur-xl opacity-20 animate-float-orb-4" style={{ 
-          background: `radial-gradient(circle at 50% 50%, ${colors.success}, transparent 70%)` 
-        }} />
-        <div ref={addParallaxRef} className="absolute bottom-1/4 left-1/3 h-[12rem] w-[12rem] rounded-full blur-lg opacity-15 animate-float-orb-5" style={{ 
-          background: `radial-gradient(circle at 50% 50%, ${colors.warning}, transparent 70%)` 
-        }} />
-        
-        {/* Rotating gradient halo with parallax */}
-        <div ref={addParallaxRef} className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 h-[48rem] w-[48rem] rounded-full blur-2xl animate-spin-slow" style={{ 
-          background: `conic-gradient(from 0deg, ${colors.link}20, ${colors.highlight}20, ${colors.accent}20, ${colors.success}20, ${colors.warning}20, ${colors.link}20)` 
-        }} />
-        
-        {/* Subtle wave pattern */}
-        <div className="absolute inset-0 opacity-5 animate-wave" style={{
-          background: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }} />
-      </div>
+      {/* Background mesh and floating bubbles removed */}
 
       {/* Enhanced Hero Section */}
       <section
@@ -157,9 +120,8 @@ const Home = () => {
         }}
       >
         {/* Top-left logo overlay */}
-        <div className="absolute top-6 left-6 hidden sm:flex items-center gap-2">
-          <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-10 w-10 rounded-xl ring-1 ring-white/40 shadow-md object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-          <span className="text-white/90 font-bold text-lg drop-shadow">Research Locker</span>
+        <div className="absolute top-6 left-6 hidden sm:flex items-center">
+          <img src="/upload/brand/research-locker-logo.png" alt="ResearchLocker" className="h-10 w-10 rounded-xl ring-1 ring-white/40 shadow-md object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
         {/* Enhanced Hero animated accents */}
         <div className="pointer-events-none absolute inset-0">
@@ -173,17 +135,13 @@ const Home = () => {
             Accelerate Your Research Workflow
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-slate-100 leading-relaxed animate-slide-up animation-delay-200">
-            Streamline your research process with Research Locker. Save, organize, and access your research materials effortlessly, anytime, anywhere.
+            Streamline your research process with ResearchLocker. Save, organize, and access your research materials effortlessly, anytime, anywhere.
           </p>
           {user ? (
             <div className="mt-10 flex items-center justify-center gap-6 animate-slide-up animation-delay-400">
               <Link to="/dashboard" className="group relative inline-flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
-                background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+                background: colors.link,
                 boxShadow: `0 15px 35px -10px ${colors.link}80`
-              }} onMouseEnter={(e) => {
-                e.target.style.boxShadow = `0 20px 45px -10px ${colors.highlight}90`;
-              }} onMouseLeave={(e) => {
-                e.target.style.boxShadow = `0 15px 35px -10px ${colors.link}80`;
               }}>
                 <span className="relative z-[1] flex items-center gap-2">
                   <span>Go to Dashboard</span>
@@ -201,12 +159,8 @@ const Home = () => {
           ) : (
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up animation-delay-400">
               <Link to="/register" className="group relative inline-flex min-w-[200px] max-w-[500px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-10 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
-                background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+                background: colors.link,
                 boxShadow: `0 20px 40px -10px ${colors.link}90`
-              }} onMouseEnter={(e) => {
-                e.target.style.boxShadow = `0 25px 50px -10px ${colors.highlight}A0`;
-              }} onMouseLeave={(e) => {
-                e.target.style.boxShadow = `0 20px 40px -10px ${colors.link}90`;
               }}>
                 <span className="relative z-[1] flex items-center gap-3">
                   <span>Get Started Free</span>
@@ -234,36 +188,101 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Value Props Sections */}
-      <section ref={addToRefs} className="py-20 sm:py-28 w-full relative overflow-hidden" style={{ backgroundColor: '#fefcf3' }}>
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-6 animate-on-scroll" style={{ color: '#2d1b0e' }}>Never Lose a Valuable Insight Again</h2>
-          <p className="mt-6 max-w-4xl mx-auto text-xl leading-relaxed animate-on-scroll" style={{ color: '#6b5b47' }}>
-            Research Locker ensures that your research is always at your fingertips. With secure cloud storage and powerful organization tools, you can focus on your work, not on managing your resources.
-          </p>
+      {/* Features Section moved up */}
+      <section className="py-16 sm:py-24 w-full" id="features" style={{ backgroundColor: colors.backgroundAlt }}>
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl" style={{ color: colors.primaryText }}>Powerful Features Designed for You</h2>
+              <p className="mt-4 max-w-2xl mx-auto text-lg" style={{ color: colors.secondaryText }}>
+              Explore the features that make ResearchLocker the ultimate research management tool.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
+              backgroundColor: colors.cardBackground,
+              border: `1px solid ${colors.border}`
+            }}>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.link}1A` }} />
+              <span className="text-3xl mt-1" style={{ color: colors.link }}>📦</span>
+            <div>
+                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Free Article Storage</h3>
+                <p className="mt-1" style={{ color: colors.secondaryText }}>Start with a free plan that includes ample storage for your research articles.</p>
+              </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
+              backgroundColor: colors.cardBackground,
+              border: `1px solid ${colors.border}`
+            }}>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.highlight}1A` }} />
+              <span className="text-3xl mt-1" style={{ color: colors.highlight }}>☁️</span>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Secure Cloud Storage</h3>
+                <p className="mt-1" style={{ color: colors.secondaryText }}>Your research is stored securely in the cloud, ensuring it's always safe and accessible.</p>
+          </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
+              backgroundColor: colors.cardBackground,
+              border: `1px solid ${colors.border}`
+            }}>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.accent}1A` }} />
+              <span className="text-3xl mt-1" style={{ color: colors.accent }}>🖱️</span>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>One-Click Saving</h3>
+                <p className="mt-1" style={{ color: colors.secondaryText }}>Save articles directly from your browser with our easy-to-use extension.</p>
+          </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
+              backgroundColor: colors.cardBackground,
+              border: `1px solid ${colors.border}`
+            }}>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.link}1A` }} />
+              <span className="text-3xl mt-1" style={{ color: colors.link }}>🔎</span>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Advanced Search & Filters</h3>
+                <p className="mt-1" style={{ color: colors.secondaryText }}>Quickly find articles with powerful search and filtering options.</p>
+          </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
+              backgroundColor: colors.cardBackground,
+              border: `1px solid ${colors.border}`
+            }}>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.highlight}1A` }} />
+              <span className="text-3xl mt-1" style={{ color: colors.highlight }}>♾️</span>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Unlimited Storage Plans</h3>
+                <p className="mt-1" style={{ color: colors.secondaryText }}>Upgrade to unlimited storage to save as many articles as you need.</p>
+          </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
+              backgroundColor: colors.cardBackground,
+              border: `1px solid ${colors.border}`
+            }}>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.accent}1A` }} />
+              <span className="text-3xl mt-1" style={{ color: colors.accent }}>📚</span>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Personal Research Library</h3>
+                <p className="mt-1" style={{ color: colors.secondaryText }}>Build a comprehensive library of your research materials, organized and accessible.</p>
+          </div>
+            </div>
+          </div>
         </div>
-        {/* Decorative elements with parallax */}
-        <div ref={addParallaxRef} className="absolute top-10 right-10 w-32 h-32 rounded-full blur-2xl opacity-10 animate-float-slow" style={{ background: colors.link }} />
-        <div ref={addParallaxRef} className="absolute bottom-10 left-10 w-24 h-24 rounded-full blur-xl opacity-15 animate-float-slower" style={{ background: colors.highlight }} />
       </section>
       <section ref={addToRefs} className="py-20 sm:py-28 w-full relative overflow-hidden" style={{ backgroundColor: '#f5f1e8' }}>
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-6 animate-on-scroll" style={{ color: '#2d1b0e' }}>Empowering Academics and Professionals</h2>
           <p className="mt-6 max-w-4xl mx-auto text-xl leading-relaxed animate-on-scroll" style={{ color: '#6b5b47' }}>
-            Join a community of researchers who are transforming their workflows with Research Locker. Whether you're a student, academic, or professional, our platform is designed to meet your needs.
+            Join a community of researchers who are transforming their workflows with ResearchLocker. Whether you're a student, or professional, our platform is designed to meet your needs.
           </p>
         </div>
-        {/* Decorative elements with parallax */}
-        <div ref={addParallaxRef} className="absolute top-1/4 left-1/4 w-20 h-20 rounded-full blur-lg opacity-20 animate-pulse" style={{ background: colors.accent }} />
-        <div ref={addParallaxRef} className="absolute bottom-1/4 right-1/4 w-16 h-16 rounded-full blur-md opacity-25 animate-bounce" style={{ background: colors.success }} />
+        {/* Decorative bubbles removed */}
       </section>
 
       {/* Demo Video */}
       <section ref={addToRefs} className="relative z-10 w-full py-16 sm:py-24" style={{ backgroundColor: '#fefcf3' }}>
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 animate-on-scroll" style={{ color: '#2d1b0e' }}>See Research Locker in Action</h2>
-            <p className="text-lg animate-on-scroll" style={{ color: '#6b5b47' }}>A quick walkthrough of saving, organizing, and accessing your research.</p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 animate-on-scroll" style={{ color: '#2d1b0e' }}>See ResearchLocker in Action</h1>
+            <p className="text-xl animate-on-scroll" style={{ color: '#6b5b47' }}>A quick walkthrough of saving, organizing, and accessing your research.</p>
           </div>
           <div className="relative rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] animate-on-scroll" style={{ 
             border: '2px solid #e8ddd4',
@@ -320,9 +339,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-        {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-16 h-16 rounded-full blur-lg opacity-20 animate-float-slow" style={{ background: colors.link }} />
-        <div className="absolute bottom-20 right-10 w-12 h-12 rounded-full blur-md opacity-25 animate-float-slower" style={{ background: colors.highlight }} />
+        {/* Decorative bubbles removed */}
       </section>
 
       {/* Chrome Extension Download Section */}
@@ -344,7 +361,7 @@ const Home = () => {
                   <h3 className="text-2xl font-bold mb-4" style={{ color: '#2d1b0e' }}>One-Click Research Saving</h3>
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -352,7 +369,7 @@ const Home = () => {
                       <span style={{ color: '#6b5b47' }}>Save articles from any website</span>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -360,7 +377,7 @@ const Home = () => {
                       <span style={{ color: '#6b5b47' }}>Automatic metadata extraction</span>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -368,7 +385,7 @@ const Home = () => {
                       <span style={{ color: '#6b5b47' }}>Instant sync with your library</span>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0D9488] to-[#F97316] flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -380,12 +397,12 @@ const Home = () => {
                 
                 <div className="text-center">
                   <div className="mb-6">
-                    <div className="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#0D9488] to-[#F97316] flex items-center justify-center shadow-lg">
+                  <div className="w-24 h-24 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: colors.link }}>
                       <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                       </svg>
                     </div>
-                    <h4 className="text-xl font-bold mb-2" style={{ color: '#2d1b0e' }}>Research Locker Extension</h4>
+                    <h4 className="text-xl font-bold mb-2" style={{ color: '#2d1b0e' }}>ResearchLocker Extension</h4>
                     <p className="text-sm mb-4" style={{ color: '#6b5b47' }}>Available on Chrome Web Store</p>
                     <div className="flex items-center justify-center gap-2 mb-4">
                       <div className="flex">
@@ -404,10 +421,10 @@ const Home = () => {
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="group relative inline-flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
-                      background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+                      background: colors.link,
                       boxShadow: `0 15px 35px -10px ${colors.link}80`
                     }} onMouseEnter={(e) => {
-                      e.target.style.boxShadow = `0 20px 45px -10px ${colors.highlight}90`;
+                      e.target.style.boxShadow = `0 20px 45px -10px ${colors.link}90`;
                     }} onMouseLeave={(e) => {
                       e.target.style.boxShadow = `0 15px 35px -10px ${colors.link}80`;
                     }}>
@@ -426,9 +443,7 @@ const Home = () => {
           </div>
         </div>
         
-        {/* Decorative elements */}
-        <div className="absolute top-10 right-10 w-20 h-20 rounded-full blur-xl opacity-15 animate-float-slow" style={{ background: colors.accent }} />
-        <div className="absolute bottom-10 left-10 w-16 h-16 rounded-full blur-lg opacity-20 animate-float-slower" style={{ background: colors.success }} />
+        {/* Decorative bubbles removed */}
       </section>
 
       {/* Features Section */}
@@ -437,7 +452,7 @@ const Home = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl" style={{ color: colors.primaryText }}>Powerful Features Designed for You</h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg" style={{ color: colors.secondaryText }}>
-              Explore the features that make Research Locker the ultimate research management tool.
+              Explore the features that make ResearchLocker the ultimate research management tool.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -551,9 +566,9 @@ const Home = () => {
       <section className="py-16 sm:py-24 w-full" id="who-benefits" style={{ backgroundColor: colors.backgroundAlt }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: colors.primaryText }}>Who Benefits from Research Locker?</h2>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: colors.primaryText }}>Who Benefits from ResearchLocker?</h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg" style={{ color: colors.secondaryText }}>
-              See how Research Locker can help you achieve your goals, no matter your field.
+              See how ResearchLocker can help you achieve your goals, no matter your field.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

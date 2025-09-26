@@ -324,7 +324,7 @@ export default function Settings() {
           marginBottom: '16px', 
           color: '#e5e7eb',
           animation: 'fadeInDown 0.8s ease-out 0.2s both'
-        }}>Research Locker</h1>
+        }}>ResearchLocker</h1>
         
         <div 
           onClick={(e) => {

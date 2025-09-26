@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { colors } from '../theme';
 
 const Footer = () => {
   return (
@@ -26,7 +27,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h3 className="text-lg font-semibold text-[#2d1b0e] mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">Home</Link></li>
+              {/* Home removed from Quick Links on Home page */}
               <li><Link to="/library" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">My Library</Link></li>
               <li><Link to="/upgrade" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">View Plans</Link></li>
               <li><Link to="/register" className="text-[#6b5b47] hover:text-[#0D9488] transition duration-300 hover:translate-x-1 inline-block">Sign Up</Link></li>
@@ -78,7 +79,7 @@ const Footer = () => {
               placeholder="Enter your email address" 
               className="flex-1 px-4 py-3 rounded-lg border border-[#e8ddd4] focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-[#0D9488] transition-colors duration-300 text-[#2d1b0e] placeholder-[#8b7d6b]"
             />
-            <button className="px-6 py-3 bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] text-white font-semibold rounded-lg transition-all duration-300 shadow-sm hover:shadow-md">
+            <button className="px-6 py-3 text-white font-semibold rounded-lg transition-all duration-300 shadow-sm hover:shadow-md" style={{ background: colors.link }}>
               Subscribe
             </button>
           </div>

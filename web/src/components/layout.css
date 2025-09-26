@@ -81,6 +81,11 @@
               linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
 }
 
+/* Hide mobile toggle button by default (desktop) */
+.mobile-toggle {
+  display: none;
+}
+
 /* Subtle pulse animation utility */
 @keyframes rl-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
