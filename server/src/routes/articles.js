@@ -573,7 +573,7 @@ router.get('/authors/:authorId/articles', requireAuth, async (req, res) => {
     }
 
     const authorName = authorsArray[authorIndex];
-    console.log('📚 Found author name:', authorName);
+    console.log(' Found author name:', authorName);
 
     // Find all articles that contain this author name
     const authorArticles = await Article.findAll({

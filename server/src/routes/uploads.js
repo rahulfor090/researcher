@@ -5,7 +5,8 @@ import fs from 'fs';
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Article, Tag } from '../models/index.js';
+import { Article, Tag, ArticleTag } from '../models/index.js';
+import { requireAuth } from '../middleware/auth.js';
 
 dotenv.config();
 
@@ -32,7 +33,6 @@ const upload = multer({
   }
 });
 
-// === Debug: Log GEMINI_API_KEY config === //
 if (!process.env.GEMINI_API_KEY) {
   console.error('❌ GEMINI_API_KEY is not set in your environment!');
 }
@@ -53,7 +53,6 @@ You are a expert medical researcher. Extract 10-15 important keywords or phrases
 Text:
 ${text.slice(0, 8000)}
     `;
-
     const result = await model.generateContent(prompt);
     const keywordsText = result.response.text();
 
@@ -68,7 +67,6 @@ ${text.slice(0, 8000)}
         .split(/\s+/)
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join('');
-      // Truncate to avoid DB overflows on tags.name (VARCHAR(255))
       return pascalCase.slice(0, 60);
     }).filter(tag => Boolean(tag) && tag.length > 0);
 
@@ -82,7 +80,6 @@ ${text.slice(0, 8000)}
 async function processPDF(pdfBuffer, filename = 'uploaded file') {
   try {
     console.log(`📄 Processing PDF: ${filename}`);
-
     const pdfData = await pdf(pdfBuffer);
 
     const prompt = `
@@ -127,8 +124,6 @@ ${pdfData.text.slice(0, 8000)}
     }
 
     const pascalTags = await extractHashtags(pdfData.text);
-
-    // Prepare string for hashtags column in Article (with # prefix)
     const hashtagsStr = pascalTags.map(tag => `#${tag}`).join(' ');
 
     return {
@@ -151,18 +146,16 @@ ${pdfData.text.slice(0, 8000)}
   }
 }
 
-router.post('/pdf', upload.single('pdf'), async (req, res) => {
+// Authenticated PDF upload and processing!
+router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
   const articleId = req.query.id;
   if (!articleId) {
-    console.error('❌ Article id is required');
     return res.status(400).json({ error: 'Article id is required' });
   }
   if (!req.file) {
-    console.error('❌ No file uploaded');
     return res.status(400).json({ error: 'No file uploaded' });
   }
   if (!model) {
-    console.error('❌ Gemini model not initialized.');
     return res.status(500).json({ error: 'Gemini model not initialized.' });
   }
 
@@ -172,75 +165,118 @@ router.post('/pdf', upload.single('pdf'), async (req, res) => {
 
     const result = await processPDF(pdfBuffer, req.file.filename);
 
+    // Tag creation and association
     let tagInstances = [];
     if (result.success && Array.isArray(result.hashtags)) {
       for (const tagName of result.hashtags) {
         const safe = (tagName || '').toString().slice(0, 60);
         if (!safe) continue;
         try {
-          const [tag] = await Tag.findOrCreate({ where: { name: safe } });
+          const [tag, created] = await Tag.findOrCreate({ where: { name: safe } });
           tagInstances.push(tag);
         } catch (tagErr) {
           console.warn('⚠️ Skipping tag due to DB error:', safe, tagErr?.message);
-          // continue
         }
       }
     }
 
-    let article;
-    try {
-      article = await Article.findByPk(articleId);
-      if (!article) {
-        console.warn(`⚠️ Article with ID ${articleId} not found`);
-        return res.status(404).json({ error: 'Article not found' });
-      }
-    } catch (artErr) {
-      console.error('❌ Error finding article:', artErr);
-      return res.status(500).json({ error: 'Failed to find article', details: artErr.message, stack: artErr.stack });
+    // Find the article
+    let article = await Article.findByPk(articleId);
+    if (!article) return res.status(404).json({ error: 'Article not found' });
+
+    // ArticleTag association (ALWAYS set user_id = req.user.id)
+    if (tagInstances.length > 0) {
+      const rows = tagInstances.map(tag => ({
+        article_id: article.id,
+        tag_id: tag.id,
+        user_id: req.user.id // always set user_id!
+      }));
+      await ArticleTag.bulkCreate(rows, { ignoreDuplicates: true });
     }
 
-    try {
-      if (tagInstances.length > 0) {
-        await article.setTags(tagInstances);
-      }
-    } catch (assocErr) {
-      console.warn('⚠️ Skipping tag association:', assocErr?.message);
-    }
+    // Update article
+    await article.update({
+      file_name: req.file.filename,
+      summary: result.success ? result.summary : '',
+      hashtags: result.success ? result.hashtagsStr : ''
+    });
 
-    try {
-      await article.update({
-        file_name: req.file.filename,
-        summary: result.success ? result.summary : '',
-        hashtags: result.success ? result.hashtagsStr : ''
-      });
-    } catch (updateErr) {
-      console.error('❌ Error updating article:', updateErr);
-      return res.status(500).json({ error: 'Failed to update article', details: updateErr.message, stack: updateErr.stack });
-    }
-
-    const payload = {
+    res.json({
       message: result.success ? 'File uploaded, processed, and article updated with tags' : 'File uploaded; processing failed, saved file reference only',
       filename: req.file.filename,
       summary: result.success ? result.summary : undefined,
       hashtags: result.success ? result.hashtagsStr : undefined,
       pages: result.pages,
       info: result.info
-    };
-    res.json(payload);
+    });
   } catch (err) {
-    console.error('❌ Error in /pdf upload:', err);
     res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
   }
 });
 
-// ---- ADDITION: API for getting all hashtags ----
-router.get('/tags', async (req, res) => {
+// Hashtags endpoints - require authentication
+router.get('/tag/tags', requireAuth, async (req, res) => {
   try {
+    const userId = req.user.id;
     const tags = await Tag.findAll({ attributes: ['id', 'name'], order: [['name', 'ASC']] });
-    res.json({ tags });
+    // Count only articles for this user
+    const rawCounts = await Tag.sequelize.query(`
+      SELECT t.id as tag_id, COUNT(at.article_id) as articleCount
+      FROM tags t
+      LEFT JOIN article_tags at ON at.tag_id = t.id
+      LEFT JOIN articles a ON at.article_id = a.id
+      WHERE a.id IS NOT NULL AND at.user_id = :userId
+      GROUP BY t.id
+    `, {
+      type: Tag.sequelize.QueryTypes.SELECT,
+      replacements: { userId }
+    });
+    const countsMap = {};
+    rawCounts.forEach(row => {
+      countsMap[row.tag_id] = parseInt(row.articleCount, 10) || 0;
+    });
+    const tagsWithCounts = tags.map(tag => ({
+      id: tag.id,
+      name: tag.name,
+      articleCount: countsMap[tag.id] || 0
+    }));
+    res.json({ tags: tagsWithCounts });
   } catch (err) {
-    console.error('❌ Error fetching tags:', err);
     res.status(500).json({ error: 'Failed to fetch tags', details: err.message });
+  }
+});
+
+router.get('/tag/tags/:id/articles', requireAuth, async (req, res) => {
+  const tagId = req.params.id;
+  try {
+    const userId = req.user.id;
+    const atRows = await ArticleTag.findAll({
+      where: { tag_id: tagId, user_id: userId },
+      attributes: ['article_id'],
+    });
+    const articleIds = atRows.map(row => row.article_id);
+    const articles = await Article.findAll({
+      where: { id: articleIds },
+      attributes: ['id', 'title', 'summary', 'file_name', 'hashtags', 'userId'],
+      order: [['id', 'DESC']]
+    });
+    res.json({ articles });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch articles for tag', details: err.message });
+  }
+});
+
+router.delete('/articles/:id', requireAuth, async (req, res) => {
+  const articleId = req.params.id;
+  try {
+    await ArticleTag.destroy({ where: { article_id: articleId, user_id: req.user.id } });
+    const deleted = await Article.destroy({ where: { id: articleId, userId: req.user.id } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+    res.json({ message: 'Article and its tag associations deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete article', details: err.message });
   }
 });
 

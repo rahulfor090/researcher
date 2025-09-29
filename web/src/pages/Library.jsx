@@ -124,15 +124,13 @@ export default function Library() {
       load();
     } catch (err) {
       // Handle article limit error from backend
-      if (
-        user?.plan === "free" &&
-        err?.response?.data?.message?.toLowerCase().includes("article limit")
-      ) {
+      if (user?.plan === "free" && err?.response?.data?.message?.toLowerCase().includes("article limit")) {
         setShowLimitModal(true);
         setShowModal(false);
         setEditArticle(null);
       } else {
-        setShowLimitModal(true);
+        // Let the error propagate to the ArticleFormModal
+        throw err;
       }
     }
   };
@@ -989,15 +987,19 @@ export default function Library() {
                           maxWidth: '200px'
                         }}
                       >
-                        <div style={{
-                          fontSize: '0.9rem',
-                          fontWeight: 500,
-                          lineHeight: 1.3,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden'
-                        }}>
+                        <div 
+                          style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            lineHeight: 1.3,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            cursor: 'help'
+                          }}
+                          title={a.authors || 'Unknown authors'}
+                        >
                           {a.authors || (
                             <span style={{ 
                               color: colors.mutedText,

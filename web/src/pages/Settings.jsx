@@ -249,6 +249,56 @@ export default function Settings() {
 
   return (
     <Layout>
+      <div style={{ 
+        flexGrow: 1,
+        padding: '40px',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+      {/* Enhanced Background decorative elements */}
+      <div style={{
+        position: 'absolute',
+        top: '-50%',
+        left: '-50%',
+        width: '200%',
+        height: '200%',
+        background: `radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%)`,
+        animation: 'dashboardFloat 25s ease-in-out infinite',
+        zIndex: 0
+      }} />
+      
+      <div style={{
+        position: 'absolute',
+        top: '10%',
+        right: '8%',
+        width: '220px',
+        height: '220px',
+        background: `linear-gradient(45deg, ${colors.link}, ${colors.highlight})`,
+        borderRadius: '50%',
+        opacity: 0.06,
+        animation: 'dashboardPulse 8s ease-in-out infinite',
+        zIndex: 0
+      }} />
+
+      <div style={{
+        position: 'absolute',
+        bottom: '15%',
+        left: '12%',
+        width: '180px',
+        height: '180px',
+        background: `linear-gradient(45deg, ${colors.highlight}, ${colors.accent || colors.link})`,
+        borderRadius: '50%',
+        opacity: 0.04,
+        animation: 'dashboardPulse 10s ease-in-out infinite reverse',
+        zIndex: 0
+      }} />
+
+
+
       {/* Main Content Area */}
       <div style={{ 
         flexGrow: 1, 
@@ -478,6 +528,29 @@ export default function Settings() {
               </button>
             </div>
             
+
+            <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} style={inputStyle} required />
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} required />
+            <input type="text" placeholder="Phone Number" value={phone_number} onChange={e => setPhoneNumber(e.target.value)} style={inputStyle} />
+            <select value={gender} onChange={e => setGender(e.target.value)} style={inputStyle}>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            <input type="text" placeholder="University" value={university} onChange={e => setUniversity(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="Department" value={department} onChange={e => setDepartment(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="Program" value={program} onChange={e => setProgram(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="Year of Study" value={year_of_study} onChange={e => setYearOfStudy(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="Research Area" value={research_area} onChange={e => setResearchArea(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="Research Interests" value={research_interests} onChange={e => setResearchInterests(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="Publications" value={publications} onChange={e => setPublications(e.target.value)} style={inputStyle} />
+            <input type="url" placeholder="LinkedIn URL" value={linkedin_url} onChange={e => setLinkedinUrl(e.target.value)} style={inputStyle} />
+            <input type="url" placeholder="Google Scholar URL" value={google_scholar_url} onChange={e => setGoogleScholarUrl(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="ORCID ID" value={orcid_id} onChange={e => setOrcidId(e.target.value)} style={inputStyle} />
+            <textarea placeholder="Bio" value={bio} onChange={e => setBio(e.target.value)} style={inputStyle} />
+            <input type="text" placeholder="Skills" value={skills} onChange={e => setSkills(e.target.value)} style={inputStyle} />
+            <button type="submit" style={{ ...saveButtonStyle, marginTop: 12, alignSelf: 'flex-end' }}>Save Profile</button>
+
             {saveMessage && <div style={{ color: 'green', marginTop: 8 }}>{saveMessage}</div>}
             {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
           </form>
@@ -757,6 +830,8 @@ export default function Settings() {
           }
         `}
       </style>
+
+    </div>
     </Layout>
   );
 }

@@ -1,13 +1,15 @@
 import express from 'express';
 import { Tag, Article } from '../models/index.js';
 import { Sequelize } from 'sequelize';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /tag/tags - fetch all tags with articleCount
-router.get('/tags', async (req, res) => {
+// GET /tag/tags - fetch all tags with articleCount (only for logged-in user)
+router.get('/tags', requireAuth, async (req, res) => {
   try {
-    // Get tags with article count using a LEFT JOIN and GROUP BY
+    const userId = req.user.id;
+    // Only include articles for this user!
     const tags = await Tag.findAll({
       attributes: [
         'id',
@@ -18,6 +20,7 @@ router.get('/tags', async (req, res) => {
         {
           model: Article,
           attributes: [],
+          where: { userId }, // <--- restrict by logged-in user
           through: { attributes: [] }
         }
       ],
@@ -25,7 +28,6 @@ router.get('/tags', async (req, res) => {
       order: [['name', 'ASC']]
     });
 
-    // Convert articleCount to integer for each tag (Sequelize returns it as a string)
     const tagsWithCount = tags.map(tag => ({
       id: tag.id,
       name: tag.name,
@@ -39,15 +41,17 @@ router.get('/tags', async (req, res) => {
   }
 });
 
-// GET /tag/:id/articles - fetch articles for a given tag id
-router.get('/:id/articles', async (req, res) => {
+// GET /tag/tags/:id/articles - fetch articles for a given tag id (only for logged-in user)
+router.get('/tags/:id/articles', requireAuth, async (req, res) => {
   const tagId = req.params.id;
   try {
+    const userId = req.user.id;
     const tag = await Tag.findByPk(tagId, {
       include: [{
         model: Article,
-        attributes: ['id', 'title', 'doi', 'authors'],
-        through: { attributes: [] } // exclude junction table attributes
+        attributes: ['id', 'title', 'doi', 'authors', 'summary', 'file_name', 'hashtags', 'userId'],
+        where: { userId }, // <--- restrict by logged-in user
+        through: { attributes: [] }
       }]
     });
 
