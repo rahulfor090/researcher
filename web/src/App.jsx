@@ -61,7 +61,7 @@ export default function App() {
           <Route path="/collection/:id/assign" element={<Protected><CollectionAssign/></Protected>} />
           <Route path="/authors" element={<Protected><Authors/></Protected>} />
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
-          <Route path="/article/:id" element={<Protected><ArticleDetails/></Protected>} />
+          <Route path="/articles/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />
           <Route path="/hashtags" element={<Protected><HashTags/></Protected>} />
           <Route path="/hashtags/:id" element={<Protected><ArticlesByTag/></Protected>} />

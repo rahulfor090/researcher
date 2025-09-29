@@ -9,6 +9,11 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: { model: 'tags', key: 'id' }
+    },
+    // Add user_id for user-scoped tags
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {
     tableName: 'article_tags',
