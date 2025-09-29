@@ -10,6 +10,7 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
   const [articles, setArticles] = useState([]);
+  const [query, setQuery] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const initials = (user?.name || 'User').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
@@ -68,43 +69,19 @@ export default function Dashboard() {
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center', 
-          marginBottom: '20px',
+          alignItems: 'flex-end', 
+          marginBottom: '16px',
           animation: 'fadeInDown 0.8s ease-out 0.5s both'
         }}>
-          <h2 style={{ 
-            fontSize: '2.25rem', 
-            fontWeight: 700, 
-            color: '#1f2937', 
-            letterSpacing: '-0.02em',
-            background: 'linear-gradient(135deg, #1f2937, #4b5563)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>Dashboard</h2>
-          <button
-            onClick={() => nav('/')}
-            style={{
-              ...primaryButtonStyle,
-              background: '#16a34a',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              fontSize: '0.95rem',
-              boxShadow: '0 6px 18px rgba(22, 163, 74, 0.25)'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 10px 24px rgba(22, 163, 74, 0.35)';
-              e.currentTarget.style.background = '#15803d';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 6px 18px rgba(22, 163, 74, 0.25)';
-              e.currentTarget.style.background = '#16a34a';
-            }}
-          >
-            ⤶ Go to Home
-          </button>
+          <div>
+            <h2 style={{ 
+              fontSize: '2.1rem', 
+              fontWeight: 800, 
+              color: colors.primaryText, 
+              letterSpacing: '-0.02em'
+            }}>Dashboard</h2>
+            <p style={{ margin: 0, marginTop: 6, fontSize: '0.95rem', color: colors.mutedText }}>Overview of your research activity and library health</p>
+          </div>
         </div>
         
         {/* Stats Overview */}
@@ -190,7 +167,8 @@ export default function Dashboard() {
                   animation: `fadeInUp 0.6s ease-out ${0.9 + index * 0.1}s both`,
                   transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
                   opacity: isLoaded ? 1 : 0,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  position: 'relative'
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translateY(-8px) scale(1.05)';
@@ -203,6 +181,7 @@ export default function Dashboard() {
                   e.currentTarget.style.border = `1px solid ${stat.borderColor}`;
                 }}
               >
+                <div style={{ position: 'absolute', top: 12, right: 12, fontSize: '0.75rem', fontWeight: 700, color: stat.color, background: `${stat.color}15`, border: `1px solid ${stat.color}40`, padding: '2px 8px', borderRadius: 999 }}>{stat.trend}</div>
                 <div style={{ 
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -244,8 +223,11 @@ export default function Dashboard() {
           e.currentTarget.style.boxShadow = shadows.soft;
           e.currentTarget.style.transform = 'translateY(0) scale(1)';
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: colors.primaryText }}>📈 Recent Activity</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: colors.primaryText, margin: 0 }}>📈 Recent Activity</h3>
+              <p style={{ margin: 0, marginTop: 4, fontSize: '0.85rem', color: colors.mutedText }}>Latest articles and updates</p>
+            </div>
             <button style={{
               background: 'transparent',
               border: `1px solid ${colors.border}`,
@@ -309,7 +291,18 @@ export default function Dashboard() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {articles.slice(0, Math.min(articles.length, 20)).map((article, index) => (
+              {articles
+                .filter((a) => {
+                  const q = query.trim().toLowerCase();
+                  if (!q) return true;
+                  return (
+                    (a.title && a.title.toLowerCase().includes(q)) ||
+                    (a.doi && a.doi.toLowerCase().includes(q)) ||
+                    (a.authors && a.authors.toLowerCase().includes(q))
+                  );
+                })
+                .slice(0, 20)
+                .map((article, index) => (
                 <div 
                   key={article.id}
                   style={{
@@ -454,21 +447,15 @@ export default function Dashboard() {
 
           {/* Search field with icon */}
           <div style={{ position: 'relative', marginTop: '12px', marginBottom: '16px' }}>
-            <span style={{ 
-              position: 'absolute', 
-              left: '12px', 
-              top: '50%', 
-              transform: 'translateY(-50%)', 
-              color: colors.mutedText,
-              transition: 'transform 0.2s ease'
-            }}>🔎</span>
             <input
               type="text"
               placeholder="Search articles, titles, DOI..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               style={{
                 width: '100%',
                 maxWidth: '100%',
-                padding: '12px 12px 12px 36px',
+                padding: '12px 12px 12px 12px',
                 border: `1px solid ${colors.border}`,
                 borderRadius: '8px',
                 fontSize: '1rem',

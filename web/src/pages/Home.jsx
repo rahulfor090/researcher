@@ -131,7 +131,7 @@ const Home = () => {
           <div className="absolute top-1/2 left-1/6 h-32 w-32 rounded-full blur-lg animate-pulse opacity-25" style={{ background: `radial-gradient(circle, ${colors.success}40, transparent 70%)` }} />
         </div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl bg-gradient-to-br from-white via-slate-100 to-slate-200 bg-clip-text text-transparent drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] animate-slide-up">
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] animate-slide-up">
             Accelerate Your Research Workflow
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-slate-100 leading-relaxed animate-slide-up animation-delay-200">
@@ -148,12 +148,6 @@ const Home = () => {
                   <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-              </Link>
-              <Link to="/library" className="group inline-flex items-center justify-center rounded-2xl h-14 px-8 border-2 border-white/40 text-white/90 hover:text-white hover:bg-white/20 hover:border-white/60 transition-all duration-300 hover:scale-105 hover:-translate-y-1 backdrop-blur-sm">
-                <span className="flex items-center gap-2">
-                  <span>Open Library</span>
-                  <span className="group-hover:rotate-12 transition-transform duration-300">📚</span>
-                </span>
               </Link>
             </div>
           ) : (
@@ -446,85 +440,7 @@ const Home = () => {
         {/* Decorative bubbles removed */}
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 sm:py-24 w-full" id="features" style={{ backgroundColor: colors.backgroundAlt }}>
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl" style={{ color: colors.primaryText }}>Powerful Features Designed for You</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-lg" style={{ color: colors.secondaryText }}>
-              Explore the features that make ResearchLocker the ultimate research management tool.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`
-            }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.link}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.link }}>📦</span>
-            <div>
-                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Free Article Storage</h3>
-                <p className="mt-1" style={{ color: colors.secondaryText }}>Start with a free plan that includes ample storage for your research articles.</p>
-              </div>
-            </div>
-            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`
-            }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.highlight}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.highlight }}>☁️</span>
-              <div>
-                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Secure Cloud Storage</h3>
-                <p className="mt-1" style={{ color: colors.secondaryText }}>Your research is stored securely in the cloud, ensuring it's always safe and accessible.</p>
-          </div>
-            </div>
-            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`
-            }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.accent}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.accent }}>🖱️</span>
-              <div>
-                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>One-Click Saving</h3>
-                <p className="mt-1" style={{ color: colors.secondaryText }}>Save articles directly from your browser with our easy-to-use extension.</p>
-          </div>
-            </div>
-            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`
-            }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.link}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.link }}>🔎</span>
-              <div>
-                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Advanced Search & Filters</h3>
-                <p className="mt-1" style={{ color: colors.secondaryText }}>Quickly find articles with powerful search and filtering options.</p>
-          </div>
-            </div>
-            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`
-            }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.highlight}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.highlight }}>♾️</span>
-              <div>
-                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Unlimited Storage Plans</h3>
-                <p className="mt-1" style={{ color: colors.secondaryText }}>Upgrade to unlimited storage to save as many articles as you need.</p>
-          </div>
-            </div>
-            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition" style={{ 
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`
-            }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.accent}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.accent }}>📚</span>
-              <div>
-                <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Personal Research Library</h3>
-                <p className="mt-1" style={{ color: colors.secondaryText }}>Build a comprehensive library of your research materials, organized and accessible.</p>
-          </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Pricing */}
       <section className="py-16 sm:py-24 w-full" id="pricing" style={{ backgroundColor: colors.cardBackground }}>

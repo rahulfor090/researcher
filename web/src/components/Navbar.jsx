@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { api } from '../api';
+import { typography } from '../theme';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -117,7 +118,7 @@ const Navbar = () => {
         e.currentTarget.style.borderBottom = isScrolled ? '1px solid #e8ddd4' : '1px solid rgba(232, 221, 212, 0.5)';
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center gap-2 group" onMouseEnter={(e) => {
@@ -144,7 +145,7 @@ const Navbar = () => {
               }
             }}>
               <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">Research Locker</span>
+              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">ResearchLocker</span>
             </Link>
           </div>
           <div className="hidden md:block">
@@ -212,11 +213,17 @@ const Navbar = () => {
                               </div>
                             )}
                             <div>
-                              <div className="text-sm font-semibold text-[#2d1b0e]">{user.name}</div>
-                              <div className="text-xs text-[#6b5b47] truncate max-w-[12rem]">{user.email}</div>
+                              <div className="text-sm font-semibold text-[#2d1b0e]" style={typography.bodySmall}>{user.name}</div>
+                              <div className="text-xs text-[#6b5b47] truncate max-w-[12rem]" style={typography.caption}>{user.email}</div>
                             </div>
                           </div>
-                          <button onClick={() => setIsEditing(true)} className="w-full bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] text-white text-sm font-semibold py-2 rounded-lg transition-all duration-300 shadow-sm">Edit Profile</button>
+                          <button 
+                            onClick={() => setIsEditing(true)} 
+                            className="w-full bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] text-white py-2 rounded-lg transition-all duration-300 shadow-sm"
+                            style={typography.buttonSmall}
+                          >
+                            Edit Profile
+                          </button>
                           <div className="flex gap-2">
                             <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex-1 text-center border border-[#e8ddd4] hover:border-[#0D9488] text-[#6b5b47] hover:text-[#0D9488] text-sm py-2 rounded-lg transition-all duration-300">Back to Home</Link>
                             <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="flex-1 text-center border border-[#e8ddd4] hover:border-[#0D9488] text-[#6b5b47] hover:text-[#0D9488] text-sm py-2 rounded-lg transition-all duration-300">Settings</Link>
@@ -238,16 +245,41 @@ const Navbar = () => {
                             <div className="text-sm font-semibold text-[#2d1b0e]">Edit Profile</div>
                           </div>
                           <div>
-                            <label className="block text-xs text-[#6b5b47] mb-1">Name</label>
-                            <input value={formName} onChange={e => setFormName(e.target.value)} className="w-full border border-[#e8ddd4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-[#0D9488] transition-colors duration-300" />
+                            <label className="block text-xs text-[#6b5b47] mb-1" style={typography.caption}>Name</label>
+                            <input 
+                              value={formName} 
+                              onChange={e => setFormName(e.target.value)} 
+                              className="w-full border border-[#e8ddd4] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-[#0D9488] transition-colors duration-300" 
+                              style={typography.bodySmall}
+                            />
                           </div>
                           <div>
-                            <label className="block text-xs text-[#6b5b47] mb-1">Profile picture</label>
-                            <input type="file" accept="image/*" onChange={e => setFormImage(e.target.files?.[0] || null)} className="w-full text-sm text-[#6b5b47]" />
+                            <label className="block text-xs text-[#6b5b47] mb-1" style={typography.caption}>Profile picture</label>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={e => setFormImage(e.target.files?.[0] || null)} 
+                              className="w-full text-[#6b5b47]" 
+                              style={typography.bodySmall}
+                            />
                           </div>
                           <div className="flex gap-2 pt-1">
-                            <button disabled={isSaving} onClick={() => { setIsEditing(false); setFormImage(null); }} className="flex-1 border border-[#e8ddd4] hover:border-[#6b5b47] text-[#6b5b47] hover:text-[#2d1b0e] text-sm py-2 rounded-lg transition-all duration-300">Cancel</button>
-                            <button disabled={isSaving} onClick={handleSave} className="flex-1 bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] disabled:opacity-60 text-white text-sm font-semibold py-2 rounded-lg transition-all duration-300 shadow-sm">{isSaving ? 'Saving...' : 'Save'}</button>
+                            <button 
+                              disabled={isSaving} 
+                              onClick={() => { setIsEditing(false); setFormImage(null); }} 
+                              className="flex-1 border border-[#e8ddd4] hover:border-[#6b5b47] text-[#6b5b47] hover:text-[#2d1b0e] py-2 rounded-lg transition-all duration-300"
+                              style={typography.buttonSmall}
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              disabled={isSaving} 
+                              onClick={handleSave} 
+                              className="flex-1 bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] disabled:opacity-60 text-white py-2 rounded-lg transition-all duration-300 shadow-sm"
+                              style={typography.buttonSmall}
+                            >
+                              {isSaving ? 'Saving...' : 'Save'}
+                            </button>
                           </div>
                         </div>
                       )}

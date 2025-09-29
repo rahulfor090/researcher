@@ -164,8 +164,22 @@ router.post('/login',
 
 
 // Twitter authentication routes
-router.get('/twitter', passport.authenticate('twitter'));
+// Alias to support /oauth/twitter start URL (keeps login/register links consistent)
+router.get('/oauth/twitter', (req, res) => {
+  return res.redirect(302, '/v1/auth/twitter');
+});
+router.get('/twitter', (req, res, next) => {
+  // Ensure session is initialized and a state value is set
+  req.session.oauthState = Math.random().toString(36).slice(2);
+  next();
+}, passport.authenticate('twitter'));
 router.get('/twitter/callback',
+  (req, res, next) => {
+    if (!req.session) {
+      return res.redirect('http://localhost:5173/login?error=no_session');
+    }
+    next();
+  },
   passport.authenticate('twitter', { failureRedirect: 'http://localhost:5173/login' }),
   (req, res) => {
     console.log('Twitter callback successful, user:', req.user);
@@ -184,6 +198,10 @@ router.get('/twitter/callback',
 );
 
 // LinkedIn authentication routes - force fresh login each time
+// Alias to support /oauth/linkedin start URL (keeps login/register links consistent)
+router.get('/oauth/linkedin', (req, res) => {
+  return res.redirect(302, '/v1/auth/linkedin');
+});
 router.get('/linkedin', (req, res) => {
   // Generate unique state and add timestamp to force fresh auth
   const timestamp = Date.now();

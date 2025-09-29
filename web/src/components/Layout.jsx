@@ -45,7 +45,16 @@ export default function Layout({ children }) {
     <div className="layout">
       {/* Left Navigation Sidebar */}
       <div className={`layout-sidebar${isSidebarOpen ? ' open' : ''}`} style={{ boxShadow: shadows.medium }}>
-        <h1 className="layout-title">ResearchLocker</h1>
+        <h1 className="layout-title">
+          <span style={{
+            minWidth: 10,
+            minHeight: 10,
+            borderRadius: '50%',
+            background: colors.link,
+            boxShadow: '0 0 12px rgba(13,148,136,0.8)'
+          }} />
+          <span>ResearchLocker</span>
+        </h1>
         
         {/* User Profile Section */}
         <div 
@@ -72,8 +81,12 @@ export default function Layout({ children }) {
             {initials}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#f1f5f9' }}>{user?.name || 'User'}</div>
-            <div style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>{user?.plan || 'free'} plan</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>{user?.name || 'User'}</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+              <span style={{ fontSize: '0.75rem', color: '#cbd5e1', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: 999 }}>
+                {user?.plan || 'free'} plan
+              </span>
+            </div>
           </div>
           <div style={{ 
             fontSize: '1.2rem', 
@@ -94,7 +107,7 @@ export default function Layout({ children }) {
       background: 'white', 
       color: colors.primaryText, 
       border: `1px solid ${colors.border}`, 
-      borderRadius: '12px', 
+      borderRadius: '0px', 
       boxShadow: shadows.soft, 
       overflow: 'hidden', 
       zIndex: 30, 
@@ -196,12 +209,18 @@ export default function Layout({ children }) {
             >
               📈 All insights
             </li>
+            <li 
+              className={`layout-nav-item ${isActive('/') ? 'active' : ''}`}
+              onClick={() => nav('/')}
+            >
+              Go to Home
+            </li>
           </ul>
         </nav>
       </div>
 
       {/* Main Content Area */}
-      <div className="layout-main">
+      <div className="layout-main" style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}>
         {/* Mobile sidebar toggle */}
         <button 
           className="mobile-toggle"

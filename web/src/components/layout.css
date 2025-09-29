@@ -2,7 +2,7 @@
   display: flex;
   min-height: 100vh;
   background: linear-gradient(180deg, #f0fdf4 0%, #ecfeff 100%);
-  font-family: Inter, sans-serif;
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 .layout-sidebar {
@@ -13,16 +13,26 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  border-top-left-radius: 16px;
-  border-bottom-left-radius: 16px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
   position: relative;
 }
 
 .layout-title {
-  font-size: 2rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.6rem;
   font-weight: 700;
   margin-bottom: 16px;
   color: #e5e7eb;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .profile-menu-trigger {
@@ -49,24 +59,39 @@
 .layout-nav-item {
   padding: 10px 12px;
   color: #cbd5e1;
-  border-radius: 10px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  font-size: 0.85rem;
 }
 .layout-nav-item:hover {
-  background: rgba(255,255,255,0.12);
-  transform: translateX(8px) scale(1.02);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  background: rgba(13,148,136,0.12);
+  transform: translateX(6px);
+  box-shadow: 0 8px 18px rgba(13,148,136,0.18);
 }
 .layout-nav-item.active {
   color: #ffffff;
   font-weight: bold;
-  background: linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  background: rgba(13,148,136,0.18);
+  border: 1px solid rgba(13,148,136,0.35);
+  box-shadow: 0 8px 22px rgba(13,148,136,0.25);
+  position: relative;
+}
+.layout-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  border-radius: 4px;
+  background: #0d9488;
 }
 
 .layout-main {

@@ -129,7 +129,7 @@ export default function Collection() {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
             }}>
-              📂 My Collection
+              My Collection
             </h1>
             <p style={{ 
               fontSize: '1.1rem', 

@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { colors, gradients, typography, cardStyle, primaryButtonStyle, shadows } from '../theme';
 
 export default function FAQ() {
   const [open, setOpen] = useState(null);
@@ -27,21 +28,42 @@ export default function FAQ() {
   }, [faqs, query]);
 
   return (
-    <div className={`relative min-h-screen bg-gray-50 overflow-hidden pt-24 pb-16 transition-all duration-500 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-      {/* Decorative background to match theme */}
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 opacity-50 z-0"></div>
-      <div className="absolute -top-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob z-0"></div>
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 z-0"></div>
-      <div className="bg-blob bg-blob--1"></div>
-      <div className="bg-blob bg-blob--2"></div>
-      <div className="bg-blob bg-blob--3"></div>
+    <div
+      className={`relative min-h-screen overflow-hidden pt-24 pb-16 transition-all duration-500 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+      style={{
+        background: gradients.app
+      }}
+    >
+      {/* Soft decorative accents to match site theme */}
+      <div
+        className="absolute -top-24 -left-24 w-64 h-64 rounded-full blur-3xl opacity-20 z-0"
+        style={{ background: colors.accent }}
+      />
+      <div
+        className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full blur-3xl opacity-20 z-0"
+        style={{ background: colors.link }}
+      />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => nav('/')}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-2 rounded-xl transition"
+            style={{
+              ...typography.buttonSmall,
+              color: 'white',
+              background: colors.link,
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '12px',
+              transition: 'all 0.2s ease',
+              boxShadow: shadows.soft,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = colors.highlight; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = colors.link; }}
           >
             <span>←</span>
             <span>Back</span>
@@ -49,24 +71,58 @@ export default function FAQ() {
           <div className="flex-1" />
         </div>
         <div className="text-center mb-10">
-          <span className="inline-block px-3 py-1 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700 mb-3">Help Center</span>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">Frequently Asked Questions</h1>
-          <p className="text-gray-600 mt-3">Find quick answers or search for a topic below.</p>
+          <span
+            className="inline-block mb-3"
+            style={{
+              ...typography.caption,
+              padding: '6px 10px',
+              borderRadius: '9999px',
+              background: `${colors.link}1A`,
+              color: colors.link,
+              fontWeight: typography.semibold
+            }}
+          >
+            Help Center
+          </span>
+          <h1
+            className="leading-tight"
+            style={{
+              ...typography.heading1,
+              color: colors.primaryText
+            }}
+          >
+            Frequently Asked Questions
+          </h1>
+          <p style={{ ...typography.body, color: colors.secondaryText, marginTop: '12px' }}>
+            Find quick answers or search for a topic below.
+          </p>
         </div>
 
         {/* Search */}
         <div className="max-w-2xl mx-auto mb-10">
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔎</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: colors.secondaryText }}>🔎</span>
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search questions..."
-              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+              className="w-full"
+              style={{
+                ...typography.body,
+                padding: '12px 16px 12px 40px',
+                borderRadius: '16px',
+                border: `1px solid ${colors.border}`,
+                background: colors.cardBackground,
+                boxShadow: shadows.soft,
+                outline: 'none',
+                transition: 'all 0.2s ease'
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = colors.link; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = colors.border; }}
             />
           </div>
           {query && (
-            <div className="text-sm text-gray-500 mt-2">{filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for “{query}”.</div>
+            <div style={{ ...typography.caption, color: colors.secondaryText, marginTop: '8px' }}>{filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for “{query}”.</div>
           )}
         </div>
 
@@ -77,19 +133,30 @@ export default function FAQ() {
             return (
               <div
                 key={f.q}
-                className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden"
+                className="transition overflow-hidden"
+                style={{
+                  ...cardStyle,
+                  border: `1px solid ${colors.border}`
+                }}
               >
                 <button
-                  className="w-full flex items-center justify-between text-left px-5 py-4"
+                  className="w-full flex items-center justify-between text-left"
+                  style={{ padding: '14px 18px' }}
                   onClick={() => setOpen(isOpen ? null : idx)}
                 >
-                  <span className="font-semibold text-gray-900 pr-4">{f.q}</span>
-                  <span className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition ${isOpen ? 'bg-teal-600' : 'bg-indigo-500'}`}>
+                  <span className="pr-4" style={{ ...typography.body, fontWeight: typography.semibold, color: colors.primaryText }}>{f.q}</span>
+                  <span
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white transition"
+                    style={{ background: isOpen ? colors.link : colors.accent }}
+                  >
                     {isOpen ? '−' : '+'}
                   </span>
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-5 text-gray-700 border-t border-gray-100 leading-relaxed">
+                  <div
+                    className="leading-relaxed"
+                    style={{ padding: '0 18px 18px 18px', color: colors.secondaryText, ...typography.body }}
+                  >
                     {f.a}
                   </div>
                 )}
@@ -100,20 +167,38 @@ export default function FAQ() {
 
         {/* Still need help */}
         <div className="mt-12 text-center">
-          <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-md border border-gray-100 rounded-2xl px-6 py-4 shadow-sm">
+          <div
+            className="inline-flex items-center gap-3"
+            style={{
+              ...cardStyle,
+              border: `1px solid ${colors.border}`,
+              padding: '16px 20px'
+            }}
+          >
             <span className="text-2xl">💬</span>
             <div className="text-left">
-              <div className="font-semibold text-gray-900">Still need help?</div>
-              <div className="text-gray-600 text-sm">Reach out to our team for support.</div>
+              <div style={{ ...typography.body, fontWeight: typography.semibold, color: colors.primaryText }}>Still need help?</div>
+              <div style={{ ...typography.caption, color: colors.secondaryText }}>Reach out to our team for support.</div>
             </div>
-            <a href="mailto:support@researchlocker.co" className="ml-4 inline-flex items-center justify-center bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+            <a
+              href="mailto:support@researchlocker.co"
+              className="ml-4 inline-flex items-center justify-center"
+              style={{
+                ...typography.buttonSmall,
+                ...primaryButtonStyle,
+                padding: '8px 12px',
+                borderRadius: '12px'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = colors.highlight; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = colors.link; }}
+            >
               Contact Support
             </a>
           </div>
         </div>
       </div>
 
-      {/* Minimal keyframes used on Home as well */}
+      {/* Minimal keyframes consistent with Home */}
       <style>
         {`
           .animate-blob { animation: blob 8s infinite; }

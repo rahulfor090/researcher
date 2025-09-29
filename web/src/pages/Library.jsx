@@ -13,10 +13,7 @@ export default function Library() {
   const nav = useNavigate();
   const location = useLocation();
   const [articles, setArticles] = useState([]);
-  const [showModal, setShowModal] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('openModal') === 'true';
-  });
+  const [showModal, setShowModal] = useState(false);
   const [editArticle, setEditArticle] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -28,14 +25,6 @@ export default function Library() {
   const [showSummary, setShowSummary] = useState(null); // { id, summary }
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [genState, setGenState] = useState({ articleId: null, percent: 0, stage: 0, label: '' });
-  const genStages = [
-    { name: 'Uploading', desc: 'Sending PDF to the server' },
-    { name: 'Processing', desc: 'Validating and preparing the file' },
-    { name: 'Extracting', desc: 'Reading and extracting text' },
-    { name: 'Generating summary', desc: 'Creating AI-powered summary' },
-    { name: 'Finalizing', desc: 'Saving results and refreshing' }
-  ];
 
   // Load articles from backend
   const load = async () => {
@@ -43,16 +32,6 @@ export default function Library() {
     setArticles(data);
     setTimeout(() => setIsLoaded(true), 100);
   };
-
-
-  // Clean up URL parameter after modal is opened
-  useEffect(() => {
-    if (showModal) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('openModal');
-      window.history.replaceState({}, '', url);
-    }
-  }, [showModal]);
 
   const fetchArticleById = async (id) => {
     try {
@@ -62,7 +41,6 @@ export default function Library() {
       return null;
     }
   };
-
 
   // Upload PDF for an article and refresh
   const handleUploadPdf = async (article) => {
@@ -78,19 +56,10 @@ export default function Library() {
         form.append('pdf', file);
         try {
           const { data } = await api.post(`/upload/pdf?id=${article.id}`, form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            onUploadProgress: (e) => {
-              if (!e.total) return;
-              const pct = Math.min(60, Math.round((e.loaded / e.total) * 60));
-              setGenState(prev => ({ articleId: article.id, percent: pct, stage: 0, label: genStages[0].name }));
-            }
+            headers: { 'Content-Type': 'multipart/form-data' }
           });
-          setGenState(prev => ({ articleId: article.id, percent: Math.max(prev.percent || 0, 65), stage: 1, label: genStages[1].name }));
-            setGenState(prev => ({ articleId: article.id, percent: Math.max(prev.percent || 0, 65), stage: 1, label: genStages[1].name }));
           await load();
           if (data?.summary) {
-            setGenState(prev => ({ articleId: article.id, percent: 100, stage: 4, label: genStages[4] }));
-            setTimeout(() => setGenState({ articleId: null, percent: 0, stage: 0, label: '' }), 1200);
             setShowSummary({ id: article.id, summary: data.summary });
           } else {
             // Poll for summary a few times (background generation)
@@ -98,25 +67,15 @@ export default function Library() {
             for (let i = 0; i < 5; i++) {
               await new Promise(r => setTimeout(r, 3000));
               const latest = await fetchArticleById(article.id);
-              // Advance staged progress while polling
-              setGenState(prev => {
-                const nextPercent = Math.min(95, (prev.percent || 65) + 7);
-                const nextStage = prev.stage < 3 ? prev.stage + 1 : 3;
-                return { articleId: article.id, percent: nextPercent, stage: nextStage, label: genStages[nextStage].name };
-              });
               if (latest && (latest.summary || latest.ai_summary || latest.summary_text)) {
                 found = latest.summary || latest.ai_summary || latest.summary_text;
                 break;
               }
             }
             if (found) {
-              setGenState({ articleId: article.id, percent: 100, stage: 4, label: genStages[4].name });
-              setTimeout(() => setGenState({ articleId: null, percent: 0, stage: 0, label: '' }), 1200);
               setShowSummary({ id: article.id, summary: found });
             } else {
-              setGenState(prev => ({ articleId: article.id, percent: Math.max(prev.percent || 90, 90), stage: 3, label: genStages[3].name }));
               setShowSummary({ id: article.id, summary: 'No summary available yet. Try opening details to refresh.' });
-              setTimeout(() => setGenState({ articleId: null, percent: 0, stage: 0, label: '' }), 1500);
             }
           }
           // Mark as recently updated for UX feedback
@@ -216,41 +175,6 @@ export default function Library() {
 
   useEffect(() => { load(); }, []);
 
-
-  // Export articles to CSV
-  const handleExportCSV = () => {
-    // Define CSV headers
-    const headers = ['Title', 'Authors', 'DOI', 'Publication Date', 'Notes', 'Tags'];
-    
-    // Convert articles to CSV rows
-    const csvRows = [
-      headers.join(','), // Header row
-      ...filteredArticles.map(article => {
-        return [
-          article.title ? `"${article.title.replace(/"/g, '""')}"` : '',
-          article.authors ? `"${article.authors.replace(/"/g, '""')}"` : '',
-          article.doi || '',
-          article.publicationDate || '',
-          article.notes ? `"${article.notes.replace(/"/g, '""')}"` : '',
-          article.tags ? `"${article.tags.join(', ').replace(/"/g, '""')}"` : ''
-        ].join(',');
-      })
-    ];
-
-    // Create CSV content
-    const csvContent = csvRows.join('\n');
-    
-    // Create blob and download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `research-articles-${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   // Read URL filter (?missing=1)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -329,7 +253,7 @@ export default function Library() {
                 backgroundClip: 'text'
               }}
             >
-              📚 Research Library
+              Research Library
             </h2>
             <p style={{
               color: colors.mutedText,
@@ -341,41 +265,6 @@ export default function Library() {
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
-              background: 'rgba(13, 148, 136, 0.1)',
-              borderRadius: '12px',
-              border: '1px solid rgba(13, 148, 136, 0.2)'
-            }}>
-              <span style={{ fontSize: '1.2rem' }}>📊</span>
-              <span style={{ fontSize: '0.9rem', color: colors.primaryText, fontWeight: 600 }}>
-                {articles.length} Total Articles
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                style={{ 
-                  ...secondaryButtonStyle,
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-                onClick={handleExportCSV}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(79, 70, 229, 0.2)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <span>📥</span> Export to CSV
-              </button>
               <button
                 style={{ 
                   ...primaryButtonStyle,
@@ -399,58 +288,66 @@ export default function Library() {
               >
                 <span>+</span> Add New Article
               </button>
-            </div>
           </div>
         </div>
 
         {/* Search Bar */}
         <div style={{
           marginBottom: '24px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
           animation: 'fadeInDown 0.7s ease-out 0.6s both'
         }}>
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="🔍 Search articles by title, DOI, or author..."
-            style={{
-              padding: '12px 18px',
-              borderRadius: '10px',
-              border: `1px solid ${colors.border}`,
-              fontSize: '1rem',
-              width: '100%',
-              maxWidth: '400px',
-              background: '#f8fafc',
-              color: colors.primaryText,
-              outline: 'none',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              transition: 'border 0.2s'
-            }}
-            onFocus={e => e.currentTarget.style.border = `1.5px solid ${colors.link}`}
-            onBlur={e => e.currentTarget.style.border = `1px solid ${colors.border}`}
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
+          <div style={{
+            ...cardStyle,
+            padding: '12px',
+            background: 'rgba(255,255,255,0.95)',
+            border: `1px solid ${colors.border}`,
+            borderRadius: '12px'
+          }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search articles by title, DOI, or author..."
               style={{
-                background: colors.mutedText,
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 14px',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                transition: 'all 0.2s ease'
+                padding: '12px 44px 12px 18px',
+                borderRadius: '10px',
+                border: `1px solid ${colors.border}`,
+                fontSize: '1rem',
+                width: '100%',
+                background: '#f8fafc',
+                color: colors.primaryText,
+                outline: 'none',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                transition: 'border 0.2s'
               }}
-              title="Clear search"
-            >
-              ✖
-            </button>
-          )}
+              onFocus={e => e.currentTarget.style.border = `1.5px solid ${colors.link}`}
+              onBlur={e => e.currentTarget.style.border = `1px solid ${colors.border}`}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: colors.mutedText,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '6px 10px',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  lineHeight: 1
+                }}
+                title="Clear search"
+              >
+                ✖
+              </button>
+            )}
+          </div>
           {onlyMissingPdf && (
             <div style={{
               display: 'inline-flex',
@@ -460,7 +357,8 @@ export default function Library() {
               background: 'rgba(239,68,68,0.08)',
               border: '1px solid rgba(239,68,68,0.2)',
               borderRadius: '10px',
-              color: '#ef4444'
+              color: '#ef4444',
+              marginTop: '12px'
             }}>
               <span>📄</span>
               <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Showing articles without uploaded PDF</span>
@@ -481,6 +379,7 @@ export default function Library() {
               </button>
             </div>
           )}
+          </div>
         </div>
 
         {/* Library Statistics */}
@@ -656,22 +555,6 @@ export default function Library() {
               alignItems: 'center',
               gap: '12px'
             }}>
-              <div
-                style={{
-                  fontSize: '0.85rem',
-                  color: colors.mutedText,
-                  padding: '6px 12px',
-                  background: 'rgba(13, 148, 136, 0.1)',
-                  borderRadius: '20px',
-                  border: `1px solid rgba(13, 148, 136, 0.2)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <span>📊</span>
-                {articles.length} articles
-              </div>
               {articles.length > 0 && (
                 <div style={{
                   fontSize: '0.85rem',
@@ -825,7 +708,7 @@ export default function Library() {
             <div style={{ overflowX: 'auto', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
-                  <tr style={{ background: 'rgba(37,99,235,0.06)' }}>
+                  <tr style={{ background: `${colors.link}10` }}>
                     <th
                       style={{
                         textAlign: 'center',
@@ -1140,50 +1023,25 @@ export default function Library() {
                       >
                         {/* Upload state and status */}
                         {uploadingArticleId === a.id && (
-                          <div style={{ minWidth: 320 }} onClick={(e) => e.stopPropagation()} aria-live="polite">
-                            {/* Title and % */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span>
-                                  {genState.stage >= 4 ? '✅' : genState.stage >= 1 ? '⚙️' : '⬆️'}
-                                </span>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: colors.primaryText }}>
-                                  {genState.articleId === a.id ? (genState.label || genStages[0].name) : genStages[0].name}
-                                </div>
-                              </div>
-                              <div style={{ fontSize: '0.85rem', color: colors.mutedText }}>
-                                {genState.articleId === a.id ? genState.percent : 0}%
-                              </div>
-                            </div>
-
-                            {/* Description */}
-                            <div style={{ fontSize: '0.75rem', color: colors.mutedText, marginBottom: 6 }}>
-                              {genState.articleId === a.id ? genStages[genState.stage]?.desc : genStages[0].desc}
-                            </div>
-
-                            {/* Progress Bar */}
-                            <div style={{ width: '100%', height: 12, background: '#f3f4f6', borderRadius: 9999, overflow: 'hidden', border: `1px solid ${colors.border}`, position: 'relative' }}>
-                              {/* animated stripes overlay */}
-                              <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0, rgba(255,255,255,0.25) 8px, transparent 8px, transparent 16px)', backgroundSize: '24px 24px', animation: 'rlStripe 1s linear infinite', pointerEvents: 'none' }} />
-                              <div style={{ height: '100%', width: `${genState.articleId === a.id ? genState.percent : 0}%`, background: `linear-gradient(90deg, ${colors.link}, ${colors.highlight})`, transition: 'width 140ms ease', position: 'relative' }} />
-                            </div>
-
-                            {/* Timeline with icons */}
-                            <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
-                              {genStages.map((s, idx) => {
-                                const isDone = genState.articleId === a.id && idx < (genState.stage || 0);
-                                const isCurrent = genState.articleId === a.id && idx === (genState.stage || 0);
-                                return (
-                                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <div style={{ width: 18, height: 18, borderRadius: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? colors.link : isCurrent ? colors.highlight : '#e5e7eb', color: isDone || isCurrent ? '#fff' : '#6b7280', fontSize: '0.7rem', boxShadow: (isDone || isCurrent) ? '0 0 0 3px rgba(13,148,136,0.12)' : 'none' }}>
-                                      {isDone ? '✓' : isCurrent ? '•' : ''}
-                                    </div>
-                                    <div style={{ fontSize: '0.72rem', color: isDone || isCurrent ? colors.primaryText : colors.mutedText }}>{s.name}</div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
+                          <button
+                            disabled
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              background: colors.mutedText,
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '6px 12px',
+                              fontWeight: 600,
+                              fontSize: '0.8rem',
+                              opacity: 0.8,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <span>⏳</span> Uploading...
+                          </button>
                         )}
 
                         {uploadingArticleId !== a.id && recentlyUpdatedIds.has(a.id) && (
@@ -1457,7 +1315,6 @@ export default function Library() {
             50% { transform: translateY(20px) rotate(180deg); }
             75% { transform: translateY(-15px) rotate(270deg); }
           }
-          @keyframes rlStripe { from { background-position: 0 0; } to { background-position: 24px 0; } }
           
           @keyframes libraryPulse {
             0%, 100% { transform: scale(1); opacity: 0.05; }

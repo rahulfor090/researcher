@@ -19,6 +19,96 @@ export const colors = {
   hover: 'rgba(0,0,0,0.05)'
 };
 
+export const typography = {
+  // Font families
+  primary: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  secondary: 'Lato, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  
+  // Font weights
+  light: 300,
+  regular: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  extrabold: 800,
+  black: 900,
+  
+  // Font sizes
+  xs: '0.75rem',    // 12px
+  sm: '0.875rem',   // 14px
+  base: '1rem',     // 16px
+  lg: '1.125rem',   // 18px
+  xl: '1.25rem',    // 20px
+  '2xl': '1.5rem',  // 24px
+  '3xl': '1.875rem', // 30px
+  '4xl': '2.25rem', // 36px
+  '5xl': '3rem',    // 48px
+  '6xl': '3.75rem', // 60px
+  
+  // Line heights
+  tight: 1.1,
+  normal: 1.5,
+  relaxed: 1.75,
+  
+  // Typography styles
+  heading1: {
+    fontFamily: 'Montserrat, sans-serif',
+    fontSize: '2.5rem',
+    fontWeight: 800,
+    lineHeight: 1.2,
+    letterSpacing: '-0.02em'
+  },
+  heading2: {
+    fontFamily: 'Montserrat, sans-serif',
+    fontSize: '2rem',
+    fontWeight: 700,
+    lineHeight: 1.2,
+    letterSpacing: '-0.01em'
+  },
+  heading3: {
+    fontFamily: 'Montserrat, sans-serif',
+    fontSize: '1.5rem',
+    fontWeight: 600,
+    lineHeight: 1.3
+  },
+  heading4: {
+    fontFamily: 'Montserrat, sans-serif',
+    fontSize: '1.25rem',
+    fontWeight: 600,
+    lineHeight: 1.4
+  },
+  body: {
+    fontFamily: 'Lato, sans-serif',
+    fontSize: '1rem',
+    fontWeight: 400,
+    lineHeight: 1.6
+  },
+  bodySmall: {
+    fontFamily: 'Lato, sans-serif',
+    fontSize: '0.875rem',
+    fontWeight: 400,
+    lineHeight: 1.5
+  },
+  button: {
+    fontFamily: 'Lato, sans-serif',
+    fontSize: '1rem',
+    fontWeight: 500,
+    lineHeight: 1.4
+  },
+  buttonSmall: {
+    fontFamily: 'Lato, sans-serif',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    lineHeight: 1.4
+  },
+  caption: {
+    fontFamily: 'Lato, sans-serif',
+    fontSize: '0.75rem',
+    fontWeight: 400,
+    lineHeight: 1.4
+  }
+};
+
 export const motion = {
   fast: '150ms ease',
   normal: '220ms ease',

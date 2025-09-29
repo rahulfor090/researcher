@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { colors } from '../theme';
 export default function Privacy() {
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   return (
-    <div className={`relative min-h-screen bg-gray-50 overflow-hidden pt-24 pb-16 transition-all duration-500 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif' }}>
+    <div className={`relative min-h-screen overflow-hidden pt-24 pb-16 transition-all duration-500 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ background: 'linear-gradient(180deg, #fefcf3 0%, #f5f1e8 100%)', fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif' }}>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 opacity-50 z-0"></div>
       <div className="absolute -top-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob z-0"></div>
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 z-0"></div>
@@ -18,7 +19,8 @@ export default function Privacy() {
           <button
             onClick={() => navigate('/')}
             aria-label="Go back"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-2 rounded-xl transition"
+            className="inline-flex items-center gap-2 text-sm font-semibold px-3 py-2 rounded-xl transition"
+            style={{ background: colors.cardBackground, color: colors.link, border: `1px solid ${colors.border}` }}
           >
             <span>←</span>
             <span>Back</span>
@@ -26,9 +28,9 @@ export default function Privacy() {
           <div className="flex-1" />
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm border border-gray-100 rounded-3xl shadow-xl p-6 sm:p-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">Privacy Policy</h1>
-          <p className="mt-1 text-gray-500"><strong>Last updated:</strong> {new Date().toLocaleDateString()}</p>
+        <div className="backdrop-blur-sm rounded-3xl shadow-xl p-6 sm:p-8" style={{ backgroundColor: colors.cardBackground, border: `1px solid ${colors.border}` }}>
+          <h1 className="text-3xl font-extrabold" style={{ color: colors.primaryText }}>Privacy Policy</h1>
+          <p className="mt-1" style={{ color: colors.secondaryText }}><strong>Last updated:</strong> {new Date().toLocaleDateString()}</p>
 
       <p>
         This Privacy Policy describes how ResearchLocker ("we", "us", or "our") collects, uses,

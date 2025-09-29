@@ -28,11 +28,13 @@ import PaypalSuccess from './pages/PaypalSuccess';
 import PaypalCancel from './pages/PaypalCancel';
 import PublicLayout from './components/PublicLayout';
 import FAQ from './pages/FAQ';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* Public layout with shared header/footer */}
           <Route element={<PublicLayout />}>
