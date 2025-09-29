@@ -47,7 +47,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
               body: JSON.stringify({ email: msg.email, password: msg.password })
             });
             await setToken(data.token);
-            sendResponse({ ok: true, user: data.user });
+            sendResponse({ ok: true, user: data.user, userId: data.user.id });
           } catch (e) {
             sendResponse({ ok: false, error: e.message });
           }
@@ -65,9 +65,14 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         }
         case "SAVE_ARTICLE": {
           try {
-            const saved = await apiFetch("/articles", {
+            // If isTemp, save to temp endpoint
+            const path = msg.isTemp ? "/temp-articles" : "/articles";
+            const payload = Object.assign({}, msg.article, {
+              userId: msg.userId
+            });
+            const saved = await apiFetch(path, {
               method: "POST",
-              body: JSON.stringify(msg.article)
+              body: JSON.stringify(payload)
             });
             sendResponse({ ok: true, article: saved });
           } catch (e) {
@@ -77,17 +82,45 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         }
         case "GET_USER_LIBRARY_INFO": {
           try {
-            const info = await apiFetch("/users/me/library-info");
-            sendResponse({
-              plan: info.plan,
-              articleCount: info.articleCount
-            });
+            let info;
+            if (msg.isTemp) {
+              // Get info for temp user
+              info = await apiFetch(`/temp-users/${msg.userId}/library-info`);
+              sendResponse({
+                plan: "temp",
+                articleCount: info.articleCount
+              });
+            } else {
+              // Get info for main user
+              info = await apiFetch("/users/me/library-info");
+              sendResponse({
+                plan: info.plan,
+                articleCount: info.articleCount
+              });
+            }
           } catch (e) {
+            // Defensive: treat missing temp user as zero articles
             sendResponse({
-              plan: "free",
+              plan: msg.isTemp ? "temp" : "free",
               articleCount: 0,
               error: e.message
             });
+          }
+          break;
+        }
+        case "MIGRATE_TEMP_ARTICLES": {
+          try {
+            // Backend should handle moving articles from temp to main user
+            const res = await apiFetch("/temp-articles/migrate", {
+              method: "POST",
+              body: JSON.stringify({
+                tempUserId: msg.tempUserId,
+                mainUserId: msg.mainUserId
+              })
+            });
+            sendResponse({ ok: true, migrated: res.migratedCount });
+          } catch (e) {
+            sendResponse({ ok: false, error: e.message });
           }
           break;
         }

@@ -54,13 +54,14 @@ console.log('Allowed CORS origins:', env.corsOrigins);
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true); // Postman / curl
-    if (origin.startsWith('chrome-extension://')) return cb(null, true);
-    if (env.corsOrigins.includes(origin)) return cb(null, true);
+    if (origin && origin.startsWith('chrome-extension://')) return cb(null, true);
+    if (origin && env.corsOrigins.includes(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS. Origin was: ' + origin));
   }
 }));
 
 app.get('/v1/health', (_, res) => res.json({ ok: true }));
+
 app.use('/v1/auth', authRoutes);
 app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
@@ -76,6 +77,15 @@ app.use('/v1/paypal', paypalRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', cors(), express.static('src/uploads'));
+
+// TEMP ARTICLES & TEMP USERS ENDPOINTS
+// These endpoints are handled within articleRoutes,
+// so you only need to mount the router once at the /v1 path.
+// Mounting again at /v1/temp-articles and /v1/temp-users is redundant and
+// can cause route conflicts or unexpected behavior.
+
+// Correct setup: Define temp endpoints in articles.js and mount articleRoutes at /v1.
+app.use('/v1', articleRoutes);
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));

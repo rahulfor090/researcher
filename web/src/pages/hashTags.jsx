@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useMediaQuery } from 'react-responsive';
 import { api } from "../api";
 import Layout from "../components/Layout";
 import { colors, gradients, shadows } from "../theme";
@@ -14,6 +15,7 @@ export default function HashTags() {
   const [search, setSearch] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const nav = useNavigate();
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   useEffect(() => {
     const loadTags = async () => {
@@ -146,7 +148,7 @@ export default function HashTags() {
         {/* Masonry Layout for Hashtags */}
         <div
           style={{
-            columnCount: 3,
+            columnCount: isMobile ? 1 : 3,
             columnGap: "20px",
             animation: "fadeInUp 0.8s ease-out 0.8s both",
             transform: isLoaded ? "translateY(0)" : "translateY(30px)",

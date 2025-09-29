@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { colors, shadows, cardStyle } from '../theme';
@@ -12,6 +13,7 @@ export default function Collection() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState(null);
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export default function Collection() {
 
   return (
     <Layout>
-      <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ padding: isMobile ? '16px' : '32px', maxWidth: '1400px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ 
           display: 'flex', 
@@ -141,7 +143,7 @@ export default function Collection() {
           <button
             onClick={() => setShowCollectionModal(true)}
             style={{
-              background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+              background: colors.link,
               color: 'white',
               border: 'none',
               borderRadius: '12px',
@@ -179,7 +181,7 @@ export default function Collection() {
           flexWrap: 'wrap',
           alignItems: 'center'
         }}>
-          <div style={{ flex: '1', minWidth: '300px' }}>
+          <div style={{ flex: '1', minWidth: isMobile ? '200px' : '300px' }}>
             <input
               type="text"
               placeholder="🔍 Search collections..."
@@ -241,7 +243,7 @@ export default function Collection() {
         ) : (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
             gap: '24px'
           }}>
             {filteredCollections.map((collection) => (
@@ -348,7 +350,7 @@ export default function Collection() {
                   </h3>
 
                   <div style={{
-                    background: colors.accent,
+                    background: colors.link,
                     color: 'white',
                     padding: '8px 12px',
                     borderRadius: '8px',

@@ -147,7 +147,7 @@ export default function CollectionDetail() {
           <button
             onClick={() => navigate(`/collection/${id}/assign`)}
             style={{
-              background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
+              background: colors.link,
               color: 'white',
               border: 'none',
               borderRadius: '12px',
@@ -219,7 +219,7 @@ export default function CollectionDetail() {
               gridTemplateColumns: '1fr 200px 150px 120px',
               gap: '16px',
               padding: '20px 24px',
-              background: colors.accent,
+              background: colors.link,
               color: 'white',
               fontWeight: 600,
               fontSize: '0.9rem'
@@ -289,7 +289,7 @@ export default function CollectionDetail() {
                     alignItems: 'center'
                   }}>
                     <span style={{
-                      background: colors.accent,
+                      background: colors.link,
                       color: 'white',
                       padding: '4px 8px',
                       borderRadius: '6px',
@@ -334,7 +334,7 @@ export default function CollectionDetail() {
                         handleRemoveArticle(article.id);
                       }}
                       style={{
-                        background: '#ef4444',
+                        background: colors.highlight,
                         color: 'white',
                         border: 'none',
                         borderRadius: '6px',
