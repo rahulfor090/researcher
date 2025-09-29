@@ -8,6 +8,7 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
   const [authors, setAuthors] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [articleReferences, setArticleReferences] = useState(null); // Store references
 
   // Function to fetch article data from DOI
   const fetchArticleData = async (doi) => {
@@ -16,8 +17,11 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
     setError('');
 
     try {
+      // Clean the DOI - remove URL prefix if present
+      const cleanDoi = doi.replace(/^https?:\/\/doi\.org\//, '');
+      
       // Make API call to Crossref
-      const response = await fetch(`https://api.crossref.org/works/${doi}`);
+      const response = await fetch(`https://api.crossref.org/works/${cleanDoi}`);
       const data = await response.json();
 
       if (data.status === 'ok' && data.message) {
@@ -48,6 +52,15 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
         if (article.URL) {
           setUrl(article.URL);
         }
+
+        // Store references for later saving when article is submitted
+        if (article.reference && Array.isArray(article.reference)) {
+          setArticleReferences(article.reference);
+          console.log(`Found ${article.reference.length} references in Crossref data for DOI: ${cleanDoi}`);
+        } else {
+          setArticleReferences([]);
+          console.log(`No references found in Crossref data for DOI: ${cleanDoi}`);
+        }
       }
     } catch (err) {
       setError('Failed to fetch article details. Please enter manually.');
@@ -76,19 +89,23 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
       setUrl(initialData.url || '');
       setDoi(initialData.doi || '');
       setAuthors(initialData.authors || '');
+      setArticleReferences(null); // Reset references for editing
     } else {
       setTitle('');
       setUrl('');
       setDoi('');
       setAuthors('');
+      setArticleReferences(null); // Reset references for new article
     }
   }, [initialData]);
 
   // Validate DOI format
   const isValidDOI = (doi) => {
+    // Clean the DOI first - remove URL prefix if present
+    const cleanDoi = doi.replace(/^https?:\/\/doi\.org\//, '');
     // Basic DOI format validation
     const doiRegex = /^10\.\d{4,9}\/[-._;()\/:A-Z0-9]+$/i;
-    return doiRegex.test(doi.trim());
+    return doiRegex.test(cleanDoi.trim());
   };
 
   const handleSubmit = async (e) => {
@@ -100,6 +117,9 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
       return;
     }
 
+    // Clean DOI for validation and saving
+    const cleanDoi = doi.replace(/^https?:\/\/doi\.org\//, '');
+    
     if (!isValidDOI(doi)) {
       setError('Invalid DOI format. Example: 10.1234/abc123');
       return;
@@ -109,7 +129,54 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
     const authorData = authors.trim() || 'N/A';
 
     try {
-      await onSave({ title, url, doi, authors: authorData });
+      await onSave({ title, url, doi: cleanDoi, authors: authorData });
+      
+      // After successfully saving the article, save the DOI references
+      try {
+        const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+        const token = localStorage.getItem('token');
+        
+        console.log('Attempting to save DOI entry:', {
+          doi: cleanDoi,
+          referencesCount: articleReferences?.length || 0,
+          apiBase,
+          hasToken: !!token
+        });
+        
+        if (token) {
+          // Always try to save the DOI, even if no references were found
+          const referencesToSave = articleReferences && articleReferences.length > 0 
+            ? articleReferences 
+            : []; // Save empty array if no references
+            
+          const response = await fetch(`${apiBase}/doi-references`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              doi: cleanDoi,
+              references: referencesToSave
+            })
+          });
+          
+          const result = await response.json();
+          console.log('DOI references save response:', result);
+          
+          if (response.ok) {
+            console.log(`Successfully saved DOI entry for: ${cleanDoi} with ${referencesToSave.length} references`);
+          } else {
+            console.error('Failed to save DOI entry:', result);
+          }
+        } else {
+          console.error('No authentication token found');
+        }
+      } catch (refError) {
+        console.error('Error saving DOI entry:', refError);
+        // Don't show error to user as this is not critical for article saving
+      }
+      
       onClose(); // Close the modal on success
     } catch (ex) {
       // Check for specific duplicate DOI error
@@ -161,6 +228,11 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
               justifyContent: 'center'
             }}>
               💡 Enter a DOI and press TAB to automatically fill article details
+              {articleReferences && articleReferences.length > 0 && (
+                <span style={{ color: '#22c55e', marginLeft: '8px' }}>
+                  ✅ {articleReferences.length} references found
+                </span>
+              )}
             </div>
           </div>
           <input
