@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from 'react-responsive';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, secondaryButtonStyle, gradients, shadows } from '../theme';
 import { useAuth } from '../auth';
@@ -10,6 +11,7 @@ import Layout from '../components/Layout';
 export default function Library() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();
   const [articles, setArticles] = useState([]);
   const [showModal, setShowModal] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -22,9 +24,18 @@ export default function Library() {
   const [search, setSearch] = useState(''); // Add search state
   const [uploadingArticleId, setUploadingArticleId] = useState(null);
   const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState(new Set());
+  const [onlyMissingPdf, setOnlyMissingPdf] = useState(false);
   const [showSummary, setShowSummary] = useState(null); // { id, summary }
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [genState, setGenState] = useState({ articleId: null, percent: 0, stage: 0, label: '' });
+  const genStages = [
+    { name: 'Uploading', desc: 'Sending PDF to the server' },
+    { name: 'Processing', desc: 'Validating and preparing the file' },
+    { name: 'Extracting', desc: 'Reading and extracting text' },
+    { name: 'Generating summary', desc: 'Creating AI-powered summary' },
+    { name: 'Finalizing', desc: 'Saving results and refreshing' }
+  ];
 
   // Load articles from backend
   const load = async () => {
@@ -32,6 +43,7 @@ export default function Library() {
     setArticles(data);
     setTimeout(() => setIsLoaded(true), 100);
   };
+
 
   // Clean up URL parameter after modal is opened
   useEffect(() => {
@@ -41,6 +53,16 @@ export default function Library() {
       window.history.replaceState({}, '', url);
     }
   }, [showModal]);
+
+  const fetchArticleById = async (id) => {
+    try {
+      const { data } = await api.get(`/articles/${id}`);
+      return data;
+    } catch {
+      return null;
+    }
+  };
+
 
   // Upload PDF for an article and refresh
   const handleUploadPdf = async (article) => {
@@ -56,13 +78,46 @@ export default function Library() {
         form.append('pdf', file);
         try {
           const { data } = await api.post(`/upload/pdf?id=${article.id}`, form, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (e) => {
+              if (!e.total) return;
+              const pct = Math.min(60, Math.round((e.loaded / e.total) * 60));
+              setGenState(prev => ({ articleId: article.id, percent: pct, stage: 0, label: genStages[0].name }));
+            }
           });
+          setGenState(prev => ({ articleId: article.id, percent: Math.max(prev.percent || 0, 65), stage: 1, label: genStages[1].name }));
+            setGenState(prev => ({ articleId: article.id, percent: Math.max(prev.percent || 0, 65), stage: 1, label: genStages[1].name }));
           await load();
           if (data?.summary) {
+            setGenState(prev => ({ articleId: article.id, percent: 100, stage: 4, label: genStages[4] }));
+            setTimeout(() => setGenState({ articleId: null, percent: 0, stage: 0, label: '' }), 1200);
             setShowSummary({ id: article.id, summary: data.summary });
           } else {
-            setShowSummary({ id: article.id, summary: 'Summary generation queued or skipped. Open details to view when ready.' });
+            // Poll for summary a few times (background generation)
+            let found = null;
+            for (let i = 0; i < 5; i++) {
+              await new Promise(r => setTimeout(r, 3000));
+              const latest = await fetchArticleById(article.id);
+              // Advance staged progress while polling
+              setGenState(prev => {
+                const nextPercent = Math.min(95, (prev.percent || 65) + 7);
+                const nextStage = prev.stage < 3 ? prev.stage + 1 : 3;
+                return { articleId: article.id, percent: nextPercent, stage: nextStage, label: genStages[nextStage].name };
+              });
+              if (latest && (latest.summary || latest.ai_summary || latest.summary_text)) {
+                found = latest.summary || latest.ai_summary || latest.summary_text;
+                break;
+              }
+            }
+            if (found) {
+              setGenState({ articleId: article.id, percent: 100, stage: 4, label: genStages[4].name });
+              setTimeout(() => setGenState({ articleId: null, percent: 0, stage: 0, label: '' }), 1200);
+              setShowSummary({ id: article.id, summary: found });
+            } else {
+              setGenState(prev => ({ articleId: article.id, percent: Math.max(prev.percent || 90, 90), stage: 3, label: genStages[3].name }));
+              setShowSummary({ id: article.id, summary: 'No summary available yet. Try opening details to refresh.' });
+              setTimeout(() => setGenState({ articleId: null, percent: 0, stage: 0, label: '' }), 1500);
+            }
           }
           // Mark as recently updated for UX feedback
           setRecentlyUpdatedIds(prev => {
@@ -161,6 +216,7 @@ export default function Library() {
 
   useEffect(() => { load(); }, []);
 
+
   // Export articles to CSV
   const handleExportCSV = () => {
     // Define CSV headers
@@ -195,6 +251,12 @@ export default function Library() {
     document.body.removeChild(link);
   };
 
+  // Read URL filter (?missing=1)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setOnlyMissingPdf(params.get('missing') === '1');
+  }, [location.search]);
+
   // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -213,7 +275,7 @@ export default function Library() {
   }, [showProfileMenu]);
 
   // Filtered articles based on search
-  const filteredArticles = articles.filter(a => {
+  let filteredArticles = articles.filter(a => {
     const q = search.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -222,13 +284,21 @@ export default function Library() {
       (a.authors && a.authors.toLowerCase().includes(q))
     );
   });
+  if (onlyMissingPdf) {
+    filteredArticles = filteredArticles.filter(a => {
+      const hasPdf = !!(a.file_name || a.pdf || a.pdfUrl || a.pdf_url);
+      return !hasPdf;
+    });
+  }
+
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   return (
     <Layout>
       <div
         style={{
           flexGrow: 1,
-          padding: '40px',
+          padding: isMobile ? '16px' : '40px',
           display: 'flex',
           flexDirection: 'column',
           borderTopRightRadius: '16px',
@@ -381,6 +451,36 @@ export default function Library() {
               ✖
             </button>
           )}
+          {onlyMissingPdf && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: '10px',
+              color: '#ef4444'
+            }}>
+              <span>📄</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Showing articles without uploaded PDF</span>
+              <button
+                onClick={() => nav('/library')}
+                style={{
+                  marginLeft: '6px',
+                  background: 'transparent',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  color: colors.primaryText,
+                  fontSize: '0.8rem'
+                }}
+              >
+                Clear
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Library Statistics */}
@@ -420,13 +520,13 @@ export default function Library() {
               description: 'Accessible online'
             },
             {
-              count: Math.round((articles.filter(a => a.doi && a.authors).length / Math.max(articles.length, 1)) * 100),
+              count: Math.round((articles.filter(a => a.file_name).length / Math.max(articles.length, 1)) * 100),
               label: 'Complete %',
               icon: '🎯',
               color: '#f59e0b',
               bgColor: 'rgba(245, 158, 11, 0.1)',
               borderColor: 'rgba(245, 158, 11, 0.2)',
-              description: 'Fully documented',
+              description: 'PDFs uploaded',
               isPercentage: true
             }
           ].map((stat, index) => (
@@ -452,6 +552,11 @@ export default function Library() {
                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
                 e.currentTarget.style.boxShadow = 'none';
                 e.currentTarget.style.border = `1px solid ${stat.borderColor}`;
+              }}
+              onClick={() => {
+                if (stat.label === 'Complete %') {
+                  nav('/library?missing=1');
+                }
               }}
             >
               <div style={{
@@ -494,7 +599,11 @@ export default function Library() {
             marginBottom: '24px',
             animation: `fadeInUp 0.8s ease-out ${isLoaded ? '1.1s' : '0s'} both`,
             transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
-            opacity: isLoaded ? 1 : 0
+            opacity: isLoaded ? 1 : 0,
+            background: 'rgba(255,255,255,0.95)',
+            border: `1px solid ${colors.border}`,
+            borderRadius: '16px',
+            overflow: 'hidden'
           }}
           onMouseEnter={e => {
             e.currentTarget.style.boxShadow = shadows.medium;
@@ -524,6 +633,15 @@ export default function Library() {
                 gap: '8px'
               }}>
                 🗃️ My Articles Collection
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: '#2563eb',
+                  background: 'rgba(37, 99, 235, 0.08)',
+                  border: '1px solid rgba(37,99,235,0.2)',
+                  padding: '4px 8px',
+                  borderRadius: '9999px'
+                }}>Theme</span>
               </h3>
               <p style={{
                 color: colors.mutedText,
@@ -704,10 +822,10 @@ export default function Library() {
               </button>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowX: 'auto', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
-                  <tr style={{ background: 'rgba(0,0,0,0.02)' }}>
+                  <tr style={{ background: 'rgba(37,99,235,0.06)' }}>
                     <th
                       style={{
                         textAlign: 'center',
@@ -795,6 +913,8 @@ export default function Library() {
                 </thead>
                 <tbody>
                   {filteredArticles.map((a, idx) => {
+                    const hasPdf = !!(a.file_name || a.pdf || a.pdfUrl || a.pdf_url);
+                    const hasSummary = !!(a.summary || a.ai_summary || a.summary_text);
                     const isSelected = selectedRows.has(a.id);
                     return (
                     <tr 
@@ -803,12 +923,12 @@ export default function Library() {
                         transition: 'all 0.2s ease',
                         cursor: 'pointer',
                         animation: `fadeInUp 0.4s ease-out ${idx * 0.05}s both`,
-                        background: isSelected ? 'rgba(13, 148, 136, 0.1)' : 'transparent',
+                        background: isSelected ? 'rgba(13, 148, 136, 0.1)' : (idx % 2 === 1 ? 'rgba(0,0,0,0.02)' : 'transparent'),
                         borderLeft: isSelected ? `4px solid ${colors.highlight}` : '4px solid transparent'
                       }}
                       onMouseEnter={e => {
                         if (!isSelected) {
-                          e.currentTarget.style.background = 'rgba(13, 148, 136, 0.04)';
+                          e.currentTarget.style.background = idx % 2 === 1 ? 'rgba(13, 148, 136, 0.04)' : 'rgba(13, 148, 136, 0.03)';
                         }
                         e.currentTarget.style.transform = 'translateX(4px)';
                         // Animate the number badge
@@ -820,7 +940,7 @@ export default function Library() {
                       }}
                       onMouseLeave={e => {
                         if (!isSelected) {
-                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.background = idx % 2 === 1 ? 'rgba(0,0,0,0.02)' : 'transparent';
                         }
                         e.currentTarget.style.transform = 'translateX(0)';
                         // Reset the number badge
@@ -1020,25 +1140,50 @@ export default function Library() {
                       >
                         {/* Upload state and status */}
                         {uploadingArticleId === a.id && (
-                          <button
-                            disabled
-                            onClick={(e) => e.stopPropagation()}
-                            style={{
-                              background: colors.mutedText,
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '6px 12px',
-                              fontWeight: 600,
-                              fontSize: '0.8rem',
-                              opacity: 0.8,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px'
-                            }}
-                          >
-                            <span>⏳</span> Uploading...
-                          </button>
+                          <div style={{ minWidth: 320 }} onClick={(e) => e.stopPropagation()} aria-live="polite">
+                            {/* Title and % */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span>
+                                  {genState.stage >= 4 ? '✅' : genState.stage >= 1 ? '⚙️' : '⬆️'}
+                                </span>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: colors.primaryText }}>
+                                  {genState.articleId === a.id ? (genState.label || genStages[0].name) : genStages[0].name}
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '0.85rem', color: colors.mutedText }}>
+                                {genState.articleId === a.id ? genState.percent : 0}%
+                              </div>
+                            </div>
+
+                            {/* Description */}
+                            <div style={{ fontSize: '0.75rem', color: colors.mutedText, marginBottom: 6 }}>
+                              {genState.articleId === a.id ? genStages[genState.stage]?.desc : genStages[0].desc}
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div style={{ width: '100%', height: 12, background: '#f3f4f6', borderRadius: 9999, overflow: 'hidden', border: `1px solid ${colors.border}`, position: 'relative' }}>
+                              {/* animated stripes overlay */}
+                              <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0, rgba(255,255,255,0.25) 8px, transparent 8px, transparent 16px)', backgroundSize: '24px 24px', animation: 'rlStripe 1s linear infinite', pointerEvents: 'none' }} />
+                              <div style={{ height: '100%', width: `${genState.articleId === a.id ? genState.percent : 0}%`, background: `linear-gradient(90deg, ${colors.link}, ${colors.highlight})`, transition: 'width 140ms ease', position: 'relative' }} />
+                            </div>
+
+                            {/* Timeline with icons */}
+                            <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
+                              {genStages.map((s, idx) => {
+                                const isDone = genState.articleId === a.id && idx < (genState.stage || 0);
+                                const isCurrent = genState.articleId === a.id && idx === (genState.stage || 0);
+                                return (
+                                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <div style={{ width: 18, height: 18, borderRadius: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? colors.link : isCurrent ? colors.highlight : '#e5e7eb', color: isDone || isCurrent ? '#fff' : '#6b7280', fontSize: '0.7rem', boxShadow: (isDone || isCurrent) ? '0 0 0 3px rgba(13,148,136,0.12)' : 'none' }}>
+                                      {isDone ? '✓' : isCurrent ? '•' : ''}
+                                    </div>
+                                    <div style={{ fontSize: '0.72rem', color: isDone || isCurrent ? colors.primaryText : colors.mutedText }}>{s.name}</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         )}
 
                         {uploadingArticleId !== a.id && recentlyUpdatedIds.has(a.id) && (
@@ -1059,7 +1204,7 @@ export default function Library() {
                         )}
 
                         {/* Upload PDF CTA when missing */}
-                        {uploadingArticleId !== a.id && !recentlyUpdatedIds.has(a.id) && (!a.file_name || !a.summary) && (
+                        {uploadingArticleId !== a.id && !recentlyUpdatedIds.has(a.id) && (!hasPdf) && (
                           <button
                             onClick={(e) => { e.stopPropagation(); handleUploadPdf(a); }}
                             style={{
@@ -1090,7 +1235,7 @@ export default function Library() {
                         )}
 
                         {/* PDF present indicator */}
-                        {a.file_name && a.summary && (
+                        {hasPdf && (
                           <div style={{
                             padding: '6px 10px',
                             background: 'rgba(34,197,94,0.12)',
@@ -1103,7 +1248,7 @@ export default function Library() {
                             alignItems: 'center',
                             gap: '6px'
                           }}>
-                            <span>📄</span> PDF ready
+                            <span>📄</span> {hasSummary ? 'PDF & Summary ready' : 'PDF ready'}
                           </div>
                         )}
 
@@ -1312,6 +1457,7 @@ export default function Library() {
             50% { transform: translateY(20px) rotate(180deg); }
             75% { transform: translateY(-15px) rotate(270deg); }
           }
+          @keyframes rlStripe { from { background-position: 0 0; } to { background-position: 24px 0; } }
           
           @keyframes libraryPulse {
             0%, 100% { transform: scale(1); opacity: 0.05; }

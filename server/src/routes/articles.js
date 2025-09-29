@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Op } from 'sequelize';
-import { Article, Author, ArticleAuthor, User } from '../models/index.js'; // Ensure User model is imported!
+import { Article, Author, ArticleAuthor, User, TempArticle, TempUser } from '../models/index.js'; // Ensure TempArticle and TempUser are imported!
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -54,6 +54,130 @@ async function getArticleAuthorsString(articleId) {
   return articleAuthors.map(aa => aa.Author.name).join(', ');
 }
 
+// ===== TEMP ARTICLE ENDPOINTS =====
+
+// Save an article for a temp user (no auth required)
+router.post('/temp-articles', 
+  body('tempUserId').notEmpty(),
+  body('title').notEmpty(),
+  body('url').isURL(),
+  async (req, res) => {
+    const errors = validationResult(req); 
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    try {
+      // Only allow one article per temp user
+      const count = await TempArticle.count({ where: { tempUserId: req.body.tempUserId } });
+      if (count >= 1) {
+        return res.status(403).json({ message: 'Temp user can only save one article. Please register to save more.' });
+      }
+
+      // Check for existing article with same URL or DOI for this temp user
+      const existing = await TempArticle.findOne({
+        where: {
+          tempUserId: req.body.tempUserId,
+          [Op.or]: [
+            { url: req.body.url },
+            req.body.doi ? { doi: req.body.doi } : null
+          ].filter(Boolean)
+        }
+      });
+
+      if (existing) {
+        return res.status(400).json({ message: 'An article with the same URL or DOI already exists for this temp user' });
+      }
+
+      // Create temp user if not exists
+      await TempUser.findOrCreate({ where: { tempUserId: req.body.tempUserId } });
+
+      // Save article
+      const created = await TempArticle.create(req.body);
+      res.json(created);
+    } catch (err) {
+      console.error('Failed to create temp article:', err);
+      res.status(500).json({ message: 'Failed to create temp article', error: String(err?.message || err) });
+    }
+  }
+);
+
+// Get temp user article count (library info)
+router.get('/temp-users/:tempUserId/library-info', async (req, res) => {
+  try {
+    const { tempUserId } = req.params;
+    const articleCount = await TempArticle.count({ where: { tempUserId } });
+    res.json({ articleCount });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get temp user library info', error: String(err?.message || err) });
+  }
+});
+
+// Migrate temp articles to real user after registration
+router.post('/temp-articles/migrate', 
+  body('tempUserId').notEmpty(),
+  body('mainUserId').notEmpty(),
+  async (req, res) => {
+    const errors = validationResult(req); 
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    try {
+      const { tempUserId, mainUserId } = req.body;
+      const tempArticles = await TempArticle.findAll({ where: { tempUserId } });
+
+      let migratedCount = 0;
+
+      for (const tempArt of tempArticles) {
+        // Check for duplicate by URL/DOI for this main user
+        const existing = await Article.findOne({
+          where: {
+            userId: mainUserId,
+            [Op.or]: [
+              { url: tempArt.url },
+              tempArt.doi ? { doi: tempArt.doi } : null
+            ].filter(Boolean)
+          }
+        });
+
+        if (!existing) {
+          // Normalize authors for real articles
+          const names = normalizeAuthorNames(tempArt.authors);
+          const authorsStringForLegacy = names.join(', ');
+
+          // Clean out temp-only fields and id
+          const raw = tempArt.toJSON();
+          delete raw.id;
+          delete raw.tempUserId;
+
+          // Create Article
+          const created = await Article.create({
+            ...raw,
+            authors: authorsStringForLegacy,
+            userId: mainUserId
+          });
+
+          // Upsert authors and link without duplicates
+          if (names.length > 0) {
+            const authors = await upsertAuthorsByNames(names);
+            await associateAuthors(created.id, authors);
+          }
+
+          migratedCount++;
+        }
+      }
+
+      // Delete temp articles and temp user
+      await TempArticle.destroy({ where: { tempUserId } });
+      await TempUser.destroy({ where: { tempUserId } });
+
+      res.json({ migratedCount });
+    } catch (err) {
+      console.error('Failed to migrate temp articles:', err);
+      res.status(500).json({ message: 'Failed to migrate temp articles', error: String(err?.message || err) });
+    }
+  }
+);
+
+// ====== EXISTING ENDPOINTS BELOW ======
+
 // LIBRARY INFO ENDPOINT (for extension and web app)
 router.get('/users/me/library-info', requireAuth, async (req, res) => {
   try {
@@ -91,8 +215,6 @@ router.post('/',
         }
       }
       
-      const { sequelize } = Article.sequelize; // guard not needed; kept local
-
       // Check for existing article with same URL or DOI for this user
       const existing = await Article.findOne({
         where: {

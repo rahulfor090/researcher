@@ -165,7 +165,7 @@ export default function Login() {
             margin: 0,
             fontWeight: 400
           }}>
-            Sign in to your Research Locker account
+            Sign in to your ResearchLocker account
           </p>
         </div>
 

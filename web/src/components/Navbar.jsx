@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { api } from '../api';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
   const { user, logout, setUser } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -12,6 +13,7 @@ const Navbar = () => {
   const [formImage, setFormImage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [avatarSrc, setAvatarSrc] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -47,6 +49,17 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', onDocClick);
   }, [isMenuOpen]);
 
+  // Scroll effect for header
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleSave = async () => {
     try {
       setIsSaving(true);
@@ -64,106 +77,177 @@ const Navbar = () => {
     }
   };
 
+  const isHome = location.pathname === '/';
   const navItems = user ? [
-    { name: 'Home', path: '/' },
-    { name: 'Library', path: '/library' },
+    ...(!isHome ? [{ name: 'Home', path: '/' }] : []),
+    ...(!isHome ? [{ name: 'Library', path: '/library' }] : []),
     { name: 'Upgrade', path: '/upgrade' },
   ] : [
-    { name: 'Home', path: '/' },
+    ...(!isHome ? [{ name: 'Home', path: '/' }] : []),
     { name: 'Membership', path: '/upgrade' },
     { name: 'Login', path: '/login' },
     { name: 'Register', path: '/register' },
   ];
 
   return (
-    <nav className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-md fixed w-full z-50 top-0 left-0 animate-fade-in-down">
+    <nav 
+      className={`backdrop-blur-md fixed w-full z-50 top-0 left-0 animate-fade-in-down border-b transition-all duration-500 group ${isScrolled ? 'shadow-xl border-[#e8ddd4]' : 'shadow-lg border-[#e8ddd4]/50'}`} 
+      style={{ 
+        background: isScrolled 
+          ? 'linear-gradient(135deg, rgba(254, 252, 243, 0.98) 0%, rgba(245, 241, 232, 0.98) 100%)'
+          : 'linear-gradient(135deg, rgba(254, 252, 243, 0.95) 0%, rgba(245, 241, 232, 0.95) 100%)',
+        boxShadow: isScrolled 
+          ? '0 8px 32px -8px rgba(45, 27, 14, 0.15)'
+          : '0 4px 20px -2px rgba(45, 27, 14, 0.1)'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(254, 252, 243, 1) 0%, rgba(245, 241, 232, 1) 100%)';
+        e.currentTarget.style.boxShadow = '0 12px 40px -8px rgba(45, 27, 14, 0.2)';
+        e.currentTarget.style.transform = 'translateY(2px)';
+        e.currentTarget.style.borderBottom = '2px solid rgba(13, 148, 136, 0.3)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = isScrolled 
+          ? 'linear-gradient(135deg, rgba(254, 252, 243, 0.98) 0%, rgba(245, 241, 232, 0.98) 100%)'
+          : 'linear-gradient(135deg, rgba(254, 252, 243, 0.95) 0%, rgba(245, 241, 232, 0.95) 100%)';
+        e.currentTarget.style.boxShadow = isScrolled 
+          ? '0 8px 32px -8px rgba(45, 27, 14, 0.15)'
+          : '0 4px 20px -2px rgba(45, 27, 14, 0.1)';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderBottom = isScrolled ? '1px solid #e8ddd4' : '1px solid rgba(232, 221, 212, 0.5)';
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
-              <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-gray-200 object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              <span className="text-teal-600 text-2xl font-bold group-hover:text-teal-700 transition-colors">Research Locker</span>
+            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group" onMouseEnter={(e) => {
+              const logo = e.currentTarget.querySelector('img');
+              const text = e.currentTarget.querySelector('span');
+              if (logo) {
+                logo.style.transform = 'scale(1.1) rotate(5deg)';
+                logo.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.3)';
+              }
+              if (text) {
+                text.style.transform = 'translateX(2px)';
+                text.style.textShadow = '0 2px 8px rgba(13, 148, 136, 0.2)';
+              }
+            }} onMouseLeave={(e) => {
+              const logo = e.currentTarget.querySelector('img');
+              const text = e.currentTarget.querySelector('span');
+              if (logo) {
+                logo.style.transform = 'scale(1) rotate(0deg)';
+                logo.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+              }
+              if (text) {
+                text.style.transform = 'translateX(0)';
+                text.style.textShadow = 'none';
+              }
+            }}>
+              <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">Research Locker</span>
             </Link>
           </div>
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="flex items-baseline space-x-4">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="text-gray-700 hover:bg-teal-50 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300"
+                  className="text-[#6b5b47] hover:bg-[#f5f1e8] hover:text-[#0D9488] px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:shadow-sm relative overflow-hidden group"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.2)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 241, 232, 0.8) 0%, rgba(254, 252, 243, 0.8) 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.background = 'transparent';
+                  }}
                 >
-                  {item.name}
+                  <span className="relative z-10">{item.name}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#0D9488]/10 via-transparent to-[#F97316]/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500"></div>
                 </Link>
               ))}
               {user ? (
                 <div className="relative ml-4" ref={menuRef}>
                   <button
                     onClick={() => setIsMenuOpen(v => !v)}
-                    className="flex items-center space-x-2 group"
+                    className="flex items-center space-x-2 group relative overflow-hidden"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
                   >
                     {avatarSrc ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+                      <div className="w-8 h-8 rounded-full overflow-hidden border border-[#e8ddd4] shadow-sm">
                         <img src={avatarSrc} alt={user.name} className="w-full h-full object-cover" />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center text-xs font-bold">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0D9488] to-[#F97316] text-white flex items-center justify-center text-xs font-bold shadow-sm">
                         {user.name?.slice(0,1)?.toUpperCase() || 'U'}
                       </div>
                     )}
-                    <span className="text-sm font-semibold text-gray-800 group-hover:text-teal-700">{user.name}</span>
-                    <svg className="w-4 h-4 text-gray-500 group-hover:text-teal-700" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd"/></svg>
+              <span className="text-sm font-semibold text-[#2d1b0e] group-hover:text-[#0D9488] transition-colors duration-300">{user.name}</span>
+                    <svg className="w-4 h-4 text-[#6b5b47] group-hover:text-[#0D9488] transition-colors duration-300" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd"/></svg>
                   </button>
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50">
+                    <div className="absolute right-0 mt-2 w-72 bg-[#fefcf3] border border-[#e8ddd4] rounded-xl shadow-xl p-4 z-50" style={{ 
+                      boxShadow: '0 10px 30px -5px rgba(45, 27, 14, 0.15)'
+                    }}>
                       {!isEditing ? (
                         <div className="space-y-3">
                           <div className="flex items-center space-x-3">
                             {avatarSrc ? (
-                              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                              <div className="w-10 h-10 rounded-full overflow-hidden border border-[#e8ddd4] shadow-sm">
                                 <img src={avatarSrc} alt={user.name} className="w-full h-full object-cover" />
                               </div>
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center text-sm font-bold">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0D9488] to-[#F97316] text-white flex items-center justify-center text-sm font-bold shadow-sm">
                                 {user.name?.slice(0,1)?.toUpperCase() || 'U'}
                               </div>
                             )}
                             <div>
-                              <div className="text-sm font-semibold text-gray-900">{user.name}</div>
-                              <div className="text-xs text-gray-500 truncate max-w-[12rem]">{user.email}</div>
+                              <div className="text-sm font-semibold text-[#2d1b0e]">{user.name}</div>
+                              <div className="text-xs text-[#6b5b47] truncate max-w-[12rem]">{user.email}</div>
                             </div>
                           </div>
-                          <button onClick={() => setIsEditing(true)} className="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold py-2 rounded-md">Edit Profile</button>
+                          <button onClick={() => setIsEditing(true)} className="w-full bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] text-white text-sm font-semibold py-2 rounded-lg transition-all duration-300 shadow-sm">Edit Profile</button>
                           <div className="flex gap-2">
-                            <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="flex-1 text-center border border-gray-200 hover:border-gray-300 text-gray-700 text-sm py-2 rounded-md">Settings</Link>
-                            <button onClick={logout} className="flex-1 text-center border border-gray-200 hover:border-gray-300 text-gray-700 text-sm py-2 rounded-md">Logout</button>
+                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex-1 text-center border border-[#e8ddd4] hover:border-[#0D9488] text-[#6b5b47] hover:text-[#0D9488] text-sm py-2 rounded-lg transition-all duration-300">Back to Home</Link>
+                            <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="flex-1 text-center border border-[#e8ddd4] hover:border-[#0D9488] text-[#6b5b47] hover:text-[#0D9488] text-sm py-2 rounded-lg transition-all duration-300">Settings</Link>
+                            <button onClick={logout} className="flex-1 text-center border border-[#e8ddd4] hover:border-red-300 text-[#6b5b47] hover:text-red-600 text-sm py-2 rounded-lg transition-all duration-300">Logout</button>
                           </div>
                         </div>
                       ) : (
                         <div className="space-y-3">
                           <div className="flex items-center space-x-3">
                             {avatarSrc ? (
-                              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                              <div className="w-10 h-10 rounded-full overflow-hidden border border-[#e8ddd4] shadow-sm">
                                 <img src={avatarSrc} alt={user.name} className="w-full h-full object-cover" />
                               </div>
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center text-sm font-bold">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0D9488] to-[#F97316] text-white flex items-center justify-center text-sm font-bold shadow-sm">
                                 {user.name?.slice(0,1)?.toUpperCase() || 'U'}
                               </div>
                             )}
-                            <div className="text-sm font-semibold text-gray-900">Edit Profile</div>
+                            <div className="text-sm font-semibold text-[#2d1b0e]">Edit Profile</div>
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-600 mb-1">Name</label>
-                            <input value={formName} onChange={e => setFormName(e.target.value)} className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                            <label className="block text-xs text-[#6b5b47] mb-1">Name</label>
+                            <input value={formName} onChange={e => setFormName(e.target.value)} className="w-full border border-[#e8ddd4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-[#0D9488] transition-colors duration-300" />
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-600 mb-1">Profile picture</label>
-                            <input type="file" accept="image/*" onChange={e => setFormImage(e.target.files?.[0] || null)} className="w-full text-sm" />
+                            <label className="block text-xs text-[#6b5b47] mb-1">Profile picture</label>
+                            <input type="file" accept="image/*" onChange={e => setFormImage(e.target.files?.[0] || null)} className="w-full text-sm text-[#6b5b47]" />
                           </div>
                           <div className="flex gap-2 pt-1">
-                            <button disabled={isSaving} onClick={() => { setIsEditing(false); setFormImage(null); }} className="flex-1 border border-gray-200 hover:border-gray-300 text-gray-700 text-sm py-2 rounded-md">Cancel</button>
-                            <button disabled={isSaving} onClick={handleSave} className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-sm font-semibold py-2 rounded-md">{isSaving ? 'Saving...' : 'Save'}</button>
+                            <button disabled={isSaving} onClick={() => { setIsEditing(false); setFormImage(null); }} className="flex-1 border border-[#e8ddd4] hover:border-[#6b5b47] text-[#6b5b47] hover:text-[#2d1b0e] text-sm py-2 rounded-lg transition-all duration-300">Cancel</button>
+                            <button disabled={isSaving} onClick={handleSave} className="flex-1 bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:from-[#0f766e] hover:to-[#ea580c] disabled:opacity-60 text-white text-sm font-semibold py-2 rounded-lg transition-all duration-300 shadow-sm">{isSaving ? 'Saving...' : 'Save'}</button>
                           </div>
                         </div>
                       )}
@@ -177,9 +261,17 @@ const Navbar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className="bg-teal-50 inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-teal-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-teal-50 focus:ring-teal-500"
+              className="bg-[#f5f1e8] inline-flex items-center justify-center p-2 rounded-lg text-[#6b5b47] hover:text-[#0D9488] hover:bg-[#fefcf3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#f5f1e8] focus:ring-[#0D9488] transition-all duration-300 relative overflow-hidden group"
               aria-controls="mobile-menu"
               aria-expanded="false"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1) rotate(5deg)';
+                e.currentTarget.style.boxShadow = '0 8px 25px -5px rgba(13, 148, 136, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+                e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+              }}
             >
               <span className="sr-only">Open main menu</span>
               {!isOpen ? (
@@ -212,32 +304,32 @@ const Navbar = () => {
 
       {isOpen && (
         <div className="md:hidden" id="mobile-menu">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#fefcf3] border-t border-[#e8ddd4]">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className="text-gray-700 hover:bg-teal-50 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium"
+                className="text-[#6b5b47] hover:bg-[#f5f1e8] hover:text-[#0D9488] block px-3 py-2 rounded-lg text-base font-medium transition-all duration-300"
                 onClick={() => setIsOpen(false)}
               >
                 {item.name}
               </Link>
             ))}
             {user ? (
-              <div className="px-3 py-3 border-t border-gray-100 mt-2 flex items-center justify-between">
+              <div className="px-3 py-3 border-t border-[#e8ddd4] mt-2 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   {avatarSrc ? (
-                    <Link to="/settings" className="w-9 h-9 rounded-full overflow-hidden border border-gray-200" onClick={() => setIsOpen(false)}>
+                    <Link to="/settings" className="w-9 h-9 rounded-full overflow-hidden border border-[#e8ddd4] shadow-sm" onClick={() => setIsOpen(false)}>
                       <img src={avatarSrc} alt={user.name} className="w-full h-full object-cover" />
                     </Link>
                   ) : (
-                    <Link to="/settings" className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center text-sm font-bold" onClick={() => setIsOpen(false)}>
+                    <Link to="/settings" className="w-9 h-9 rounded-full bg-gradient-to-br from-[#0D9488] to-[#F97316] text-white flex items-center justify-center text-sm font-bold shadow-sm" onClick={() => setIsOpen(false)}>
                       {user.name?.slice(0,1)?.toUpperCase() || 'U'}
                     </Link>
                   )}
-                  <Link to="/settings" className="text-sm font-semibold text-teal-700" onClick={() => setIsOpen(false)}>{user.name}</Link>
+                  <Link to="/settings" className="text-sm font-semibold text-[#0D9488]" onClick={() => setIsOpen(false)}>{user.name}</Link>
                 </div>
-                <button onClick={() => { setIsOpen(false); logout(); }} className="text-gray-700 hover:text-red-600 text-sm">Logout</button>
+                <button onClick={() => { setIsOpen(false); logout(); }} className="text-[#6b5b47] hover:text-red-600 text-sm transition-colors duration-300">Logout</button>
               </div>
             ) : null}
           </div>
