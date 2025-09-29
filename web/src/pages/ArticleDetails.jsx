@@ -56,7 +56,12 @@ export default function ArticleDetails() {
       try {
         console.log('Fetching article with ID:', id);
         const { data } = await api.get(`/articles/${id}`);
-        setArticle(data);
+        // Ensure authors is never undefined
+        const processedData = {
+          ...data,
+          authors: data.authors?.trim() || 'N/A'
+        };
+        setArticle(processedData);
         let initialContent = data.summary || '';
         
         // If initial content is plain text, convert to bullet points
@@ -289,7 +294,7 @@ export default function ArticleDetails() {
         }}>
           <h1 style={{ marginTop: 0, color: colors.primaryText }}>{article.title}</h1>
           <p><strong>DOI:</strong> {article.doi || '-'}</p>
-          <p><strong>Authors:</strong> {article.authors || '-'}</p>
+          <p><strong>Authors:</strong> {article.authors?.trim() || 'N/A'}</p>
           <p>
             <strong>URL:</strong>{' '}
             {article.url ? (

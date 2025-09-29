@@ -30,11 +30,18 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
         }
 
         // Update authors
-        if (article.author) {
+        if (article.author && Array.isArray(article.author) && article.author.length > 0) {
           const authorNames = article.author
-            .map(author => `${author.given} ${author.family}`)
+            .map(author => {
+              const given = author.given || '';
+              const family = author.family || '';
+              return [given, family].filter(Boolean).join(' ');
+            })
+            .filter(name => name.trim())
             .join(', ');
-          setAuthors(authorNames);
+          setAuthors(authorNames || 'N/A');
+        } else {
+          setAuthors('N/A');
         }
 
         // Update URL if available
@@ -77,6 +84,13 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
     }
   }, [initialData]);
 
+  // Validate DOI format
+  const isValidDOI = (doi) => {
+    // Basic DOI format validation
+    const doiRegex = /^10\.\d{4,9}\/[-._;()\/:A-Z0-9]+$/i;
+    return doiRegex.test(doi.trim());
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); // Clear previous errors
@@ -86,11 +100,26 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
       return;
     }
 
+    if (!isValidDOI(doi)) {
+      setError('Invalid DOI format. Example: 10.1234/abc123');
+      return;
+    }
+
+    // Ensure authors field is never undefined
+    const authorData = authors.trim() || 'N/A';
+
     try {
-      await onSave({ title, url, doi, authors });
+      await onSave({ title, url, doi, authors: authorData });
       onClose(); // Close the modal on success
     } catch (ex) {
-      setError(ex?.response?.data?.message || 'Failed to save article.');
+      // Check for specific duplicate DOI error
+      if (ex?.response?.status === 409 || 
+          ex?.response?.data?.message?.toLowerCase().includes('duplicate') ||
+          ex?.response?.data?.message?.toLowerCase().includes('already exists')) {
+        setError('An article with this DOI already exists in your library.');
+      } else {
+        setError(ex?.response?.data?.message || 'Failed to save article.');
+      }
     }
   };
 
@@ -99,30 +128,40 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
       <div style={modalContentStyle}>
         <h3>{initialData ? 'Edit Article' : 'Add New Article'}</h3>
         <form onSubmit={handleSubmit} style={formStyle}>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              placeholder="DOI (press Tab to auto-fill)"
-              value={doi}
-              onChange={handleDoiChange}
-              onBlur={handleDoiBlur}
-              style={{
-                ...inputStyle,
-                paddingRight: isLoading ? '30px' : '10px'
-              }}
-              required
-            />
-            {isLoading && (
-              <div style={{
-                position: 'absolute',
-                right: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                animation: 'spin 1s linear infinite'
-              }}>
-                ⌛
-              </div>
-            )}
+          <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px' }}>
+              <input
+                type="text"
+                placeholder="https://doi.org/10.1234/abc123"
+                value={doi}
+                onChange={handleDoiChange}
+                onBlur={handleDoiBlur}
+                style={{ ...inputStyle, width: '300px' }}
+                title="DOI format: 10.XXXX/XXXXX"
+                required
+              />
+              {isLoading && (
+                <div style={{
+                  animation: 'spin 1s linear infinite',
+                  marginLeft: '8px',
+                  fontSize: '1rem'
+                }}>
+                  ⌛
+                </div>
+              )}
+            </div>
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#666',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              whiteSpace: 'nowrap',
+              width: '300px',
+              justifyContent: 'center'
+            }}>
+              💡 Enter a DOI and press TAB to automatically fill article details
+            </div>
           </div>
           <input
             type="text"
