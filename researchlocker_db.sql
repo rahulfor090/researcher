@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 24, 2025 at 12:54 AM
+-- Generation Time: Sep 25, 2025 at 02:07 PM
 -- Server version: 10.11.14-MariaDB
 -- PHP Version: 8.4.11
 
@@ -411,7 +411,7 @@ INSERT INTO `sequelizemeta` (`name`) VALUES
 
 CREATE TABLE `tags` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL
+  `name` varchar(191) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -525,6 +525,42 @@ INSERT INTO `tags` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `temp_articles`
+--
+
+CREATE TABLE `temp_articles` (
+  `id` int(11) NOT NULL,
+  `tempUserId` varchar(255) NOT NULL,
+  `title` varchar(500) NOT NULL,
+  `authors` varchar(500) DEFAULT NULL,
+  `journal` varchar(255) DEFAULT NULL,
+  `doi` varchar(255) DEFAULT NULL,
+  `url` text NOT NULL,
+  `purchaseDate` date DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `tags` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`tags`)),
+  `file_name` varchar(255) DEFAULT NULL,
+  `summary` text DEFAULT NULL,
+  `hashtags` text DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `temp_users`
+--
+
+CREATE TABLE `temp_users` (
+  `id` int(11) NOT NULL,
+  `tempUserId` varchar(255) NOT NULL,
+  `createdAt` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -550,10 +586,10 @@ CREATE TABLE `users` (
   `skills` text DEFAULT NULL,
   `phone_number` varchar(20) DEFAULT '',
   `createdAt` datetime NOT NULL,
-  `twitterId` varchar(255) DEFAULT NULL,
+  `twitterId` varchar(191) DEFAULT NULL,
   `twitterToken` varchar(255) DEFAULT NULL,
   `twitterTokenSecret` varchar(255) DEFAULT NULL,
-  `linkedinId` varchar(255) DEFAULT NULL,
+  `linkedinId` varchar(191) DEFAULT NULL,
   `linkedinToken` varchar(255) DEFAULT NULL,
   `updatedAt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -697,7 +733,23 @@ ALTER TABLE `tags`
   ADD UNIQUE KEY `name_18` (`name`),
   ADD UNIQUE KEY `name_19` (`name`),
   ADD UNIQUE KEY `name_20` (`name`),
-  ADD UNIQUE KEY `name_21` (`name`);
+  ADD UNIQUE KEY `name_21` (`name`),
+  ADD UNIQUE KEY `name_22` (`name`),
+  ADD UNIQUE KEY `name_23` (`name`);
+
+--
+-- Indexes for table `temp_articles`
+--
+ALTER TABLE `temp_articles`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `temp_users`
+--
+ALTER TABLE `temp_users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `tempUserId` (`tempUserId`),
+  ADD UNIQUE KEY `tempUserId_2` (`tempUserId`);
 
 --
 -- Indexes for table `users`
@@ -706,67 +758,10 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
   ADD UNIQUE KEY `email_2` (`email`),
-  ADD UNIQUE KEY `email_3` (`email`),
-  ADD UNIQUE KEY `email_4` (`email`),
-  ADD UNIQUE KEY `email_5` (`email`),
-  ADD UNIQUE KEY `email_6` (`email`),
-  ADD UNIQUE KEY `email_7` (`email`),
-  ADD UNIQUE KEY `email_8` (`email`),
-  ADD UNIQUE KEY `email_9` (`email`),
-  ADD UNIQUE KEY `email_10` (`email`),
-  ADD UNIQUE KEY `email_11` (`email`),
-  ADD UNIQUE KEY `email_12` (`email`),
-  ADD UNIQUE KEY `email_13` (`email`),
-  ADD UNIQUE KEY `email_14` (`email`),
-  ADD UNIQUE KEY `email_15` (`email`),
-  ADD UNIQUE KEY `email_16` (`email`),
-  ADD UNIQUE KEY `email_17` (`email`),
-  ADD UNIQUE KEY `email_18` (`email`),
-  ADD UNIQUE KEY `email_19` (`email`),
-  ADD UNIQUE KEY `email_20` (`email`),
-  ADD UNIQUE KEY `email_21` (`email`),
   ADD UNIQUE KEY `twitterId` (`twitterId`),
   ADD UNIQUE KEY `linkedinId` (`linkedinId`),
   ADD UNIQUE KEY `twitterId_2` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_2` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_3` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_3` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_4` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_4` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_5` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_5` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_6` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_6` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_7` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_7` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_8` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_8` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_9` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_9` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_10` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_10` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_11` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_11` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_12` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_12` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_13` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_13` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_14` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_14` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_15` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_15` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_16` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_16` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_17` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_17` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_18` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_18` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_19` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_19` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_20` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_20` (`linkedinId`),
-  ADD UNIQUE KEY `twitterId_21` (`twitterId`),
-  ADD UNIQUE KEY `linkedinId_21` (`linkedinId`);
+  ADD UNIQUE KEY `linkedinId_2` (`linkedinId`);
 
 --
 -- Indexes for table `user_plan`
@@ -823,6 +818,18 @@ ALTER TABLE `tags`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
+-- AUTO_INCREMENT for table `temp_articles`
+--
+ALTER TABLE `temp_articles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `temp_users`
+--
+ALTER TABLE `temp_users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -874,8 +881,8 @@ ALTER TABLE `collections`
 -- Constraints for table `collection_masters`
 --
 ALTER TABLE `collection_masters`
-  ADD CONSTRAINT `collection_masters_ibfk_39` FOREIGN KEY (`collection_id`) REFERENCES `collections` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `collection_masters_ibfk_40` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `collection_masters_ibfk_43` FOREIGN KEY (`collection_id`) REFERENCES `collections` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `collection_masters_ibfk_44` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

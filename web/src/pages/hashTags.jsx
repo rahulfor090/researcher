@@ -132,76 +132,97 @@ export default function HashTags() {
           }}
         >
           <input
-            type="text"
-            placeholder="🔍 Search hashtags..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+        type="text"
+        placeholder="🔍 Search hashtags..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{
+          padding: "12px 18px",
+          borderRadius: "10px",
+          border: `1px solid ${colors.border}`,
+          fontSize: "1rem",
+          width: "100%",
+          maxWidth: "400px",
+          background: "#f8fafc",
+          color: colors.primaryText,
+          outline: "none",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          transition: "border 0.2s",
+        }}
+        onFocus={(e) =>
+          (e.currentTarget.style.border = `1.5px solid ${colors.link}`)
+        }
+        onBlur={(e) =>
+          (e.currentTarget.style.border = `1px solid ${colors.border}`)
+        }
+      />
+
+      {search && (
+        <button
+          onClick={() => setSearch("")}
+          style={{
+            marginTop: "10px",
+            padding: "6px 12px",
+            borderRadius: "8px",
+            border: "none",
+            background: colors.link,
+            color: "#fff",
+            cursor: "pointer",
+          }}
+        >
+          ❌ Clear
+        </button>
+      )}
+
+      {!selectedTag ? (
+        <>
+          <div
             style={{
-              padding: "12px 18px",
-              borderRadius: "10px",
-              border: `1px solid ${colors.border}`,
-              fontSize: "1rem",
-              width: "100%",
-              maxWidth: "400px",
-              background: "#f8fafc",
-              color: colors.primaryText,
-              outline: "none",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              transition: "border 0.2s",
+              marginBottom: "30px",
+              animation: "fadeInDown 0.8s ease-out 0.5s both",
             }}
-            onFocus={(e) =>
-              (e.currentTarget.style.border = `1.5px solid ${colors.link}`)
-            }
-            onBlur={(e) =>
-              (e.currentTarget.style.border = `1px solid ${colors.border}`)
-            }
-          />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-        {!selectedTag ? (
-          <>
-            <div
+          >
+            <h2
               style={{
-                marginBottom: "30px",
-                animation: "fadeInDown 0.8s ease-out 0.5s both",
+                fontSize: "2.25rem",
+                fontWeight: 700,
+                color: "#1f2937",
+                letterSpacing: "-0.02em",
+                marginBottom: "8px",
+                background: "linear-gradient(135deg, #1f2937, #4b5563)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
             >
-              <h2
-                style={{
-                  fontSize: "2.25rem",
-                  fontWeight: 700,
-                  color: "#1f2937",
-                  letterSpacing: "-0.02em",
-                  marginBottom: "8px",
-                  background: "linear-gradient(135deg, #1f2937, #4b5563)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                🗂️ All Hashtags
-              </h2>
-              <p
-                style={{
-                  color: colors.mutedText,
-                  fontSize: "1rem",
-                  margin: 0,
-                  fontWeight: 400,
-                }}
-              >
-                Search and browse all hashtags found in your research database
-              </p>
-            </div>
-            <div
+              🗂️ All Hashtags
+            </h2>
+            <p
               style={{
-                marginBottom: "24px",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                animation: "fadeInDown 0.7s ease-out 0.6s both",
+                color: colors.mutedText,
+                fontSize: "1rem",
+                margin: 0,
+                fontWeight: 400,
               }}
             >
+              Search and browse all hashtags found in your research database
+            </p>
+          </div>
+
+          <div
+            style={{
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              animation: "fadeInDown 0.7s ease-out 0.6s both",
+            }}
+          >
+            {/* Your content goes here */}
+          </div>
+        </>
+      ) : null}
+
               <input
                 type="text"
                 placeholder="🔍 Search hashtags..."
@@ -317,7 +338,6 @@ export default function HashTags() {
                 ))
               )}
             </div>
-          </>
         ) : (
           <div style={{ marginTop: "40px", animation: "fadeInDown 0.7s" }}>
             <div style={{
