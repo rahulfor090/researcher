@@ -11,6 +11,8 @@ import makeUserPlan from './UserPlan.js';
 // Import new collection models
 import makeCollection from './Collection.js';
 import makeCollectionMaster from './CollectionMaster.js';
+// Import DOI reference model
+import makeDoiReference from './DoiReference.js';
 
 // Add UserPlan model
 export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
@@ -25,6 +27,9 @@ export const ArticleTag = makeArticleTag(sequelize, Sequelize.DataTypes);
 // Initialize collection models
 export const Collection = makeCollection(sequelize, Sequelize.DataTypes);
 export const CollectionMaster = makeCollectionMaster(sequelize, Sequelize.DataTypes);
+
+// Initialize DOI reference model
+export const DoiReference = makeDoiReference(sequelize);
 
 // User-Article associations
 User.hasMany(Article, { foreignKey: 'userId' });

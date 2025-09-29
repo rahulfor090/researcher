@@ -5,38 +5,29 @@ export default (sequelize) => {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING(120), allowNull: false },
     email: { type: DataTypes.STRING(160), unique: true, allowNull: false },
-    password: { type: DataTypes.STRING(255), allowNull: true }, // Allow null for OAuth users
+    password: { type: DataTypes.STRING(200), allowNull: false },
     plan: { type: DataTypes.ENUM('free','pro'), defaultValue: 'free' },
-    phone_number: { type: DataTypes.STRING(20), allowNull: true, defaultValue: '' },
+    phone_number: { type: DataTypes.STRING(20), allowNull: true },
     profile_image: { 
       type: DataTypes.STRING(255), 
-      allowNull: true,
-      defaultValue: ''
+      allowNull: true
     }, 
-    gender: { type: DataTypes.ENUM('Male', 'Female', 'Other'), allowNull: true, defaultValue: 'Other' },
-    university: { type: DataTypes.STRING(255), allowNull: true, defaultValue: '' },
-    department: { type: DataTypes.STRING(255), allowNull: true, defaultValue: '' },
-    program: { type: DataTypes.STRING(255), allowNull: true, defaultValue: '' },
-    year_of_study: { type: DataTypes.STRING(50), allowNull: true, defaultValue: '' },
-    research_area: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
-    research_interests: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
-    publications: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
-    linkedin_url: { type: DataTypes.STRING(255), allowNull: true, defaultValue: '' },
-    google_scholar_url: { type: DataTypes.STRING(255), allowNull: true, defaultValue: '' },
-    orcid_id: { type: DataTypes.STRING(50), allowNull: true, defaultValue: '' },
-    bio: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
-    skills: { type: DataTypes.TEXT, allowNull: true, defaultValue: '' },
-    // Twitter OAuth fields
-    twitterId: { type: DataTypes.STRING(191), allowNull: true, unique: true },
-    twitterToken: { type: DataTypes.STRING, allowNull: true },
-    twitterTokenSecret: { type: DataTypes.STRING, allowNull: true },
-    // LinkedIn OAuth fields
-    linkedinId: { type: DataTypes.STRING(191), allowNull: true, unique: true },
-    linkedinToken: { type: DataTypes.STRING, allowNull: true }
-  }, { 
-    tableName: 'users',
-    timestamps: true
-  });
+    gender: { type: DataTypes.ENUM('Male', 'Female', 'Other'), allowNull: true },
+    university: { type: DataTypes.STRING(255), allowNull: true },
+    department: { type: DataTypes.STRING(255), allowNull: true },
+    program: { type: DataTypes.STRING(255), allowNull: true },
+    year_of_study: { type: DataTypes.STRING(50), allowNull: true },
+    research_area: { type: DataTypes.TEXT, allowNull: true },
+    research_interests: { type: DataTypes.TEXT, allowNull: true },
+    publications: { type: DataTypes.TEXT, allowNull: true },
+    linkedin_url: { type: DataTypes.STRING(255), allowNull: true },
+    google_scholar_url: { type: DataTypes.STRING(255), allowNull: true },
+    orcid_id: { type: DataTypes.STRING(50), allowNull: true },
+    bio: { type: DataTypes.TEXT, allowNull: true },
+    skills: { type: DataTypes.TEXT, allowNull: true },
+  }, { tableName: 'users' });
+  
 
   return User;
 };
+
