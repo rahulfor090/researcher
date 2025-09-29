@@ -15,5 +15,13 @@ export default (sequelize, DataTypes) => {
     timestamps: false
   });
 
+  Tag.associate = (models) => {
+    Tag.belongsToMany(models.Article, {
+      through: models.ArticleTag,
+      foreignKey: 'tag_id',
+      otherKey: 'article_id'
+    });
+  };
+
   return Tag;
 };
