@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { gradients, colors, shadows, cardStyle } from '../theme';
 import { api } from '../api';
 import { useAuth } from '../auth';
+import Layout from '../components/Layout';
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -254,14 +255,15 @@ export default function Settings() {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      background: gradients.app, 
-      fontFamily: 'Inter, sans-serif',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
+    <Layout>
+      <div style={{ 
+        flexGrow: 1,
+        padding: '40px',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
       {/* Enhanced Background decorative elements */}
       <div style={{
         position: 'absolute',
@@ -302,195 +304,6 @@ export default function Settings() {
         zIndex: 0
       }} />
 
-      {/* Left Navigation Sidebar */}
-      <div 
-        style={{ 
-          width: '280px', 
-          background: gradients.sidebar, 
-          color: 'white', 
-          padding: '32px', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          boxShadow: shadows.medium, 
-          borderTopLeftRadius: '16px', 
-          borderBottomLeftRadius: '16px', 
-          position: 'relative',
-          animation: 'slideInLeft 0.6s ease-out'
-        }}
-      >
-        <h1 style={{ 
-          fontSize: '2rem', 
-          fontWeight: '700', 
-          marginBottom: '16px', 
-          color: '#e5e7eb',
-          animation: 'fadeInDown 0.8s ease-out 0.2s both'
-        }}>Research Locker</h1>
-        
-        <div 
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowProfileMenu(v => !v);
-          }} 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '12px', 
-            padding: '12px', 
-            borderRadius: '12px', 
-            background: 'rgba(255,255,255,0.06)', 
-            marginBottom: '16px', 
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            animation: 'fadeInUp 0.8s ease-out 0.4s both'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-            e.currentTarget.style.transform = 'scale(1.02)';
-            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          <div style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: '50%', 
-            background: 'linear-gradient(135deg, #0ea5e9, #22c55e)', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            fontWeight: 700,
-            animation: 'pulse 2s infinite'
-          }}>
-            {initials}
-          </div>
-          <div>
-            <div style={{ fontWeight: 600 }}>{user?.name || 'You'}</div>
-            <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>{user?.email || ''}</div>
-          </div>
-        </div>
-        
-        {showProfileMenu && (
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            style={{ 
-            position: 'relative', 
-            top: '0px', 
-            left: '0px', 
-            right: '0px', 
-            background: 'white', 
-            color: colors.primaryText, 
-            border: `1px solid ${colors.border}`, 
-            borderRadius: '12px', 
-            boxShadow: shadows.soft, 
-            overflow: 'hidden', 
-            zIndex: 30, 
-            animation: 'slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', 
-            transformOrigin: 'top center',
-            marginBottom: '16px'
-          }}>
-            <button style={{ 
-              display: 'block', 
-              padding: '10px 14px', 
-              background: 'transparent', 
-              border: 'none', 
-              width: '100%', 
-              textAlign: 'left', 
-              cursor: 'pointer',
-              transition: 'background 0.2s ease'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Settings</button>
-            <button style={{ 
-              display: 'block', 
-              padding: '10px 14px', 
-              background: 'transparent', 
-              border: 'none', 
-              width: '100%', 
-              textAlign: 'left', 
-              cursor: 'pointer',
-              transition: 'background 0.2s ease'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>About</button>
-            <button 
-              onClick={() => {
-                logout();
-                nav('/login');
-              }}
-              style={{ 
-                display: 'block', 
-                padding: '10px 14px', 
-                background: 'transparent', 
-                border: 'none', 
-                width: '100%', 
-                textAlign: 'left', 
-                cursor: 'pointer',
-                transition: 'background 0.2s ease',
-                color: '#dc2626',
-                fontWeight: 600
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-                e.currentTarget.style.color = '#b91c1c';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#dc2626';
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        )}
-        
-        <nav style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {[
-              { label: 'Dashboard', icon: '🏠', path: '/' },
-              { label: 'Library', icon: '📚', path: '/library' },
-              { label: 'All insights', icon: '📈', path: null },
-              
-            ].map(({ label, icon, path }, index) => (
-              <li
-                key={label}
-                style={{
-                  padding: '10px 12px',
-                  color: '#cbd5e1',
-                  borderRadius: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  animation: `fadeInLeft 0.6s ease-out ${0.8 + index * 0.1}s both`
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                  e.currentTarget.style.transform = 'translateX(8px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.transform = 'translateX(0) scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                onClick={() => { if (path) nav(path); }}
-              >
-                <span style={{
-                  width: 20,
-                  textAlign: 'center',
-                  transition: 'transform 0.3s ease'
-                }}>{icon}</span>
-                <span>{label}</span>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
 
       {/* Main Content Area */}
       <div style={{ 
@@ -605,7 +418,6 @@ export default function Settings() {
             <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} required />
             <input type="text" placeholder="Phone Number" value={phone_number} onChange={e => setPhoneNumber(e.target.value)} style={inputStyle} />
             <select value={gender} onChange={e => setGender(e.target.value)} style={inputStyle}>
-              <option value="">Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
@@ -772,6 +584,7 @@ export default function Settings() {
         `}
       </style>
     </div>
+    </Layout>
   );
 }
 

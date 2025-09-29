@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useMediaQuery } from 'react-responsive';
+import { api } from "../api";
 import Layout from "../components/Layout";
 import { colors, shadows } from "../theme";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +14,7 @@ export default function HashTags() {
   const [selectedTag, setSelectedTag] = useState(null);
   const [tagArticles, setTagArticles] = useState([]);
   const nav = useNavigate();
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   const token = localStorage.getItem("token") || "";
 

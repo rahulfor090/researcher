@@ -9,6 +9,8 @@ import makeArticleAuthor from './ArticleAuthor.js';
 import makeUserPlan from './UserPlan.js';
 import makeCollection from './Collection.js';
 import makeCollectionMaster from './CollectionMaster.js';
+// Import DOI reference model
+import makeDoiReference from './DoiReference.js';
 // TEMP MODELS
 import makeTempUser from './TempUser.js';
 import makeTempArticle from './TempArticle.js';
@@ -27,6 +29,8 @@ export const ArticleTag = makeArticleTag(sequelize, Sequelize.DataTypes);
 export const Collection = makeCollection(sequelize, Sequelize.DataTypes);
 export const CollectionMaster = makeCollectionMaster(sequelize, Sequelize.DataTypes);
 
+// Initialize DOI reference model
+export const DoiReference = makeDoiReference(sequelize);
 // TEMP MODELS
 export const TempUser = makeTempUser(sequelize, Sequelize.DataTypes);
 export const TempArticle = makeTempArticle(sequelize, Sequelize.DataTypes);

@@ -52,7 +52,12 @@ export default function ArticleDetails() {
     const fetchArticle = async () => {
       try {
         const { data } = await api.get(`/articles/${id}`);
-        setArticle(data);
+        // Ensure authors is never undefined
+        const processedData = {
+          ...data,
+          authors: data.authors?.trim() || 'N/A'
+        };
+        setArticle(processedData);
         let initialContent = data.summary || '';
         if (!initialContent.startsWith('<')) {
           const lines = initialContent.split('\n').filter(line => line.trim() !== '');

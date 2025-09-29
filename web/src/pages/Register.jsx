@@ -191,7 +191,7 @@ export default function Register() {
             backgroundClip: 'text',
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            Join Research Locker
+            Join ResearchLocker
           </h1>
           
           <p style={{

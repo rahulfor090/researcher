@@ -8,7 +8,7 @@ export default function FAQ() {
   const [query, setQuery] = useState('');
   const nav = useNavigate();
   const faqs = [
-    { q: 'What is Research Locker?', a: 'Research Locker helps you save, organize, and search academic articles and PDFs with AI summaries.' },
+    { q: 'What is ResearchLocker?', a: 'ResearchLocker helps you save, organize, and search academic articles and PDFs with AI summaries.' },
     { q: 'Is there a free plan?', a: 'Yes. You can save up to 10 articles on the free plan. Upgrade anytime for unlimited storage.' },
     { q: 'How do I import articles?', a: 'Use our Chrome extension or add items manually with title, DOI, and authors.' },
     { q: 'Can I upload PDFs?', a: 'Yes. Upload PDFs to generate AI-powered summaries and make articles searchable.' },
