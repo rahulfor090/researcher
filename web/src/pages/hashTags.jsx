@@ -75,7 +75,7 @@ export default function HashTags() {
               backgroundClip: "text",
             }}
           >
-            🗂️ All Hashtags
+             All Hashtags
           </h2>
           <p
             style={{
