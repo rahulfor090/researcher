@@ -63,7 +63,7 @@ app.use(cors({
 app.get('/v1/health', (_, res) => res.json({ ok: true }));
 
 app.use('/v1/auth', authRoutes);
-app.use('/articles', articleRoutes);
+app.use('/v1/articles', articleRoutes);
 app.use('/v1/upload', uploadRoutes);
 app.use('/v1/profile', profileRouter);
 app.use('/v1/authors', authorRoutes);
@@ -85,7 +85,6 @@ app.use('/uploads', cors(), express.static('src/uploads'));
 // can cause route conflicts or unexpected behavior.
 
 // Correct setup: Define temp endpoints in articles.js and mount articleRoutes at /v1.
-app.use('/v1', articleRoutes);
 
 syncDb().then(() => {
   app.listen(env.port, () => console.log(`API on http://localhost:${env.port}`));

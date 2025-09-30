@@ -12,6 +12,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const serverBase = import.meta.env.VITE_API_BASE;
   // Twitter login handler
   const handleTwitterLogin = () => {
     const serverBase = import.meta.env.VITE_API_BASE?.replace('/v1', '') || 'http://localhost:5000';
@@ -42,7 +43,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const { data } = await api.post(`${serverBase}/v1/auth/login`, { email, password });
+      const { data } = await api.post(`${serverBase}/auth/login`, { email, password });
       localStorage.setItem('token', data.token);
       navigate('/dashboard');
     } catch (err) {

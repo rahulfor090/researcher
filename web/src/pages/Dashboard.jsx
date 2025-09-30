@@ -21,7 +21,7 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get('/articles');
+        const { data } = await api.get(`${BASE_API_URL}/articles`);
         const sorted = [...data].sort((a, b) => {
           const ad = new Date(a.createdAt || a.created_at || a.updatedAt || a.updated_at || 0).getTime();
           const bd = new Date(b.createdAt || b.created_at || b.updatedAt || b.updated_at || 0).getTime();
