@@ -26,7 +26,7 @@ export default function Authors() {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get(`${BASE_API_URL}/v1/authors`);
+      const response = await api.get(`${BASE_API_URL}/authors`);
       setAuthors(response.data || []);
     } catch (err) {
       console.error('Failed to load authors:', err);
@@ -41,7 +41,7 @@ export default function Authors() {
   const loadAuthorArticles = async (authorId) => {
     try {
       setLoadingArticles(true);
-      const response = await api.get(`${BASE_API_URL}/v1/authors/${authorId}/articles`);
+      const response = await api.get(`${BASE_API_URL}/authors/${authorId}/articles`);
       setAuthorArticles(response.data || []);
     } catch (err) {
       console.error('Failed to load author articles:', err);
