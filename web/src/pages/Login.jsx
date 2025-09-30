@@ -42,7 +42,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const { data } = await api.post('/v1/auth/login', { email, password });
+      const { data } = await api.post(`${serverBase}/v1/auth/login`, { email, password });
       localStorage.setItem('token', data.token);
       navigate('/dashboard');
     } catch (err) {

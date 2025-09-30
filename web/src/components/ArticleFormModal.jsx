@@ -149,7 +149,7 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
             ? articleReferences 
             : []; // Save empty array if no references
             
-          const response = await fetch(`${apiBase}/doi-references`, {
+          const response = await fetch(`${apiBase}v1/doi-references`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -199,7 +199,7 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px' }}>
               <input
                 type="text"
-                placeholder="https://doi.org/10.1234/abc123"
+                placeholder="10.1234/abc123"
                 value={doi}
                 onChange={handleDoiChange}
                 onBlur={handleDoiBlur}
