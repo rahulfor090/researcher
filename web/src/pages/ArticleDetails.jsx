@@ -10,7 +10,13 @@ import 'react-quill-new/dist/quill.snow.css';
 import { htmlToText } from 'html-to-text';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
+import { Document, Page, pdfjs } from 'react-pdf';
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min?url';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import './ArticleDetails.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 const SEND_PLAIN_TEXT = false;
 const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
@@ -31,6 +37,10 @@ export default function ArticleDetails() {
 
   const [editorContent, setEditorContent] = useState('');
   const [pdfProcessed, setPdfProcessed] = useState(false);
+
+  // PDF Viewer state
+  const [numPages, setNumPages] = useState(null);
+  const [pdfError, setPdfError] = useState(null);
 
   // Quill toolbar config
   const modules = {
@@ -90,7 +100,7 @@ export default function ArticleDetails() {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const { data } = await api.get(`/articles/${id}`);
+        const { data } = await api.get(`${BASE_API_URL}/articles/${id}`);
         const processedData = {
           ...data,
           authors: data.authors?.trim() || 'N/A',
@@ -162,6 +172,11 @@ export default function ArticleDetails() {
             hashtags: data.hashtags || prev.hashtags,
           }));
           setEditorContent(normalizedHtml);
+        } else {
+          setArticle((prev) => ({
+            ...prev,
+            file_name: data.filename || prev.file_name,
+          }));
         }
       } else {
         const errorData = await response.json();
@@ -191,7 +206,7 @@ export default function ArticleDetails() {
         authors: article.authors || '',
         summary: contentToSave,
       };
-      await api.put(`/articles/${id}`, updateData);
+      await api.put(`${BASE_API_URL}/articles/${id}`, updateData);
 
       const normalizedHtml = normalizeToHtml(contentToSave);
       setArticle((prev) => ({ ...prev, summary: normalizedHtml }));
@@ -249,6 +264,23 @@ export default function ArticleDetails() {
   const noSummaryGenerated =
     (!article?.file_name || !pdfProcessed) &&
     (!mainSummary || mainSummary === '<p></p>' || mainSummary === '<p><br></p>');
+
+  // Determine button label
+  const uploadBtnLabel = uploading
+    ? 'Uploading...'
+    : article?.file_name && pdfProcessed
+      ? 'Process New PDF'
+      : 'Upload PDF';
+
+  // The PDF URL to show
+  const pdfUrl = article?.file_name
+    ? `${BASE_API_URL}/uploads/${article.file_name}`
+    : null;
+
+  // PDF error handling callback
+  const handlePdfError = (err) => {
+    setPdfError(err?.message || String(err));
+  };
 
   if (loading) return <div className="articledetails-loading">Loading...</div>;
   if (error) return <div className="articledetails-error">{error}</div>;
@@ -320,24 +352,87 @@ export default function ArticleDetails() {
             )}
 
             <div className="articledetails-pdfbox">
-              {article.file_name && !pdfProcessed && (
-                <p className="articledetails-pdfname">
-                  <strong>Uploaded PDF:</strong>{' '}
-                  <a href={`${BASE_API_URL}/uploads/${article.file_name}`} target="_blank" rel="noopener noreferrer">{article.file_name}</a>
-                </p>
-              )}
-
-              <button className="articledetails-uploadbtn articledetails-uploadbtn-left" type="button" onClick={handleButtonClick} disabled={uploading}>
-                {uploading ? 'Uploading...' : (article.file_name && pdfProcessed ? 'Process New PDF' : 'Upload PDF')}
+              <button
+                className="articledetails-uploadbtn articledetails-uploadbtn-left"
+                type="button"
+                onClick={handleButtonClick}
+                disabled={uploading}
+              >
+                {uploadBtnLabel}
               </button>
-
-              <input type="file" accept="application/pdf" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+              <input
+                type="file"
+                accept="application/pdf"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
 
               {uploadStatus && (
                 <p className={`articledetails-uploadstatus ${uploadStatus.startsWith('Upload and processing successful') ? 'success' : 'error'}`}>
                   {uploadStatus}
                 </p>
               )}
+
+              {/* PDF Viewer -- scrollable, fixed size, one page at a time */}
+              <div
+                  style={{
+                    margin: '20px 0',
+                    height: '900px',
+                    maxHeight: '90vh',
+                    width: '700px',
+                    maxWidth: '100%',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    border: pdfUrl ? "1px solid #eee" : "none",
+                    boxSizing: 'border-box',
+                    background: "#fafafa",
+                    scrollSnapType: 'y mandatory',
+                  }}
+                >
+                  {pdfUrl ? (
+                    <Document
+                      key={pdfUrl}
+                      file={pdfUrl}
+                      onLoadSuccess={({ numPages }) => {
+                        setNumPages(numPages);
+                        setPdfError(null);
+                      }}
+                      loading={<div>Loading PDF...</div>}
+                      error={handlePdfError}
+                    >
+                      {numPages &&
+                        Array.from({ length: numPages }, (_, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              scrollSnapAlign: 'start',
+                              minHeight: '900px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderBottom: '1px solid #eee',
+                              background: "#fff",
+                            }}
+                          >
+                            <Page
+                              pageNumber={index + 1}
+                              width={650}
+                            />
+                          </div>
+                        ))}
+                    </Document>
+                  ) : (
+                    <div style={{ textAlign: 'center', color: '#888', fontStyle: 'italic', padding: '40px 0' }}>
+                      No PDF uploaded yet.
+                    </div>
+                  )}
+                  {pdfError && (
+                    <div style={{ color: "#900", textAlign: "center", padding: "8px" }}>
+                      Failed to load PDF: {pdfError}
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
         </div>
