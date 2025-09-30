@@ -1,12 +1,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { colors, gradients } from '../theme';
+import { gradients } from '../theme';
 import { useAuth } from '../auth';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { htmlToText } from 'html-to-text';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 import './ArticleDetails.css';
 
 const SEND_PLAIN_TEXT = false;
@@ -29,50 +32,80 @@ export default function ArticleDetails() {
   const [editorContent, setEditorContent] = useState('');
   const [pdfProcessed, setPdfProcessed] = useState(false);
 
-  // Quill toolbar configuration
+  // Quill toolbar config
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'color': ['#000000', '#ff0000', '#00ff00', '#0000ff'] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ color: ['#000000', '#ff0000', '#00ff00', '#0000ff'] }],
       ['clean'],
     ],
   };
+  const formats = ['bold', 'italic', 'underline', 'color', 'list', 'bullet'];
 
-  const formats = [
-    'bold',
-    'italic',
-    'underline',
-    'color',
-    'list',
-    'bullet'
-  ];
+  // Detect if text looks like HTML
+  const looksLikeHTML = (text) => {
+    if (!text) return false;
+    const trimmed = text.trim();
+    if (trimmed.startsWith('<')) return true;
+    return /<\/?(p|ul|ol|li|b|strong|i|em|u|h[1-6]|br|div|span|a)[^>]*>/i.test(trimmed);
+  };
 
+  // Normalize → clean HTML
+  const normalizeToHtml = (input) => {
+    if (!input) return '';
+    let outputHtml = '';
+
+    if (looksLikeHTML(input)) {
+      outputHtml = input;
+    } else {
+      const trimmed = input.trim();
+      const hasMdMarkers = /\*\*|__|^[-*]\s+|\n-{3,}|\n#{1,6}\s+/m.test(trimmed);
+      if (hasMdMarkers) {
+        outputHtml = marked.parse(trimmed);
+      } else {
+        const lines = trimmed.split('\n').map((l) => l.trim()).filter((l) => l !== '');
+        if (lines.length === 1) {
+          outputHtml = `<p>${lines[0]}</p>`;
+        } else {
+          const lis = lines.map((l) => `<li>${l}</li>`).join('');
+          outputHtml = `<ul>${lis}</ul>`;
+        }
+      }
+    }
+
+    // === Custom formatting ===
+    // 1. Turn "• Detailed Summary with Key Points" → <h1>
+    outputHtml = outputHtml.replace(/(?:<p>)?•?\s*Detailed Summary with Key Points\s*(?:<\/p>)?/gi,
+      '<h3>Detailed Summary with Key Points</h3>'
+    );
+
+    // 2. Ensure paragraph spacing
+    outputHtml = outputHtml.replace(/<p>/g, '<p style="margin-bottom:16px;">');
+
+    return DOMPurify.sanitize(outputHtml);
+  };
+
+  // Fetch article
   useEffect(() => {
     const fetchArticle = async () => {
       try {
         const { data } = await api.get(`/articles/${id}`);
-        // Ensure authors is never undefined
         const processedData = {
           ...data,
-          authors: data.authors?.trim() || 'N/A'
+          authors: data.authors?.trim() || 'N/A',
         };
+        const normalizedHtml = normalizeToHtml(processedData.summary || '');
+        processedData.summary = normalizedHtml;
         setArticle(processedData);
-        let initialContent = data.summary || '';
-        if (!initialContent.startsWith('<')) {
-          const lines = initialContent.split('\n').filter(line => line.trim() !== '');
-          if (lines.length > 1) {
-            initialContent = '<ul>' +
-              lines.map(line => `<li>${line.trim()}</li>`).join('') +
-              '</ul>';
-          } else {
-            initialContent = `<p>${initialContent}</p>`;
-          }
-        }
-        setEditorContent(initialContent);
+        setEditorContent(normalizedHtml);
         setPdfProcessed(Boolean(data.file_name));
       } catch (err) {
-        setError(err.response?.status === 404 ? 'Article not found.' : 'Failed to load article details.');
+        setError(
+          err.response?.status === 404
+            ? 'Article not found.'
+            : 'Failed to load article details.'
+        );
       } finally {
         setLoading(false);
       }
@@ -80,6 +113,7 @@ export default function ArticleDetails() {
     fetchArticle();
   }, [id]);
 
+  // Handle file uploads
   const handleButtonClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
@@ -89,75 +123,67 @@ export default function ArticleDetails() {
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        setUploadStatus('Please select a PDF file.');
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      setUploadStatus('Please select a PDF file.');
+      return;
+    }
+    setUploading(true);
+    setUploadStatus('Uploading and processing...');
+
+    const formData = new FormData();
+    formData.append('pdf', file);
+
+    try {
+      const token = user?.token || localStorage.getItem('token');
+      if (!token) {
+        setUploadStatus('Upload error: No authentication token found. Please login.');
+        setUploading(false);
         return;
       }
-      setUploading(true);
-      setUploadStatus('Uploading and processing...');
 
-      const formData = new FormData();
-      formData.append('pdf', file);
+      const response = await fetch(`${BASE_API_URL}/v1/upload/pdf?id=${id}`, {
+        method: 'POST',
+        body: formData,
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      try {
-        const response = await fetch(`${BASE_API_URL}/upload/pdf?id=${id}`, {
-          method: 'POST',
-          body: formData,
-        });
+      if (response.ok) {
+        const data = await response.json();
+        setUploadStatus('Upload and processing successful.');
+        setPdfProcessed(true);
 
-        if (response.ok) {
-          const data = await response.json();
-          setUploadStatus('Upload and processing successful.');
-          setPdfProcessed(true);
-          if (data.summary) {
-            const lines = data.summary.split('\n').filter(line => line.trim() !== '');
-            const bulletPointsHtml = '<ul>' +
-              lines.map(line => `<li>${line.trim()}</li>`).join('') +
-              '</ul>';
-
-            setArticle(prev => ({
-              ...prev,
-              summary: bulletPointsHtml,
-              file_name: data.filename || prev.file_name,
-              hashtags: data.hashtags || prev.hashtags,
-            }));
-            setEditorContent(bulletPointsHtml);
-          } else {
-            const refreshed = await api.get(`/articles/${id}`);
-            setArticle(refreshed.data);
-            let newContent = refreshed.data.summary || '';
-            if (!newContent.startsWith('<')) {
-              const lines = newContent.split('\n').filter(line => line.trim() !== '');
-              if (lines.length > 1) {
-                newContent = '<ul>' +
-                  lines.map(line => `<li>${line.trim()}</li>`).join('') +
-                  '</ul>';
-              } else {
-                newContent = `<p>${newContent}</p>`;
-              }
-            }
-            setEditorContent(newContent);
-          }
-        } else {
-          const errorData = await response.json();
-          setUploadStatus('Upload failed: ' + (errorData.error || 'Unknown error'));
+        if (data.summary) {
+          const normalizedHtml = normalizeToHtml(data.summary);
+          setArticle((prev) => ({
+            ...prev,
+            summary: normalizedHtml,
+            file_name: data.filename || prev.file_name,
+            hashtags: data.hashtags || prev.hashtags,
+          }));
+          setEditorContent(normalizedHtml);
         }
-      } catch (error) {
-        setUploadStatus('Upload error: ' + error.message);
-      } finally {
-        setUploading(false);
+      } else {
+        const errorData = await response.json();
+        setUploadStatus('Upload failed: ' + (errorData.error || 'Unknown error'));
       }
+    } catch (error) {
+      setUploadStatus('Upload error: ' + error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
+  // Save summary
   const handleSaveSummary = async () => {
-    if (!editorContent || editorContent === '<p><br></p>' || editorContent.trim() === '') {
+    if (!editorContent || editorContent.trim() === '' || editorContent === '<p><br></p>') {
       setSaveStatus('Failed to save summary: Content cannot be empty');
       return;
     }
     try {
-      const contentToSave = SEND_PLAIN_TEXT ? htmlToText(editorContent, { wordwrap: false }) : editorContent;
+      const contentToSave = SEND_PLAIN_TEXT
+        ? htmlToText(editorContent, { wordwrap: false })
+        : editorContent;
       const updateData = {
         title: article.title,
         url: article.url,
@@ -166,95 +192,41 @@ export default function ArticleDetails() {
         summary: contentToSave,
       };
       await api.put(`/articles/${id}`, updateData);
-      setArticle(prev => ({ ...prev, summary: contentToSave }));
+
+      const normalizedHtml = normalizeToHtml(contentToSave);
+      setArticle((prev) => ({ ...prev, summary: normalizedHtml }));
+      setEditorContent(normalizedHtml);
       setIsEditing(false);
       setSaveStatus('Summary saved successfully.');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (error) {
-      const errorMessage = error.response?.status === 404
-        ? 'Article not found. Please check if the article ID is valid.'
-        : `Failed to save summary: ${error.response?.data?.error || error.message}`;
+      const errorMessage =
+        error.response?.status === 404
+          ? 'Article not found. Please check if the article ID is valid.'
+          : `Failed to save summary: ${error.response?.data?.error || error.message}`;
       setSaveStatus(errorMessage);
     }
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    let originalContent = article.summary || '';
-    if (!originalContent.startsWith('<')) {
-      const lines = originalContent.split('\n').filter(line => line.trim() !== '');
-      if (lines.length > 1) {
-        originalContent = '<ul>' +
-          lines.map(line => `<li>${line.trim()}</li>`).join('') +
-          '</ul>';
-      } else {
-        originalContent = `<p>${originalContent}</p>`;
-      }
-    }
-    setEditorContent(originalContent);
+    setEditorContent(article?.summary || '');
     setSaveStatus(null);
   };
 
-  // Improved formatSummary function to clean Quill HTML
-  function formatSummary(text) {
-    if (!text) return '';
-
-    // Remove all Quill UI spans
-    text = text.replace(/<span class="ql-ui"[^>]*><\/span>/g, '');
-
-    // Remove all attributes from <li> tags (like data-list)
-    text = text.replace(/<li[^>]*>/g, '<li>');
-
-    // Convert <ul>/<ol> lists to plain text
-    text = text.replace(/<(ul|ol)>\s*/g, '')
-               .replace(/<\/(ul|ol)>/g, '');
-
-    // Convert <li> to new lines
-    text = text.replace(/<li>/g, '')
-               .replace(/<\/li>/g, '\n');
-
-    // Remove leading bullet points (•) and stray "**"
-    text = text.replace(/^•\s*/gm, '');
-    text = text.replace(/^\*\*\s*$/gm, '');
-
-    // Section headings to recognize and format
-    const headings = [
-      { pattern: /Detailed Summary with Key Points/i, markdown: '## Detailed Summary with Key Points' },
-      { pattern: /Background & Motivation/i, markdown: '### Background & Motivation' },
-      { pattern: /Key Findings/i, markdown: '### Key Findings' },
-      { pattern: /Methods & Evidence/i, markdown: '### Methods & Evidence' },
-      { pattern: /Therapeutic Implications/i, markdown: '### Therapeutic Implications' },
-      { pattern: /Conclusion/i, markdown: '### Conclusion' },
-    ];
-
-    // Insert line breaks and markdown headings, remove remaining "**" around headings
-    headings.forEach(({ pattern, markdown }) => {
-      text = text.replace(new RegExp(`\\*\\*\\s*${pattern.source}\\s*\\*\\*`, 'i'), markdown);
-      text = text.replace(pattern, match => `\n\n${markdown}\n\n`);
-    });
-
-    // Insert line breaks after sentences followed by a heading or at the end
-    text = text.replace(/\.\s*(?=\n\n##|\n\n###|$)/g, '.\n\n');
-
-    // Remove any remaining numbered headings
-    text = text.replace(/^\d+\.\s*/gm, '');
-
-    // Clean up excessive spaces and line breaks
-    text = text.replace(/\n{3,}/g, '\n\n');
-
-    // Trim
-    return text.trim();
-  }
-
   const markdownComponents = {
-    h1: ({node, ...props}) => <div style={{fontSize: '2rem', fontWeight: 700, margin: '24px 0 16px 0', color: '#2c3e50'}} {...props} />,
-    h2: ({node, ...props}) => <div style={{fontSize: '1.4rem', fontWeight: 600, margin: '22px 0 12px 0', color: '#2c3e50'}} {...props} />,
-    h3: ({node, ...props}) => <div style={{fontSize: '1.1rem', fontWeight: 600, margin: '18px 0 10px 0', color: '#2c3e50'}} {...props} />,
-    p: ({node, ...props}) => <p style={{margin: '0 0 10px 0', color: '#23272f'}} {...props} />,
-    li: ({node, ...props}) => <li style={{marginBottom: 6}} {...props} />,
+    h1: ({ node, ...props }) => (
+      <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: '24px 0 16px 0', color: '#2c3e50' }} {...props} />
+    ),
+    h2: ({ node, ...props }) => (
+      <h2 style={{ fontSize: '1.4rem', fontWeight: 600, margin: '22px 0 12px 0', color: '#2c3e50' }} {...props} />
+    ),
+    p: ({ node, ...props }) => (
+      <p style={{ margin: '0 0 16px 0', color: '#23272f' }} {...props} />
+    ),
+    li: ({ node, ...props }) => <li style={{ marginBottom: 6 }} {...props} />,
   };
 
-  // Calculate summary and hashtags every render
   let summaryText = article?.summary || '';
   let mainSummary = summaryText.trim();
   let hashtags = article?.hashtags?.trim() || '';
@@ -270,16 +242,13 @@ export default function ArticleDetails() {
         break;
       }
     }
-    const mainSummaryLines = lines.slice(0, hashtagStartIndex);
-    const hashtagLines = lines.slice(hashtagStartIndex);
-    mainSummary = mainSummaryLines.join('\n').trim();
-    hashtags = hashtagLines.join(' ').trim();
+    mainSummary = lines.slice(0, hashtagStartIndex).join('\n').trim();
+    hashtags = lines.slice(hashtagStartIndex).join(' ').trim();
   }
 
-  const noSummaryGenerated = (
+  const noSummaryGenerated =
     (!article?.file_name || !pdfProcessed) &&
-    (!mainSummary || mainSummary === "<p></p>" || mainSummary === "<p><br></p>" || mainSummary === "")
-  );
+    (!mainSummary || mainSummary === '<p></p>' || mainSummary === '<p><br></p>');
 
   if (loading) return <div className="articledetails-loading">Loading...</div>;
   if (error) return <div className="articledetails-error">{error}</div>;
@@ -296,73 +265,44 @@ export default function ArticleDetails() {
         <div className="articledetails-card">
           <h1 className="articledetails-title">{article.title}</h1>
           <div className="articledetails-info">
-            <div>
-              <span className="articledetails-label">Authors:</span>{' '}
-              <span>{article.authors || '-'}</span>
-            </div>
-            <div>
-              <span className="articledetails-label">DOI:</span>{' '}
-              <span>{article.doi || '-'}</span>
-            </div>
+            <div><span className="articledetails-label">Authors:</span> {article.authors || '-'}</div>
+            <div><span className="articledetails-label">DOI:</span> {article.doi || '-'}</div>
             <div>
               <span className="articledetails-label">URL:</span>{' '}
               {article.url ? (
                 <a href={article.url} target="_blank" rel="noopener noreferrer" className="articledetails-link">
                   {article.url}
                 </a>
-              ) : (
-                '-'
-              )}
+              ) : '-'}
             </div>
           </div>
+
           <div className="articledetails-summarybox">
             <div className="articledetails-summaryheader">
               <h3 className="articledetails-summarytitle">Summary</h3>
-              <button
-                className="articledetails-editbtn articledetails-editbtn-right"
-                onClick={() => setIsEditing(true)}
-              >
+              <button className="articledetails-editbtn articledetails-editbtn-right" onClick={() => setIsEditing(true)}>
                 Edit Summary
               </button>
             </div>
+
             {isEditing ? (
               <div className="articledetails-editorbox">
-                <ReactQuill
-                  value={editorContent}
-                  onChange={setEditorContent}
-                  modules={modules}
-                  formats={formats}
-                  theme="snow"
-                />
+                <ReactQuill value={editorContent} onChange={setEditorContent} modules={modules} formats={formats} theme="snow" />
                 <div className="articledetails-editactions">
-                  <button
-                    className="articledetails-savebtn"
-                    onClick={handleSaveSummary}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="articledetails-cancelbtn"
-                    onClick={handleCancelEdit}
-                  >
-                    Cancel
-                  </button>
+                  <button className="articledetails-savebtn" onClick={handleSaveSummary}>Save</button>
+                  <button className="articledetails-cancelbtn" onClick={handleCancelEdit}>Cancel</button>
                 </div>
-                {saveStatus && (
-                  <p className={`articledetails-savestatus ${saveStatus.startsWith('Summary saved') ? 'success' : 'error'}`}>
-                    {saveStatus}
-                  </p>
-                )}
+                {saveStatus && <p className={`articledetails-savestatus ${saveStatus.startsWith('Summary saved') ? 'success' : 'error'}`}>{saveStatus}</p>}
               </div>
             ) : (
               <div className="articledetails-markdown">
                 {noSummaryGenerated ? (
-                  <div style={{ fontWeight: 600, padding: '20px 0', fontSize: '1.2rem' }}>
-                    No Summary Generated!
-                  </div>
+                  <div style={{ fontWeight: 600, padding: '20px 0', fontSize: '1.2rem' }}>No Summary Generated!</div>
+                ) : looksLikeHTML(mainSummary) ? (
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mainSummary) }} />
                 ) : (
-                  <ReactMarkdown components={markdownComponents}>
-                    {formatSummary(mainSummary)}
+                  <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
+                    {mainSummary}
                   </ReactMarkdown>
                 )}
               </div>
@@ -372,13 +312,8 @@ export default function ArticleDetails() {
               <div className="articledetails-hashtagsbox">
                 <h4 className="articledetails-hashtagsheader">Hashtags</h4>
                 <div className="articledetails-hashtags">
-                  {hashtags.split(' ').map(tag => (
-                    <span
-                      key={tag}
-                      className="articledetails-hashtag"
-                    >
-                      {tag}
-                    </span>
+                  {hashtags.split(' ').map((tag) => (
+                    <span key={tag} className="articledetails-hashtag">{tag}</span>
                   ))}
                 </div>
               </div>
@@ -388,41 +323,16 @@ export default function ArticleDetails() {
               {article.file_name && !pdfProcessed && (
                 <p className="articledetails-pdfname">
                   <strong>Uploaded PDF:</strong>{' '}
-                  <a
-                    href={`${BASE_API_URL}/uploads/${article.file_name}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {article.file_name}
-                  </a>
+                  <a href={`${BASE_API_URL}/uploads/${article.file_name}`} target="_blank" rel="noopener noreferrer">{article.file_name}</a>
                 </p>
               )}
-              {(!article.file_name || !pdfProcessed) ? (
-                <button
-                  className="articledetails-uploadbtn articledetails-uploadbtn-left"
-                  type="button"
-                  onClick={handleButtonClick}
-                  disabled={uploading}
-                >
-                  {uploading ? 'Uploading...' : 'Upload PDF'}
-                </button>
-              ) : (
-                <button
-                  className="articledetails-uploadbtn articledetails-uploadbtn-left"
-                  type="button"
-                  onClick={handleButtonClick}
-                  disabled={uploading}
-                >
-                  {uploading ? 'Uploading...' : 'Process New PDF'}
-                </button>
-              )}
-              <input
-                type="file"
-                accept="application/pdf"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={handleFileChange}
-              />
+
+              <button className="articledetails-uploadbtn articledetails-uploadbtn-left" type="button" onClick={handleButtonClick} disabled={uploading}>
+                {uploading ? 'Uploading...' : (article.file_name && pdfProcessed ? 'Process New PDF' : 'Upload PDF')}
+              </button>
+
+              <input type="file" accept="application/pdf" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+
               {uploadStatus && (
                 <p className={`articledetails-uploadstatus ${uploadStatus.startsWith('Upload and processing successful') ? 'success' : 'error'}`}>
                   {uploadStatus}
