@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api, setAuthToken, isTokenExpired } from './api';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000/v1';
 
 const AuthCtx = createContext();
 
@@ -11,7 +12,7 @@ export function AuthProvider({ children }) {
     if (t && !isTokenExpired(t)) {
       setAuthToken(t);
       // Load profile once on app start so all components share the same user
-      api.get('/profile')
+      api.get(`${BASE_API_URL}/profile`)
         .then(res => setUser(res.data))
         .catch(() => setUser(null));
     } else if (t) {
@@ -21,22 +22,22 @@ export function AuthProvider({ children }) {
     }
   }, []);
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
+    const { data } = await api.post(`${BASE_API_URL}/auth/login`, { email, password });
     localStorage.setItem('token', data.token);
     setAuthToken(data.token);
     try {
-      const { data: profile } = await api.get('/profile');
+      const { data: profile } = await api.get(`${BASE_API_URL}/profile`);
       setUser(profile);
     } catch {
       setUser(null);
     }
   };
   const register = async (name, email, password) => {
-    const { data } = await api.post('/auth/register', { name, email, password });
+    const { data } = await api.post(`${BASE_API_URL}/auth/register`, { name, email, password });
     localStorage.setItem('token', data.token);
     setAuthToken(data.token);
     try {
-      const { data: profile } = await api.get('/profile');
+      const { data: profile } = await api.get(`${BASE_API_URL}/profile`);
       setUser(profile);
     } catch {
       setUser(null);
@@ -45,7 +46,7 @@ export function AuthProvider({ children }) {
   const logout = async () => { 
     try {
       // Call server logout endpoint to clear session
-      await api.post('/auth/logout');
+      await api.post(`${BASE_API_URL}/auth/logout`);
     } catch (error) {
       console.error('Server logout failed:', error);
     }
@@ -73,7 +74,7 @@ export function Protected({ children }) {
     if (localToken) {
       setHasToken(true);
       // Ensure profile is loaded on protected pages
-      api.get('/profile')
+      api.get(`${BASE_API_URL}/profile`)
         .then(res => setUser(res.data))
         .catch(() => setUser(null))
         .finally(() => setIsChecking(false));
@@ -101,13 +102,13 @@ export function Protected({ children }) {
       // For other OAuth providers like Twitter, we'll fetch user info from the server
       else {
         // Fetch user info using the token
-        api.get('/v1/auth/me').then(({ data }) => {
+        api.get(`${BASE_API_URL}/auth/me`).then(({ data }) => {
           setUser(data.user);
         }).catch(console.error);
       }
       
       // Try to load full profile after setting token; fallback to basic info
-      api.get('/profile')
+      api.get(`${BASE_API_URL}/profile`)
         .then(res => setUser(res.data))
         .catch(() => setUser({ name, email, plan: 'free' }));
 
