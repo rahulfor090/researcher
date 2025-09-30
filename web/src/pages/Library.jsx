@@ -25,17 +25,18 @@ export default function Library() {
   const [showSummary, setShowSummary] = useState(null); // { id, summary }
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000/v1';
 
   // Load articles from backend
   const load = async () => {
-    const { data } = await api.get('/articles');
+    const { data } = await api.get(`${BASE_API_URL}/articles`);
     setArticles(data);
     setTimeout(() => setIsLoaded(true), 100);
   };
 
   const fetchArticleById = async (id) => {
     try {
-      const { data } = await api.get(`/articles/${id}`);
+      const { data } = await api.get(`${BASE_API_URL}/articles/${id}`);
       return data;
     } catch {
       return null;
@@ -55,7 +56,7 @@ export default function Library() {
         const form = new FormData();
         form.append('pdf', file);
         try {
-          const { data } = await api.post(`/upload/pdf?id=${article.id}`, form, {
+          const { data } = await api.post(`${BASE_API_URL}/upload/pdf?id=${article.id}`, form, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
           await load();
@@ -115,9 +116,9 @@ export default function Library() {
     }
     try {
       if (editArticle) {
-        await api.put(`/articles/${editArticle.id}`, articleData);
+        await api.put(`${BASE_API_URL}/articles/${editArticle.id}`, articleData);
       } else {
-        await api.post('/articles', articleData);
+        await api.post(`${BASE_API_URL}/articles`, articleData);
       }
       setEditArticle(null);
       setShowModal(false);
@@ -139,7 +140,7 @@ export default function Library() {
   const handleDeleteArticle = async (id) => {
     if (!window.confirm('Are you sure you want to delete this article?')) return;
     try {
-      await api.delete(`/articles/${id}`);
+      await api.delete(`${BASE_API_URL}/articles/${id}`);
       setArticles(prev => prev.filter(article => article.id !== id));
     } catch {
       alert('Failed to delete article.');
