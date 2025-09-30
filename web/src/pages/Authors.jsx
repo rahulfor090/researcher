@@ -26,7 +26,7 @@ export default function Authors() {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get(`${BASE_API_URL}/authors`);
+      const response = await api.get(`${BASE_API_URL}/v1/authors`);
       setAuthors(response.data || []);
     } catch (err) {
       console.error('Failed to load authors:', err);
@@ -41,7 +41,7 @@ export default function Authors() {
   const loadAuthorArticles = async (authorId) => {
     try {
       setLoadingArticles(true);
-      const response = await api.get(`${BASE_API_URL}/authors/${authorId}/articles`);
+      const response = await api.get(`${BASE_API_URL}/v1/authors/${authorId}/articles`);
       setAuthorArticles(response.data || []);
     } catch (err) {
       console.error('Failed to load author articles:', err);
@@ -326,16 +326,6 @@ export default function Authors() {
                 e.target.style.boxShadow = 'none';
               }}
             />
-            <div style={{
-              position: 'absolute',
-              right: '16px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: colors.secondaryText,
-              fontSize: '1.2rem'
-            }}>
-              🔍
-            </div>
           </div>
         </div>
 
