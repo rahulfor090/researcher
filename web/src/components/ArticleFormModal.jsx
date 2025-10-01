@@ -149,7 +149,7 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
             ? articleReferences 
             : []; // Save empty array if no references
             
-          const response = await fetch(`${apiBase}v1/doi-references`, {
+          const response = await fetch(`${apiBase}/doi-references`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

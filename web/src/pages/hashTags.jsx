@@ -31,7 +31,7 @@ export default function HashTags() {
   useEffect(() => {
     const loadTags = async () => {
       try {
-        const data = await fetchWithAuth(`${BASE_API_URL}/v1/tag/tags`);
+        const data = await fetchWithAuth(`${BASE_API_URL}/tag/tags`);
         const allTags = data.tags || [];
         setHashtags(allTags);
         setFiltered(allTags);
@@ -61,7 +61,7 @@ export default function HashTags() {
     setSelectedTag(tag);
     setTagArticles([]);
     try {
-      const data = await fetchWithAuth(`${BASE_API_URL}/v1/tag/tags/${tag.id}/articles`);
+      const data = await fetchWithAuth(`${BASE_API_URL}/tag/tags/${tag.id}/articles`);
       setTagArticles(data.articles || []);
     } catch (error) {
       console.error("Failed to fetch articles for tag:", error);
