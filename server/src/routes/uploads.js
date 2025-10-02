@@ -151,6 +151,7 @@ ${pdfData.text.slice(0, 8000)}
   }
 }
 
+/*
 // Extract embedded images from the PDF using Poppler's pdfimages utility
 function extractEmbeddedImagesFromPdf(pdfPath, outputDir) {
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
@@ -178,6 +179,7 @@ function extractEmbeddedImagesFromPdf(pdfPath, outputDir) {
     });
   });
 }
+*/
 
 // Authenticated PDF upload and processing!
 router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
@@ -198,7 +200,8 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
 
     const result = await processPDF(pdfBuffer, req.file.filename);
 
-    // --- Extract images with Poppler ---
+    // --- Image extraction is commented out ---
+    /*
     let extractedImageFiles = [];
     let imageExtractionDebug = {};
     let convertedImages = [];
@@ -230,6 +233,7 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
       imageExtractionDebug.error = String(imgErr);
       console.error('⚠️ Failed to extract or store images from PDF:', imgErr);
     }
+    */
 
     // Tag creation and association
     let tagInstances = [];
@@ -274,10 +278,10 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
       hashtags: result.success ? result.hashtagsStr : undefined,
       pages: result.pages,
       info: result.info,
-      extractedImages: extractedImageFiles.map(f => path.relative(process.cwd(), f)),
-      convertedImages: convertedImages.map(f => path.relative(process.cwd(), f)),
-      failedConversions,
-      imageExtractionDebug
+      // extractedImages: extractedImageFiles.map(f => path.relative(process.cwd(), f)),
+      // convertedImages: convertedImages.map(f => path.relative(process.cwd(), f)),
+      // failedConversions,
+      // imageExtractionDebug
     });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
