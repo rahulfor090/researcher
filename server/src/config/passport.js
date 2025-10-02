@@ -8,27 +8,65 @@ import bcrypt from 'bcryptjs'; // Use bcryptjs for consistency
 passport.use(new TwitterStrategy({
   consumerKey: env.twitter.consumerKey,
   consumerSecret: env.twitter.consumerSecret,
-  callbackURL: env.twitter.callbackURL // Should be 'http://localhost:5000/v1/auth/twitter/callback'
-}, async (token, tokenSecret, profile, done) => {
+  callbackURL: env.twitter.callbackURL,
+  includeEmail: true, // Request email from Twitter if available
+  passReqToCallback: true
+}, async (req, token, tokenSecret, profile, done) => {
   try {
-    console.log('Twitter Profile:', profile); // Add for debugging
-    let user = await User.findOne({ where: { twitterId: profile.id } });
-    if (!user) {
-      const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10); // Random password
-      user = await User.create({
-        name: profile.displayName,
-        email: profile.emails?.[0]?.value || `${profile.id}@twitter.com`,
-        password,
-        twitterId: profile.id,
-        twitterToken: token,
-        twitterTokenSecret: tokenSecret
-      });
-    } else {
-      await user.update({ twitterToken: token, twitterTokenSecret: tokenSecret });
+    console.log('Twitter Strategy - Incoming profile:', {
+      id: profile.id,
+      displayName: profile.displayName,
+      emails: profile.emails
+    });
+
+    if (!profile || !profile.id) {
+      console.error('Invalid profile received from Twitter');
+      return done(new Error('Invalid profile received from Twitter'));
     }
+
+    let user = await User.findOne({ where: { twitterId: profile.id } });
+    
+    if (!user) {
+      // Generate a unique email if Twitter doesn't provide one
+      const email = profile.emails?.[0]?.value || `twitter_${profile.id}@${new URL(env.frontendBaseUrl).hostname}`;
+      
+      // Check if email is already in use
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return done(null, existingUser);
+      }
+
+      const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
+      
+      try {
+        user = await User.create({
+          name: profile.displayName || 'Twitter User',
+          email,
+          password,
+          twitterId: profile.id,
+          twitterToken: token,
+          twitterTokenSecret: tokenSecret
+        });
+      } catch (createError) {
+        console.error('Error creating user:', createError);
+        return done(createError);
+      }
+    } else {
+      try {
+        await user.update({
+          twitterToken: token,
+          twitterTokenSecret: tokenSecret,
+          name: profile.displayName || user.name
+        });
+      } catch (updateError) {
+        console.error('Error updating user:', updateError);
+        // Continue with existing user data if update fails
+      }
+    }
+    
     return done(null, user);
   } catch (err) {
-    console.error('Twitter Auth Error:', err); // Log the error
+    console.error('Twitter Auth Error:', err);
     return done(err);
   }
 }));
