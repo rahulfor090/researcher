@@ -5,8 +5,17 @@ export default (sequelize) => {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING(120), allowNull: false },
     email: { type: DataTypes.STRING(160), unique: true, allowNull: false },
-    password: { type: DataTypes.STRING(200), allowNull: false },
+    password: { type: DataTypes.STRING(200), allowNull: true }, // Allow null for OAuth users who haven't set password
     plan: { type: DataTypes.ENUM('free','pro'), defaultValue: 'free' },
+    // OAuth fields
+    googleId: { type: DataTypes.STRING(255), allowNull: true, unique: true },
+    twitterId: { type: DataTypes.STRING(255), allowNull: true, unique: true },
+    twitterToken: { type: DataTypes.STRING(255), allowNull: true },
+    twitterTokenSecret: { type: DataTypes.STRING(255), allowNull: true },
+    linkedinId: { type: DataTypes.STRING(255), allowNull: true, unique: true },
+    linkedinToken: { type: DataTypes.STRING(255), allowNull: true },
+    // Password requirement flag for OAuth users
+    password_set: { type: DataTypes.BOOLEAN, defaultValue: false },
     phone_number: { type: DataTypes.STRING(20), allowNull: true },
     profile_image: { 
       type: DataTypes.STRING(255), 

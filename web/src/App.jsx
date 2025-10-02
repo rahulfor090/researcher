@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import SetPassword from './pages/SetPassword';
 import Dashboard from './pages/Dashboard';
 import Library from './pages/Library';
 import Collection from './pages/Collection';
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/register" element={<Register/>} />
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path="/reset-password" element={<ResetPassword/>} />
+          <Route path="/set-password" element={<SetPassword/>} />
 
           {/* Protected app sections (custom internal layouts) */}
           <Route path="/dashboard" element={<Protected><Dashboard/></Protected>} />

@@ -392,7 +392,8 @@ router.get('/me', requireAuth, (req, res) => {
       name: req.user.name,
       email: req.user.email,
       plan: req.user.plan,
-      profile_image: req.user.profile_image
+      profile_image: req.user.profile_image,
+      password_set: req.user.password_set !== false // Default to true for existing users
     }
   });
 });
@@ -451,7 +452,18 @@ const callbackGoogle = async (req, res) => {
 
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      user = await User.create({ name, email, password: '' });
+      user = await User.create({ 
+        name, 
+        email, 
+        password: null, // OAuth users start without password
+        googleId: profile.sub,
+        password_set: false // Flag that password needs to be set
+      });
+    } else {
+      // Update existing user with Google ID if not set
+      if (!user.googleId) {
+        await user.update({ googleId: profile.sub });
+      }
     }
 
     if (!env.jwtSecret) {
@@ -459,10 +471,16 @@ const callbackGoogle = async (req, res) => {
     }
     const token = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: '7d' });
 
-    const redirect = new URL(env.webAppUrl + '/dashboard');
+    // Check if user needs to set password (OAuth users who haven't set one)
+    const needsPasswordSetup = !user.password_set && user.googleId;
+    
+    const redirect = new URL(env.webAppUrl + (needsPasswordSetup ? '/set-password' : '/dashboard'));
     redirect.searchParams.set('token', token);
     redirect.searchParams.set('name', user.name);
     redirect.searchParams.set('email', user.email);
+    if (needsPasswordSetup) {
+      redirect.searchParams.set('oauth', 'google');
+    }
     return res.redirect(redirect.toString());
   } catch (err) {
     console.error('Google OAuth error', err);
@@ -586,5 +604,50 @@ router.post('/test-email', async (req, res) => {
     });
   }
 });
+
+// Set password for OAuth users
+router.post('/set-password',
+  requireAuth,
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const { password } = req.body;
+    
+    try {
+      const user = await User.findByPk(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Check if user is OAuth user who needs to set password
+      if (user.password_set) {
+        return res.status(400).json({ message: 'Password already set' });
+      }
+      
+      // Hash and set the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await user.update({ 
+        password: hashedPassword, 
+        password_set: true 
+      });
+      
+      res.json({ 
+        success: true, 
+        message: 'Password set successfully',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          password_set: true
+        }
+      });
+    } catch (error) {
+      console.error('Set password error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+);
 
 export default router;
