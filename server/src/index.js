@@ -76,7 +76,7 @@ app.use('/v1/doi-references', doiReferencesRoutes); // Add DOI references routes
 app.use('/v1/paypal', paypalRoutes);
 
 // Serve uploaded files with CORS headers
-app.use('/uploads', cors(), express.static('src/uploads'));
+app.use('/v1/uploads', cors(), express.static('src/uploads'));
 
 // TEMP ARTICLES & TEMP USERS ENDPOINTS
 // These endpoints are handled within articleRoutes,

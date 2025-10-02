@@ -4,8 +4,9 @@ import path from 'path';
 import fs from 'fs';
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 import dotenv from 'dotenv';
+import { exec } from 'child_process';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Article, Tag, ArticleTag } from '../models/index.js';
+import { Article, Tag, ArticleTag, PdfImage } from '../models/index.js';
 import { requireAuth } from '../middleware/auth.js';
 
 dotenv.config();
@@ -13,8 +14,12 @@ dotenv.config();
 const router = express.Router();
 
 const uploadDir = path.resolve('src/uploads');
+const imagesDir = path.resolve('src/uploads/images');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
+}
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
@@ -146,6 +151,34 @@ ${pdfData.text.slice(0, 8000)}
   }
 }
 
+// Extract embedded images from the PDF using Poppler's pdfimages utility
+function extractEmbeddedImagesFromPdf(pdfPath, outputDir) {
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+  const baseName = path.basename(pdfPath, path.extname(pdfPath));
+  const outputPattern = path.join(outputDir, baseName);
+
+  return new Promise((resolve, reject) => {
+    // -j = save jpeg/jpg directly; -png for PNG output if possible (Poppler >=22.01.0)
+    // Use -j and -png together for best compatibility
+    console.log(`🔍 Running pdfimages on: ${pdfPath}`);
+    exec(`pdfimages -j -png "${pdfPath}" "${outputPattern}"`, (error, stdout, stderr) => {
+      if (error) {
+        console.error('❌ pdfimages error:', error);
+        console.error('❌ pdfimages stderr:', stderr);
+        return reject(stderr || stdout || error.message);
+      }
+      const files = fs.readdirSync(outputDir)
+        .filter(f =>
+          (f.startsWith(baseName + "-") && /\.(jpg|jpeg|png|ppm|pbm|jp2)$/i.test(f))
+        )
+        .map(f => path.join(outputDir, f));
+      console.log(`✅ pdfimages extraction complete. Files found: ${files.length}`);
+      files.forEach(file => console.log('  🖼️', file));
+      resolve(files);
+    });
+  });
+}
+
 // Authenticated PDF upload and processing!
 router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
   const articleId = req.query.id;
@@ -164,6 +197,39 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
     const pdfBuffer = await fs.promises.readFile(pdfPath);
 
     const result = await processPDF(pdfBuffer, req.file.filename);
+
+    // --- Extract images with Poppler ---
+    let extractedImageFiles = [];
+    let imageExtractionDebug = {};
+    let convertedImages = [];
+    let failedConversions = [];
+    try {
+      console.log('🚩 Starting image extraction via pdfimages...');
+      const beforeFiles = fs.readdirSync(imagesDir);
+      extractedImageFiles = await extractEmbeddedImagesFromPdf(pdfPath, imagesDir);
+      const afterFiles = fs.readdirSync(imagesDir);
+      imageExtractionDebug.beforeCount = beforeFiles.length;
+      imageExtractionDebug.afterCount = afterFiles.length;
+      imageExtractionDebug.filesAdded = afterFiles.filter(f => !beforeFiles.includes(f));
+      imageExtractionDebug.allFiles = afterFiles;
+      imageExtractionDebug.extractedCount = extractedImageFiles.length;
+      console.log(`🖼️ Extracted images:`, extractedImageFiles);
+
+      // --- Remove old images for this article ---
+      await PdfImage.destroy({ where: { article_id: articleId } });
+
+      // --- Store each new image name ---
+      for (const imgPath of extractedImageFiles) {
+        await PdfImage.create({
+          article_id: articleId,
+          images_name: path.basename(imgPath),
+          created_at: new Date()
+        });
+      }
+    } catch (imgErr) {
+      imageExtractionDebug.error = String(imgErr);
+      console.error('⚠️ Failed to extract or store images from PDF:', imgErr);
+    }
 
     // Tag creation and association
     let tagInstances = [];
@@ -207,7 +273,11 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
       summary: result.success ? result.summary : undefined,
       hashtags: result.success ? result.hashtagsStr : undefined,
       pages: result.pages,
-      info: result.info
+      info: result.info,
+      extractedImages: extractedImageFiles.map(f => path.relative(process.cwd(), f)),
+      convertedImages: convertedImages.map(f => path.relative(process.cwd(), f)),
+      failedConversions,
+      imageExtractionDebug
     });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
