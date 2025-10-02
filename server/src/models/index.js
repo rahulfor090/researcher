@@ -15,6 +15,9 @@ import makeDoiReference from './DoiReference.js';
 import makeTempUser from './TempUser.js';
 import makeTempArticle from './TempArticle.js';
 
+// PDF Images model
+import makePdfImage from './pdfImage.js'; // <-- Import your model
+
 // Add UserPlan model
 export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
 
@@ -34,6 +37,9 @@ export const DoiReference = makeDoiReference(sequelize);
 // TEMP MODELS
 export const TempUser = makeTempUser(sequelize, Sequelize.DataTypes);
 export const TempArticle = makeTempArticle(sequelize, Sequelize.DataTypes);
+
+// PDF Images model
+export const PdfImage = makePdfImage(sequelize); // <-- Export and initialize the model
 
 // User-Article associations
 User.hasMany(Article, { foreignKey: 'userId' });
@@ -95,6 +101,10 @@ CollectionMaster.belongsTo(Collection, { foreignKey: 'collection_id' });
 Article.hasMany(CollectionMaster, { foreignKey: 'article_id' });
 CollectionMaster.belongsTo(Article, { foreignKey: 'article_id' });
 
+// PDF Images <-> Article association
+PdfImage.belongsTo(Article, { foreignKey: 'article_id', as: 'article' });
+Article.hasMany(PdfImage, { foreignKey: 'article_id', as: 'pdfImages' });
+
 // TEMP MODELS associations (if needed, you can add them here, for now just basic models)
 
 // Sync function
@@ -104,7 +114,7 @@ export const syncDb = async () => {
   await sequelize.sync({ alter: true });
 };
 
-// Default export for ES module compatibility, now with UserPlan, Collections, and Temp models
+// Default export for ES module compatibility, now with UserPlan, Collections, Temp models, PdfImage
 export default {
   Author,
   ArticleAuthor,
@@ -117,6 +127,7 @@ export default {
   CollectionMaster,
   TempUser,
   TempArticle,
+  PdfImage,
   syncDb,
   sequelize
 };

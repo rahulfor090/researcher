@@ -152,7 +152,7 @@ export default function ArticleDetails() {
         return;
       }
 
-      const response = await fetch(`${BASE_API_URL}/v1/upload/pdf?id=${id}`, {
+      const response = await fetch(`${BASE_API_URL}/upload/pdf?id=${id}`, {
         method: 'POST',
         body: formData,
         headers: { Authorization: `Bearer ${token}` },
