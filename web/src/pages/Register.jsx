@@ -167,7 +167,7 @@ export default function Register() {
           <div style={{
             width: '80px',
             height: '80px',
-            background: colors.link,
+            background: '#4146C9',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -191,7 +191,7 @@ export default function Register() {
             backgroundClip: 'text',
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            Join ResearchLocker
+            Join Research Locker
           </h1>
           
           <p style={{
@@ -260,7 +260,7 @@ export default function Register() {
                   boxSizing: 'border-box'
                 }}
                 onFocus={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.link}`;
+                  e.currentTarget.style.border = `2px solid #4146C9`;
                   e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
                   e.currentTarget.style.transform = 'scale(1.02)';
                 }}
@@ -309,7 +309,7 @@ export default function Register() {
                   boxSizing: 'border-box'
                 }}
                 onFocus={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.link}`;
+                  e.currentTarget.style.border = `2px solid #4146C9`;
                   e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
                   e.currentTarget.style.transform = 'scale(1.02)';
                 }}
@@ -358,7 +358,7 @@ export default function Register() {
                   boxSizing: 'border-box'
                 }}
                 onFocus={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.link}`;
+                  e.currentTarget.style.border = `2px solid #4146C9`;
                   e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
                   e.currentTarget.style.transform = 'scale(1.02)';
                 }}
@@ -407,7 +407,7 @@ export default function Register() {
                   boxSizing: 'border-box'
                 }}
                 onFocus={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.link}`;
+                  e.currentTarget.style.border = `2px solid #4146C9`;
                   e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
                   e.currentTarget.style.transform = 'scale(1.02)';
                 }}
@@ -436,19 +436,19 @@ export default function Register() {
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               position: 'relative',
               overflow: 'hidden',
-              background: isLoading ? colors.mutedText : colors.link,
-              boxShadow: isLoading ? 'none' : `0 4px 12px rgba(13, 148, 136, 0.3)`
+              background: isLoading ? colors.mutedText : '#4146C9',
+              boxShadow: isLoading ? 'none' : `0 4px 12px rgba(65, 70, 201, 0.3)`
             }}
             onMouseEnter={e => {
               if (!isLoading) {
                 e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                e.currentTarget.style.boxShadow = `0 6px 20px rgba(13, 148, 136, 0.4)`;
+                e.currentTarget.style.boxShadow = `0 6px 20px rgba(65, 70, 201, 0.4)`;
               }
             }}
             onMouseLeave={e => {
               if (!isLoading) {
                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = `0 4px 12px rgba(13, 148, 136, 0.3)`;
+                e.currentTarget.style.boxShadow = `0 4px 12px rgba(65, 70, 201, 0.3)`;
               }
             }}
           >
@@ -522,7 +522,7 @@ export default function Register() {
           }}>
             Already have an account?{' '}
             <Link to="/login" style={{
-              color: colors.link,
+              color: '#4146C9',
               textDecoration: 'none',
               fontWeight: 600,
               transition: 'all 0.2s ease'
@@ -532,7 +532,7 @@ export default function Register() {
               e.currentTarget.style.textDecoration = 'underline';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color = colors.link;
+                e.currentTarget.style.color = '#4146C9';
               e.currentTarget.style.textDecoration = 'none';
             }}>
               Sign in here

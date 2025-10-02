@@ -292,7 +292,7 @@
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: #4146C9;
   color: #fff;
   font-weight: 600;
   font-size: 1rem;
@@ -300,14 +300,14 @@
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
+  box-shadow: 0 2px 8px rgba(65, 70, 201, 0.2);
   transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 
 .btn-primary:hover { background: var(--primary-600); }
 
 .btn-secondary {
-  background: #1F2937; /* colors.primaryText from theme */
+  background: #4146C9; /* new blue color for consistency */
   color: #ffffff;
   font-weight: 600;
   padding: 8px 12px; /* matches secondaryButtonStyle */
@@ -317,7 +317,7 @@
   transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 
-.btn-secondary:hover { background: #111827; }
+.btn-secondary:hover { background: #3B40B8; }
 
 .hero-card {
   background: rgba(255,255,255,0.95);

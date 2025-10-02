@@ -632,7 +632,7 @@ export default function Library() {
                 <button
                   style={{
                     padding: '6px 12px',
-                    background: colors.link,
+                    background: '#4146C9',
                     border: 'none',
                     borderRadius: '6px',
                     fontSize: '0.8rem',
@@ -646,7 +646,7 @@ export default function Library() {
                     e.currentTarget.style.transform = 'translateY(-1px)';
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.background = colors.link;
+                    e.currentTarget.style.background = '#4146C9';
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
@@ -679,7 +679,7 @@ export default function Library() {
                   setShowModal(true);
                 }}
                 style={{
-                  background: colors.link,
+                  background: '#4146C9',
                   color: 'white',
                   border: 'none',
                   padding: '14px 28px',
@@ -1067,7 +1067,7 @@ export default function Library() {
                           <button
                             onClick={(e) => { e.stopPropagation(); handleUploadPdf(a); }}
                             style={{
-                              background: colors.link,
+                              background: '#4146C9',
                               color: 'white',
                               border: 'none',
                               borderRadius: '8px',

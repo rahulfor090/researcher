@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth';
@@ -144,8 +145,8 @@ const Navbar = () => {
                 text.style.textShadow = 'none';
               }
             }}>
-              <img src="/upload/brand/research-locker-logo.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">ResearchLocker</span>
+              <img src="/unnamed.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <span className="text-[#2d1b0e] text-2xl font-bold group-hover:text-[#0D9488] transition-all duration-300">Research Locker</span>
             </Link>
           </div>
           <div className="hidden md:block">

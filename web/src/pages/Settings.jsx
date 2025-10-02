@@ -418,7 +418,7 @@ export default function Settings() {
                 type="button"
                 onClick={() => document.getElementById('profileImageInput').click()}
                 style={{
-                  background: colors.link,
+                  background: '#4146C9',
                   border: 'none',
                   color: 'white',
                   cursor: 'pointer',
@@ -438,7 +438,7 @@ export default function Settings() {
                 onMouseOut={e => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(13, 148, 136, 0.3)';
-                  e.currentTarget.style.background = colors.link;
+                  e.currentTarget.style.background = '#4146C9';
                 }}
               >
                 {profile_image ? 'Change Photo' : 'Upload Photo'}
@@ -856,7 +856,7 @@ const saveButtonStyle = {
   ...typography.button,
   transition: 'all 0.3s ease',
   color: 'white',
-  backgroundColor: colors.link,
+  backgroundColor: '#4146C9',
   boxShadow: '0 8px 20px rgba(13,148,136,0.25)'
 };
 

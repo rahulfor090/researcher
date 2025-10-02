@@ -7,11 +7,11 @@ export const colors = {
   backgroundAlt: '#FAFAF9',
   dark: '#111827',
   cardBackground: '#FFFFFF',
-  background: '#FFFFFF',
+  background: '#F3F4F6',
   border: '#E5E7EB',
   mutedText: '#6B7280',
-  primary: '#0f172a',
-  secondary: '#1e293b',
+  primary: '#4146C9',
+  secondary: '#4146C9',
   accent: '#8b5cf6',
   success: '#22c55e',
   warning: '#f59e0b',
@@ -119,7 +119,7 @@ export const shadows = {
   soft: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
   medium: '0 10px 20px -10px rgba(0,0,0,0.25)',
   large: '0 20px 40px -15px rgba(0,0,0,0.3)',
-  glow: '0 0 20px rgba(13, 148, 136, 0.3)',
+  glow: '0 0 20px rgba(65, 70, 201, 0.3)',
   glowOrange: '0 0 20px rgba(249, 115, 22, 0.3)'
 };
 
@@ -129,11 +129,11 @@ export const radii = {
 };
 
 export const gradients = {
-  app: `linear-gradient(180deg, ${colors.backgroundAlt} 0%, ${colors.secondaryBackground} 100%)`,
+  app: `linear-gradient(180deg, ${colors.backgroundAlt} 0%, ${colors.background} 100%)`,
   sidebar: 'linear-gradient(180deg, #0f172a 0%, #111827 100%)',
   auth: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%)',
-  primary: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
-  accent: `linear-gradient(135deg, ${colors.highlight}, ${colors.link})`
+  primary: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+  accent: `linear-gradient(135deg, ${colors.secondary}, ${colors.primary})`
 };
 
 export const cardStyle = {
@@ -149,24 +149,25 @@ export const cardStyle = {
 
 export const primaryButtonStyle = {
   padding: '10px 16px',
-  background: colors.link,
+  background: colors.primary,
   color: 'white',
   border: 'none',
   borderRadius: '8px',
   cursor: 'pointer',
   fontWeight: 600,
   transition: `transform ${motion.fast}, box-shadow ${motion.fast}, background-color ${motion.fast}`,
-  boxShadow: '0 2px 8px rgba(13, 148, 136, 0.2)'
+  boxShadow: '0 2px 8px rgba(65, 70, 201, 0.2)'
 };
 
 export const secondaryButtonStyle = {
   padding: '8px 12px',
-  backgroundColor: colors.primaryText,
+  backgroundColor: '#4146C9',
   color: 'white',
   border: 'none',
   borderRadius: '8px',
   cursor: 'pointer',
   fontWeight: 600,
-  transition: `transform ${motion.fast}, box-shadow ${motion.fast}, background-color ${motion.fast}`
+  transition: `transform ${motion.fast}, box-shadow ${motion.fast}, background-color ${motion.fast}`,
+  boxShadow: '0 2px 8px rgba(65, 70, 201, 0.2)'
 };
 

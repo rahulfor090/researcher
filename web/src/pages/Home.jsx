@@ -102,7 +102,7 @@ const Home = () => {
           ref={scrollProgressRef}
           className="h-full transition-all duration-300 ease-out"
           style={{ 
-            background: colors.link,
+            background: '#4146C9',
             width: '0%'
           }}
         />
@@ -119,13 +119,10 @@ const Home = () => {
           backgroundAttachment: 'fixed'
         }}
       >
-        {/* Top-left logo overlay */}
-        <div className="absolute top-6 left-6 hidden sm:flex items-center">
-          <img src="/upload/brand/research-locker-logo.png" alt="ResearchLocker" className="h-10 w-10 rounded-xl ring-1 ring-white/40 shadow-md object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-        </div>
+        
         {/* Enhanced Hero animated accents */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 left-1/4 h-80 w-80 rounded-full blur-2xl animate-float-slow opacity-40" style={{ background: `radial-gradient(circle, ${colors.link}40, transparent 70%)` }} />
+          <div className="absolute -top-24 left-1/4 h-80 w-80 rounded-full blur-2xl animate-float-slow opacity-40" style={{ background: `radial-gradient(circle, #4146C940, transparent 70%)` }} />
           <div className="absolute bottom-10 right-1/5 h-72 w-72 rounded-full blur-2xl animate-float-slower opacity-35" style={{ background: `radial-gradient(circle, ${colors.highlight}40, transparent 70%)` }} />
           <div className="absolute top-1/3 right-1/3 h-48 w-48 rounded-full blur-xl animate-tilt opacity-30" style={{ background: `radial-gradient(circle, ${colors.accent}40, transparent 70%)` }} />
           <div className="absolute top-1/2 left-1/6 h-32 w-32 rounded-full blur-lg animate-pulse opacity-25" style={{ background: `radial-gradient(circle, ${colors.success}40, transparent 70%)` }} />
@@ -135,13 +132,13 @@ const Home = () => {
             Accelerate Your Research Workflow
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-slate-100 leading-relaxed animate-slide-up animation-delay-200">
-            Streamline your research process with ResearchLocker. Save, organize, and access your research materials effortlessly, anytime, anywhere.
+            Streamline your research process with Research Locker. Save, organize, and access your research materials effortlessly, anytime, anywhere.
           </p>
           {user ? (
             <div className="mt-10 flex items-center justify-center gap-6 animate-slide-up animation-delay-400">
               <Link to="/dashboard" className="group relative inline-flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
-                background: colors.link,
-                boxShadow: `0 15px 35px -10px ${colors.link}80`
+                background: '#4146C9',
+                boxShadow: '0 15px 35px -10px rgba(65, 70, 201, 0.5)'
               }}>
                 <span className="relative z-[1] flex items-center gap-2">
                   <span>Go to Dashboard</span>
@@ -153,8 +150,8 @@ const Home = () => {
           ) : (
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up animation-delay-400">
               <Link to="/register" className="group relative inline-flex min-w-[200px] max-w-[500px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-10 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
-                background: colors.link,
-                boxShadow: `0 20px 40px -10px ${colors.link}90`
+                background: '#4146C9',
+                boxShadow: '0 20px 40px -10px rgba(65, 70, 201, 0.6)'
               }}>
                 <span className="relative z-[1] flex items-center gap-3">
                   <span>Get Started Free</span>
@@ -188,7 +185,7 @@ const Home = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl" style={{ color: colors.primaryText }}>Powerful Features Designed for You</h2>
               <p className="mt-4 max-w-2xl mx-auto text-lg" style={{ color: colors.secondaryText }}>
-              Explore the features that make ResearchLocker the ultimate research management tool.
+              Explore the features that make Research Locker the ultimate research management tool.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -196,8 +193,8 @@ const Home = () => {
               backgroundColor: colors.cardBackground,
               border: `1px solid ${colors.border}`
             }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.link}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.link }}>📦</span>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `#4146C91A` }} />
+              <span className="text-3xl mt-1" style={{ color: '#4146C9' }}>📦</span>
             <div>
                 <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Free Article Storage</h3>
                 <p className="mt-1" style={{ color: colors.secondaryText }}>Start with a free plan that includes ample storage for your research articles.</p>
@@ -229,8 +226,8 @@ const Home = () => {
               backgroundColor: colors.cardBackground,
               border: `1px solid ${colors.border}`
             }}>
-              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `${colors.link}1A` }} />
-              <span className="text-3xl mt-1" style={{ color: colors.link }}>🔎</span>
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition" style={{ background: `#4146C91A` }} />
+              <span className="text-3xl mt-1" style={{ color: '#4146C9' }}>🔎</span>
               <div>
                 <h3 className="text-lg font-bold" style={{ color: colors.primaryText }}>Advanced Search & Filters</h3>
                 <p className="mt-1" style={{ color: colors.secondaryText }}>Quickly find articles with powerful search and filtering options.</p>
@@ -265,7 +262,7 @@ const Home = () => {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-6 animate-on-scroll" style={{ color: '#2d1b0e' }}>Empowering Academics and Professionals</h2>
           <p className="mt-6 max-w-4xl mx-auto text-xl leading-relaxed animate-on-scroll" style={{ color: '#6b5b47' }}>
-            Join a community of researchers who are transforming their workflows with ResearchLocker. Whether you're a student, or professional, our platform is designed to meet your needs.
+            Join a community of researchers who are transforming their workflows with Research Locker. Whether you're a student, or professional, our platform is designed to meet your needs.
           </p>
         </div>
         {/* Decorative bubbles removed */}
@@ -275,16 +272,16 @@ const Home = () => {
       <section ref={addToRefs} className="relative z-10 w-full py-16 sm:py-24" style={{ backgroundColor: '#fefcf3' }}>
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 animate-on-scroll" style={{ color: '#2d1b0e' }}>See ResearchLocker in Action</h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 animate-on-scroll" style={{ color: '#2d1b0e' }}>See Research Locker in Action</h1>
             <p className="text-xl animate-on-scroll" style={{ color: '#6b5b47' }}>A quick walkthrough of saving, organizing, and accessing your research.</p>
           </div>
           <div className="relative rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] animate-on-scroll" style={{ 
             border: '2px solid #e8ddd4',
             boxShadow: '0 25px 50px -12px rgba(45, 27, 14, 0.15)'
           }}>
-            <VideoSection videoUrl="https://www.youtube.com/embed/3iMbMyKEDik" />
+            <VideoSection videoUrl="https://www.youtube.com/embed/FYUbpKlqjpA" />
             {/* Decorative corner elements */}
-            <div className="absolute top-4 right-4 w-6 h-6 rounded-full blur-sm opacity-30" style={{ background: colors.link }} />
+            <div className="absolute top-4 right-4 w-6 h-6 rounded-full blur-sm opacity-30" style={{ background: '#4146C9' }} />
             <div className="absolute bottom-4 left-4 w-4 h-4 rounded-full blur-sm opacity-40" style={{ background: colors.highlight }} />
           </div>
         </div>
@@ -303,8 +300,8 @@ const Home = () => {
               boxShadow: '0 10px 30px -10px rgba(45, 27, 14, 0.15)'
             }}>
               <div className="flex items-center justify-center h-28 w-28 rounded-full text-white mb-8 text-5xl group-hover:scale-110 transition-transform duration-300" style={{ 
-                background: `linear-gradient(135deg, ${colors.link}, ${colors.highlight})`,
-                boxShadow: `0 10px 25px -5px ${colors.link}40`
+                background: `linear-gradient(135deg, #4146C9, ${colors.highlight})`,
+                boxShadow: '0 10px 25px -5px rgba(65, 70, 201, 0.25)'
               }}>💾</div>
               <h3 className="text-2xl font-bold mb-4" style={{ color: '#2d1b0e' }}>Save Articles Easily</h3>
               <p className="text-center leading-relaxed" style={{ color: '#6b5b47' }}>Use our browser extension to save articles with a single click. No more manual downloads or messy folders.</p>
@@ -355,7 +352,7 @@ const Home = () => {
                   <h3 className="text-2xl font-bold mb-4" style={{ color: '#2d1b0e' }}>One-Click Research Saving</h3>
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#4146C9' }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -363,7 +360,7 @@ const Home = () => {
                       <span style={{ color: '#6b5b47' }}>Save articles from any website</span>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#4146C9' }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -371,7 +368,7 @@ const Home = () => {
                       <span style={{ color: '#6b5b47' }}>Automatic metadata extraction</span>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#4146C9' }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -379,7 +376,7 @@ const Home = () => {
                       <span style={{ color: '#6b5b47' }}>Instant sync with your library</span>
                     </li>
                     <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: colors.link }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#4146C9' }}>
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -391,7 +388,7 @@ const Home = () => {
                 
                 <div className="text-center">
                   <div className="mb-6">
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: colors.link }}>
+                  <div className="w-24 h-24 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: '#4146C9' }}>
                       <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                       </svg>
@@ -415,12 +412,12 @@ const Home = () => {
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="group relative inline-flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1" style={{ 
-                      background: colors.link,
-                      boxShadow: `0 15px 35px -10px ${colors.link}80`
+                      background: '#4146C9',
+                      boxShadow: '0 15px 35px -10px rgba(65, 70, 201, 0.5)'
                     }} onMouseEnter={(e) => {
-                      e.target.style.boxShadow = `0 20px 45px -10px ${colors.link}90`;
+                      e.target.style.boxShadow = '0 20px 45px -10px rgba(65, 70, 201, 0.6)';
                     }} onMouseLeave={(e) => {
-                      e.target.style.boxShadow = `0 15px 35px -10px ${colors.link}80`;
+                      e.target.style.boxShadow = '0 15px 35px -10px rgba(65, 70, 201, 0.5)';
                     }}>
                     <span className="relative z-[1] flex items-center gap-3">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -450,9 +447,9 @@ const Home = () => {
             <p className="mt-4 text-lg" style={{ color: colors.secondaryText }}>Unlock everything with one simple plan.</p>
           </div>
           <div className="grid grid-cols-1 gap-8 max-w-3xl mx-auto">
-            <div className="flex flex-col gap-6 rounded-lg p-8 relative" style={{ border: `2px solid ${colors.link}` }}>
+            <div className="flex flex-col gap-6 rounded-lg p-8 relative" style={{ border: `2px solid #4146C9` }}>
               <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
-                <span className="text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: colors.link }}>Most Popular</span>
+                <span className="text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#4146C9' }}>Most Popular</span>
               </div>
               <div className="text-center">
                 <h3 className="text-2xl font-bold" style={{ color: colors.primaryText }}>Pro</h3>
@@ -465,11 +462,11 @@ const Home = () => {
                 <li className="flex items-center gap-3">✅ Priority Support</li>
             </ul>
               <Link to="/upgrade" className="w-full mt-auto inline-flex items-center justify-center rounded-md h-12 px-6 text-slate-50 font-semibold transition" style={{ 
-                background: colors.link 
+                background: '#1E3A8A'
               }} onMouseEnter={(e) => {
-                e.target.style.background = colors.highlight;
+                e.target.style.background = '#3B40B8';
               }} onMouseLeave={(e) => {
-                e.target.style.background = colors.link;
+                e.target.style.background = '#4146C9';
               }}>
                 Upgrade Now
             </Link>
@@ -521,21 +518,21 @@ const Home = () => {
           </p>
           {user ? (
             <Link to="/library" className="mt-8 inline-flex min-w-[84px] max-w-md mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-6 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors" style={{ 
-              background: colors.link 
+              background: '#1E3A8A'
             }} onMouseEnter={(e) => {
-              e.target.style.background = colors.highlight;
+              e.target.style.background = '#3B40B8';
             }} onMouseLeave={(e) => {
-              e.target.style.background = colors.link;
+              e.target.style.background = '#4146C9';
             }}>
               Go to your library
             </Link>
           ) : (
             <Link to="/register" className="mt-8 inline-flex min-w-[84px] max-w-md mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-6 text-slate-50 text-base font-bold leading-normal tracking-[0.015em] transition-colors" style={{ 
-              background: colors.link 
+              background: '#1E3A8A'
             }} onMouseEnter={(e) => {
-              e.target.style.background = colors.highlight;
+              e.target.style.background = '#3B40B8';
             }} onMouseLeave={(e) => {
-              e.target.style.background = colors.link;
+              e.target.style.background = '#4146C9';
             }}>
               Start building your research library today
             </Link>
