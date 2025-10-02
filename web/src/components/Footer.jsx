@@ -19,7 +19,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-full md:col-span-1 text-center md:text-left">
           <Link to="/" className="mb-4 block hover:text-[#0D9488] transition-colors duration-300">
-            <span className="text-[#2d1b0e] text-3xl font-extrabold">ResearchLocker</span>
+            <span className="text-[#2d1b0e] text-3xl font-extrabold">Research Locker</span>
           </Link>
           <p className="text-sm text-[#6b5b47] leading-relaxed mb-4">
             Your ultimate platform for securely saving, organizing, and accessing all your academic and professional research in one intuitive place.
@@ -103,5 +103,8 @@ const Footer = () => {
 };
 
 export default Footer;
+
+
+
 
 

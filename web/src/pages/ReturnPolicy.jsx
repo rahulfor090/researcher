@@ -34,7 +34,7 @@ export default function ReturnPolicy() {
               </p>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: colors.primaryText }}>Return & Refund Policy</h1>
               <p className="mt-2 max-w-2xl" style={{ color: colors.secondaryText }}>
-                We want you to love ResearchLocker. If something isn’t right, here’s how returns and refunds work.
+                We want you to love Research Locker. If something isn’t right, here’s how returns and refunds work.
               </p>
             </div>
           </div>

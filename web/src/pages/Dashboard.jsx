@@ -239,7 +239,7 @@ export default function Dashboard() {
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = colors.link;
+              e.currentTarget.style.background = '#4146C9';
               e.currentTarget.style.color = 'white';
               e.currentTarget.style.borderColor = colors.link;
             }}
@@ -268,7 +268,7 @@ export default function Dashboard() {
                 onClick={() => nav('/library')}
                 style={{
                   marginTop: '16px',
-                  background: colors.link,
+                  background: '#4146C9',
                   color: 'white',
                   border: 'none',
                   padding: '12px 24px',

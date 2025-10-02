@@ -131,7 +131,7 @@ export default function CollectionAssign() {
           <button
             onClick={() => navigate('/collection')}
             style={{
-              background: colors.link,
+              background: '#4146C9',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -205,7 +205,7 @@ export default function CollectionAssign() {
               onClick={handleSaveAssignments}
               disabled={isSaving}
               style={{
-                background: colors.link,
+                background: '#4146C9',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -286,7 +286,7 @@ export default function CollectionAssign() {
                   <button
                     onClick={() => navigate(`/collection/${id}`)}
                     style={{
-                      background: colors.link,
+                      background: '#4146C9',
                       color: 'white',
                       border: 'none',
                       borderRadius: '6px',
@@ -407,7 +407,7 @@ export default function CollectionAssign() {
             <button
               onClick={() => navigate('/library')}
               style={{
-                background: colors.link,
+                background: '#4146C9',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',

@@ -75,7 +75,7 @@ export default function CollectionDetail() {
           <button
             onClick={() => navigate('/collection')}
             style={{
-              background: colors.link,
+              background: '#4146C9',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -147,7 +147,7 @@ export default function CollectionDetail() {
           <button
             onClick={() => navigate(`/collection/${id}/assign`)}
             style={{
-              background: colors.link,
+              background: '#4146C9',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
@@ -188,7 +188,7 @@ export default function CollectionDetail() {
             <button
               onClick={() => navigate(`/collection/${id}/assign`)}
               style={{
-                background: colors.link,
+                background: '#4146C9',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -219,7 +219,7 @@ export default function CollectionDetail() {
               gridTemplateColumns: '1fr 200px 150px 120px',
               gap: '16px',
               padding: '20px 24px',
-              background: colors.link,
+              background: '#4146C9',
               color: 'white',
               fontWeight: 600,
               fontSize: '0.9rem'
@@ -289,7 +289,7 @@ export default function CollectionDetail() {
                     alignItems: 'center'
                   }}>
                     <span style={{
-                      background: colors.link,
+                      background: '#4146C9',
                       color: 'white',
                       padding: '4px 8px',
                       borderRadius: '6px',
@@ -312,7 +312,7 @@ export default function CollectionDetail() {
                         navigate(`/article/${article.id}`);
                       }}
                       style={{
-                        background: colors.link,
+                        background: '#4146C9',
                         color: 'white',
                         border: 'none',
                         borderRadius: '6px',
@@ -373,7 +373,7 @@ export default function CollectionDetail() {
               <button
                 onClick={() => navigate(`/collection/${id}/assign`)}
                 style={{
-                  background: colors.link,
+                  background: '#4146C9',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',

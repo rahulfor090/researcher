@@ -53,7 +53,7 @@ export default function Layout({ children }) {
             background: colors.link,
             boxShadow: '0 0 12px rgba(13,148,136,0.8)'
           }} />
-          <span>ResearchLocker</span>
+          <span>Research Locker</span>
         </h1>
         
         {/* User Profile Section */}
