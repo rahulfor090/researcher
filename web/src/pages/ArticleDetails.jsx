@@ -10,11 +10,15 @@ import 'react-quill-new/dist/quill.snow.css';
 import { htmlToText } from 'html-to-text';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
+import Lightbox from 'yet-another-react-lightbox';
+import "yet-another-react-lightbox/styles.css";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import './ArticleDetails.css';
 import { Document, Page, pdfjs } from 'react-pdf';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min?url';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import './ArticleDetails.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -41,6 +45,15 @@ export default function ArticleDetails() {
   // PDF Viewer state
   const [numPages, setNumPages] = useState(null);
   const [pdfError, setPdfError] = useState(null);
+
+  // Image state
+  const [pdfImages, setPdfImages] = useState([]);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // For scroll
+  const pdfRef = useRef(null);
+  const imagesRef = useRef(null);
 
   // Quill toolbar config
   const modules = {
@@ -123,6 +136,27 @@ export default function ArticleDetails() {
     fetchArticle();
   }, [id]);
 
+  // Fetch images for this article
+  useEffect(() => {
+    if (!id) return;
+    async function fetchImages() {
+      try {
+        const token = user?.token || localStorage.getItem('token');
+        const { data } = await api.get(`${BASE_API_URL}/upload/pdf_images/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (Array.isArray(data.images)) {
+          setPdfImages(data.images);
+        } else {
+          setPdfImages([]);
+        }
+      } catch (err) {
+        setPdfImages([]);
+      }
+    }
+    fetchImages();
+  }, [id, article?.file_name, user?.token]);
+
   // Handle file uploads
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -178,6 +212,18 @@ export default function ArticleDetails() {
             file_name: data.filename || prev.file_name,
           }));
         }
+        // Re-fetch images after upload
+        if (data.filename) {
+          setTimeout(() => {
+            if (id) {
+              api.get(`${BASE_API_URL}/upload/pdf_images/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              }).then(({data}) => {
+                if (Array.isArray(data.images)) setPdfImages(data.images);
+              });
+            }
+          }, 1000);
+        }
       } else {
         const errorData = await response.json();
         setUploadStatus('Upload failed: ' + (errorData.error || 'Unknown error'));
@@ -227,6 +273,23 @@ export default function ArticleDetails() {
     setIsEditing(false);
     setEditorContent(article?.summary || '');
     setSaveStatus(null);
+  };
+
+  const handleShowPdf = () => {
+    if (pdfRef.current) {
+      pdfRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleShowImages = () => {
+    if (imagesRef.current) {
+      imagesRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleLightboxOpen = (index) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
   };
 
   const markdownComponents = {
@@ -286,10 +349,20 @@ export default function ArticleDetails() {
   if (error) return <div className="articledetails-error">{error}</div>;
   if (!article) return <div className="articledetails-loading">Article not found.</div>;
 
+  const imageBaseUrl = `${BASE_API_URL}/images/`;
+
   return (
     <div className="articledetails-app" style={{ background: gradients.app }}>
       <div className="articledetails-centerbox">
         <div className="articledetails-toprow">
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={handleShowPdf} className="articledetails-navbtn">
+              Show PDF
+            </button>
+            <button onClick={handleShowImages} className="articledetails-navbtn">
+              Show Images from PDF
+            </button>
+          </div>
           <button onClick={() => nav(-1)} className="articledetails-backbtn">
             ← Back
           </button>
@@ -351,7 +424,7 @@ export default function ArticleDetails() {
               </div>
             )}
 
-            <div className="articledetails-pdfbox">
+            <div ref={pdfRef} className="articledetails-pdfbox">
               <button
                 className="articledetails-uploadbtn articledetails-uploadbtn-left"
                 type="button"
@@ -374,6 +447,13 @@ export default function ArticleDetails() {
                 </p>
               )}
 
+              <button
+                onClick={handleShowImages}
+                className="articledetails-navbtn articledetails-above-pdf-btn"
+                style={{ marginBottom: 10 }}
+              >
+                Show Images from PDF
+              </button>
               {/* PDF Viewer -- scrollable, fixed size, one page at a time */}
               <div
                   style={{
@@ -433,6 +513,46 @@ export default function ArticleDetails() {
                     </div>
                   )}
                 </div>
+            </div>
+
+            <div ref={imagesRef} className="articledetails-images-section">
+              <h3 style={{ margin: "24px 0 10px 0" }}>Extracted Images from PDF</h3>
+              <div className="articledetails-images-thumbs">
+                {pdfImages.length === 0 ? (
+                  <div style={{ color: "#888", fontStyle: "italic", padding: "20px 0" }}>
+                    No images extracted for this article.
+                  </div>
+                ) : (
+                  pdfImages.map((img, idx) => (
+                    <div
+                      className="articledetails-image-thumb"
+                      key={img}
+                      onClick={() => handleLightboxOpen(idx)}
+                      tabIndex={0}
+                      style={{ outline: lightboxOpen && lightboxIndex === idx ? '2px solid #0099ff' : 'none' }}
+                    >
+                      <img
+                        src={imageBaseUrl + img}
+                        alt={`Extracted ${idx + 1}`}
+                        loading="lazy"
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
+              <Lightbox
+                open={lightboxOpen}
+                close={() => setLightboxOpen(false)}
+                slides={pdfImages.map(img => ({
+                  src: imageBaseUrl + img,
+                  alt: `Extracted image ${img}`,
+                }))}
+                plugins={[Thumbnails]}
+                index={lightboxIndex}
+                on={{
+                  view: ({ index }) => setLightboxIndex(index)
+                }}
+              />
             </div>
           </div>
         </div>
