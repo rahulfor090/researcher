@@ -284,6 +284,21 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
   }
 });
 
+// Endpoint to get PDF images for an article (NEW)
+router.get('/pdf_images/:articleId', requireAuth, async (req, res) => {
+  try {
+    const articleId = req.params.articleId;
+    const images = await PdfImage.findAll({
+      where: { article_id: articleId },
+      order: [['created_at', 'ASC']]
+    });
+    const imageNames = images.map(img => img.images_name);
+    res.json({ images: imageNames });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch images', details: err.message });
+  }
+});
+
 // Hashtags endpoints - require authentication
 router.get('/tag/tags', requireAuth, async (req, res) => {
   try {
