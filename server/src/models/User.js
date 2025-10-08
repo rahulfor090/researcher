@@ -128,4 +128,5 @@ export default (sequelize) => {
   );
 
   return User;
+
 };
