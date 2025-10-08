@@ -1,11 +1,42 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const PaypalCancel = () => {
   const navigate = useNavigate();
+  const orderIDRef = useRef(null);
 
-  const handleRetry = () => {
-    navigate("/premium-payment"); // 👈 redirect them back to your premium/payment page
+  useEffect(() => {
+    // Get the PayPal order ID from the URL params when landing here
+    const params = new URLSearchParams(window.location.search);
+    const orderID = params.get("token"); // PayPal's order ID
+    orderIDRef.current = orderID;
+  }, []);
+
+  const handleRetry = async () => {
+    // Debug log to confirm handler is firing and values are correct
+    console.log("Try Again clicked!");
+    console.log("OrderID:", orderIDRef.current);
+
+    if (orderIDRef.current) {
+      try {
+        const response = await axios.post(
+          `${API_BASE}/paypal/cancel-order`,
+          { orderID: orderIDRef.current },
+          {
+            withCredentials: true
+          }
+        );
+        console.log("Cancel order response:", response.data);
+      } catch (error) {
+        console.error("Cancel order error:", error?.response?.data || error.message);
+      }
+    } else {
+      console.error("No orderID present in URL.");
+    }
+    navigate("/premium-payment");
   };
 
   return (

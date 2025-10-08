@@ -4,12 +4,13 @@ const defineUserPlan = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
+      allowNull: false,
     },
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    plan_id: {
+    payment_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -26,9 +27,19 @@ const defineUserPlan = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true,
     },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
   }, {
     tableName: 'user_plans',
-    timestamps: false, // Set to true if you have createdAt/updatedAt columns
+    timestamps: false, // If you want Sequelize to auto-manage createdAt/updatedAt, set this to true and rename fields to createdAt/updatedAt
   });
 
   return UserPlan;

@@ -58,7 +58,8 @@ app.use(cors({
     if (origin && origin.startsWith('chrome-extension://')) return cb(null, true);
     if (origin && env.corsOrigins.includes(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS. Origin was: ' + origin));
-  }
+  },
+  credentials: true
 }));
 
 app.get('/v1/health', (_, res) => res.json({ ok: true }));
