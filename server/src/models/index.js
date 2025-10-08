@@ -14,9 +14,11 @@ import makeDoiReference from './DoiReference.js';
 // TEMP MODELS
 import makeTempUser from './TempUser.js';
 import makeTempArticle from './TempArticle.js';
-
 // PDF Images model
 import makePdfImage from './pdfImage.js'; // <-- Import your model
+
+// Import Paypal/Payment model
+import makePayment from './Payments.js';
 
 // Add UserPlan model
 export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
@@ -41,6 +43,9 @@ export const TempArticle = makeTempArticle(sequelize, Sequelize.DataTypes);
 // PDF Images model
 export const PdfImage = makePdfImage(sequelize); // <-- Export and initialize the model
 
+// Payment model
+export const Payment = makePayment(sequelize); // <-- Export and initialize the Payment model
+
 // User-Article associations
 User.hasMany(Article, { foreignKey: 'userId' });
 Article.belongsTo(User, { foreignKey: 'userId' });
@@ -52,12 +57,14 @@ Article.belongsToMany(Author, {
   otherKey: 'author_id',
   as: 'authorList'
 });
-Author.belongsToMany(Article, { 
-  through: ArticleAuthor, 
-  foreignKey: 'author_id',
-  otherKey: 'article_id',
-  as: 'articles'
-});
+Author.belongsToMany(Article, 
+  { 
+    through: ArticleAuthor, 
+    foreignKey: 'author_id',
+    otherKey: 'article_id',
+    as: 'articles'
+  }
+);
 
 // Direct associations for junction table
 Article.hasMany(ArticleAuthor, { foreignKey: 'article_id' });
@@ -114,7 +121,7 @@ export const syncDb = async () => {
   await sequelize.sync({ alter: true });
 };
 
-// Default export for ES module compatibility, now with UserPlan, Collections, Temp models, PdfImage
+// Default export for ES module compatibility, now with UserPlan, Collections, Temp models, PdfImage, Payment
 export default {
   Author,
   ArticleAuthor,
@@ -128,6 +135,8 @@ export default {
   TempUser,
   TempArticle,
   PdfImage,
+  Payment,
+  DoiReference,
   syncDb,
   sequelize
 };
