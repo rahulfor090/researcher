@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
+// Ensure plan_id is always 2
+const PREMIUM_PLAN_ID = 2;
+
 const PremiumPayment = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,13 +26,11 @@ const PremiumPayment = () => {
 
   // On PayPal redirect back, capture payment if needed
   useEffect(() => {
-    // These routes should be set up in your frontend router
     // /paypal-success?token=ORDER_ID
     // /paypal-cancel
     const urlParams = new URLSearchParams(window.location.search);
-    const orderID = urlParams.get("token"); // PayPal sends "token" param for order id
+    const orderID = urlParams.get("token");
 
-    // Only on the success page, capture payment
     if (window.location.pathname.endsWith("/paypal-success") && orderID) {
       setLoading(true);
       const token = localStorage.getItem("token");
@@ -41,22 +42,19 @@ const PremiumPayment = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         )
-        .then((res) => {
+        .then(() => {
           setLoading(false);
-          // Redirect to thank you page or show message
           navigate("/thank-you");
         })
         .catch((err) => {
           setLoading(false);
           console.error("❌ Error capturing order:", err);
-          // Optionally navigate to error or cancel page
           navigate("/paypal-cancel");
         });
     }
     // On cancel, just redirect/can show message
     if (window.location.pathname.endsWith("/paypal-cancel")) {
       // Optionally show message or redirect
-      // Here you could navigate("/paypal-cancel") if on a different page
     }
     // On thank-you, do nothing special
   }, [navigate]);
@@ -66,12 +64,12 @@ const PremiumPayment = () => {
       const token = localStorage.getItem("token");
       const res = await axios.post(
         `${API_BASE}/paypal/create-order`,
-        {},
+        { planId: PREMIUM_PLAN_ID }, // Always send planId: 2
         token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
       );
 
       if (res.data.approvalUrl) {
-        window.location.href = res.data.approvalUrl; // ✅ redirect in same tab
+        window.location.href = res.data.approvalUrl;
       } else {
         console.error("No approvalUrl returned from backend:", res.data);
       }
@@ -82,7 +80,7 @@ const PremiumPayment = () => {
 
   return (
     <div style={{ textAlign: "center", marginTop: "60px" }}>
-      <h2>Premium Plan - $10</h2>
+      <h2>Premium Plan</h2>
       <p>Unlock all premium features of our website!</p>
 
       {loading && (

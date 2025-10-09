@@ -8,6 +8,7 @@ const router = express.Router();
 const UserPlan = db.UserPlan;
 const User = db.User;
 const Payment = db.Payment;
+const Plan = db.Plan; // Make sure Plan model is exported from models/index.js
 
 function debugLog(...args) {
   if (process.env.NODE_ENV !== "production") {
@@ -27,20 +28,39 @@ function client() {
 
 /**
  * Create an order
+ * 1. amount from plans table (price column)
+ * 2. currency hardcoded as USD
+ * 3. payment_method set as "PayPal" in DB (updated in capture below)
  */
 router.post("/create-order", requireAuth, async (req, res) => {
   debugLog("Received /create-order request", { body: req.body });
 
   const userId = req.user.id;
-  const amount = "10.00";
-  const currency = "USD";
-  const payment_method = "PayPal";
+  const { planId } = req.body; // frontend must send planId
 
+  // 1. Get plan from DB
+  const plan = await Plan?.findOne?.({ where: { id: planId } });
+  if (!plan) {
+    debugLog("Plan not found for id:", planId);
+    return res.status(404).json({ error: "Plan not found." });
+  }
+  const amount = plan.price.toString(); // Ensure string for PayPal API
+
+  // 2. Hardcode currency as USD
+  const currency = "USD";
+  const payment_method = "PayPal"; // Default, update after capture
+
+  // 3. Create PayPal order
   const request = new paypal.orders.OrdersCreateRequest();
   request.prefer("return=representation");
   request.requestBody({
     intent: "CAPTURE",
-    purchase_units: [{ amount: { currency_code: currency, value: amount } }],
+    purchase_units: [{
+      amount: {
+        currency_code: currency,
+        value: amount
+      }
+    }],
     application_context: {
       brand_name: "Research Locker",
       landing_page: "LOGIN",
@@ -72,7 +92,8 @@ router.post("/create-order", requireAuth, async (req, res) => {
       status: 'Pending',
       payment_method: payment_method,
       created_at: new Date(),
-      updated_at: new Date()
+      updated_at: new Date(),
+      plan_id: planId
     });
 
     res.json({
@@ -91,6 +112,7 @@ router.post("/create-order", requireAuth, async (req, res) => {
 
 /**
  * Capture an order & update DB
+ * 3. payment_method taken from PayPal response object
  */
 router.post("/capture-order", requireAuth, async (req, res) => {
   debugLog("Received /capture-order request", { body: req.body });
@@ -116,6 +138,7 @@ router.post("/capture-order", requireAuth, async (req, res) => {
   let capture = null;
   let paypal_status = 'Pending';
   let paypal_payment_id = null;
+  let payment_method = paymentRecord.payment_method;
 
   try {
     debugLog("Sending capture order request to PayPal for orderID:", orderID);
@@ -126,6 +149,11 @@ router.post("/capture-order", requireAuth, async (req, res) => {
     paypal_status = capture.result.status || 'Pending';
     paypal_payment_id =
       capture.result.purchase_units?.[0]?.payments?.captures?.[0]?.id || null;
+
+    // Extract payment_method from PayPal response (e.g. 'paypal', 'card', etc.)
+    payment_method = capture.result.payment_source
+      ? Object.keys(capture.result.payment_source)[0]
+      : "PayPal";
 
     debugLog("PayPal capture response:", JSON.stringify(capture.result, null, 2));
   } catch (paypalErr) {
@@ -148,7 +176,8 @@ router.post("/capture-order", requireAuth, async (req, res) => {
     await paymentRecord.update({
       status: finalStatus,
       paypal_payment_id: paypal_payment_id,
-      updated_at: new Date()
+      updated_at: new Date(),
+      payment_method
     });
 
     debugLog("Payment record marked Completed.");
@@ -207,7 +236,8 @@ router.post("/capture-order", requireAuth, async (req, res) => {
   } else {
     await paymentRecord.update({
       status: finalStatus,
-      updated_at: new Date()
+      updated_at: new Date(),
+      payment_method
     });
 
     debugLog(`Payment record marked as ${finalStatus} (not Completed).`);
