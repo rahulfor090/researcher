@@ -206,7 +206,8 @@ export default function Library() {
     return (
       (a.title && a.title.toLowerCase().includes(q)) ||
       (a.doi && a.doi.toLowerCase().includes(q)) ||
-      (a.authors && a.authors.toLowerCase().includes(q))
+      (a.authors && a.authors.toLowerCase().includes(q)) ||
+      (a.publisher && a.publisher.toLowerCase().includes(q))
     );
   });
   if (onlyMissingPdf) {
@@ -309,7 +310,7 @@ export default function Library() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search articles by title, DOI, or author..."
+              placeholder="Search articles by title, DOI, author, or publisher..."
               style={{
                 padding: '12px 44px 12px 18px',
                 borderRadius: '10px',
@@ -783,6 +784,18 @@ export default function Library() {
                     </th>
                     <th
                       style={{
+                        textAlign: 'left',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      📚 Publisher
+                    </th>
+                    <th
+                      style={{
                         textAlign: 'center',
                         padding: '14px 16px',
                         borderBottom: `2px solid ${colors.border}`,
@@ -1007,6 +1020,37 @@ export default function Library() {
                               fontStyle: 'italic'
                             }}>
                               Unknown authors
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td
+                        style={{
+                          padding: '16px',
+                          borderBottom: `1px solid ${colors.border}`,
+                          color: colors.primaryText,
+                          maxWidth: '150px'
+                        }}
+                      >
+                        <div 
+                          style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            lineHeight: 1.3,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            cursor: 'help'
+                          }}
+                          title={a.publisher || 'Unknown publisher'}
+                        >
+                          {a.publisher || (
+                            <span style={{ 
+                              color: colors.mutedText,
+                              fontStyle: 'italic'
+                            }}>
+                              Unknown publisher
                             </span>
                           )}
                         </div>

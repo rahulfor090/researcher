@@ -33,19 +33,24 @@ passport.use(new TwitterStrategy({
       // Check if email is already in use
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
+        // Link Twitter to existing account
+        await existingUser.update({
+          twitterId: profile.id,
+          twitterToken: token,
+          twitterTokenSecret: tokenSecret
+        });
         return done(null, existingUser);
       }
-
-      const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
       
       try {
         user = await User.create({
           name: profile.displayName || 'Twitter User',
           email,
-          password,
+          password: null, // OAuth users start without password
           twitterId: profile.id,
           twitterToken: token,
-          twitterTokenSecret: tokenSecret
+          twitterTokenSecret: tokenSecret,
+          password_set: false // Flag that password needs to be set
         });
       } catch (createError) {
         console.error('Error creating user:', createError);
@@ -107,13 +112,13 @@ passport.use('linkedin', new OAuth2Strategy({
       
       let user = await User.findOne({ where: { linkedinId } });
       if (!user) {
-        const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
         user = await User.create({
           name,
           email: userEmail,
-          password,
+          password: null, // OAuth users start without password
           linkedinId,
-          linkedinToken: accessToken
+          linkedinToken: accessToken,
+          password_set: false // Flag that password needs to be set
         });
       } else {
         await user.update({ linkedinToken: accessToken });
@@ -131,14 +136,26 @@ passport.use('linkedin', new OAuth2Strategy({
     
     let user = await User.findOne({ where: { linkedinId } });
     if (!user) {
-      const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
+      // Check if user exists with this email
+      const existingUser = await User.findOne({ where: { email: userEmail } });
+      if (existingUser) {
+        // Link LinkedIn to existing account
+        await existingUser.update({
+          linkedinId,
+          linkedinToken: accessToken,
+          profile_image: profileImage || existingUser.profile_image
+        });
+        return done(null, existingUser);
+      }
+      
       user = await User.create({
         name,
         email: userEmail,
-        password,
+        password: null, // OAuth users start without password
         linkedinId,
         linkedinToken: accessToken,
-        profile_image: profileImage || null
+        profile_image: profileImage || null,
+        password_set: false // Flag that password needs to be set
       });
     } else {
       await user.update({ 

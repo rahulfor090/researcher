@@ -6,6 +6,8 @@ import makeTag from './tag.js';
 import makeArticleTag from './articletag.js';
 import makeAuthor from './Author.js';
 import makeArticleAuthor from './ArticleAuthor.js';
+import makePublisher from './Publisher.js';
+import makeArticlePublisher from './ArticlePublisher.js';
 import makeUserPlan from './UserPlan.js';
 import makeCollection from './Collection.js';
 import makeCollectionMaster from './CollectionMaster.js';
@@ -23,6 +25,8 @@ export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
 
 export const Author = makeAuthor(sequelize);
 export const ArticleAuthor = makeArticleAuthor(sequelize);
+export const Publisher = makePublisher(sequelize);
+export const ArticlePublisher = makeArticlePublisher(sequelize);
 export const User = makeUser(sequelize, Sequelize.DataTypes);
 export const Article = makeArticle(sequelize, Sequelize.DataTypes);
 export const Tag = makeTag(sequelize, Sequelize.DataTypes);
@@ -77,6 +81,26 @@ Tag.belongsToMany(Article, {
   otherKey: 'article_id',
 });
 
+// Many-to-many association between Article and Publisher using article_publishers join table
+Article.belongsToMany(Publisher, {
+  through: ArticlePublisher,
+  foreignKey: 'article_id',
+  otherKey: 'publisher_id',
+  as: 'publishers'
+});
+Publisher.belongsToMany(Article, {
+  through: ArticlePublisher,
+  foreignKey: 'publisher_id',
+  otherKey: 'article_id',
+  as: 'articles'
+});
+
+// Direct associations for junction table
+Article.hasMany(ArticlePublisher, { foreignKey: 'article_id' });
+ArticlePublisher.belongsTo(Article, { foreignKey: 'article_id' });
+Publisher.hasMany(ArticlePublisher, { foreignKey: 'publisher_id' });
+ArticlePublisher.belongsTo(Publisher, { foreignKey: 'publisher_id' });
+
 // Collection associations
 User.hasMany(Collection, { foreignKey: 'userId' });
 Collection.belongsTo(User, { foreignKey: 'userId' });
@@ -114,10 +138,12 @@ export const syncDb = async () => {
   await sequelize.sync({ alter: true });
 };
 
-// Default export for ES module compatibility, now with UserPlan, Collections, Temp models, PdfImage
+// Default export for ES module compatibility, now with UserPlan, Collections, Temp models, PdfImage, Publishers
 export default {
   Author,
   ArticleAuthor,
+  Publisher,
+  ArticlePublisher,
   User,
   Article,
   Tag,
@@ -128,6 +154,7 @@ export default {
   TempUser,
   TempArticle,
   PdfImage,
+  DoiReference,
   syncDb,
   sequelize
 };
