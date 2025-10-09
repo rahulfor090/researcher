@@ -6,6 +6,7 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
   const [url, setUrl] = useState('');
   const [doi, setDoi] = useState('');
   const [authors, setAuthors] = useState('');
+  const [publisher, setPublisher] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [articleReferences, setArticleReferences] = useState(null); // Store references
@@ -53,6 +54,14 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
           setUrl(article.URL);
         }
 
+        // Update publisher if available
+        if (article.publisher) {
+          setPublisher(article.publisher);
+        } else if (article['container-title'] && article['container-title'][0]) {
+          // Sometimes journal/publisher info is in container-title
+          setPublisher(article['container-title'][0]);
+        }
+
         // Store references for later saving when article is submitted
         if (article.reference && Array.isArray(article.reference)) {
           setArticleReferences(article.reference);
@@ -89,12 +98,14 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
       setUrl(initialData.url || '');
       setDoi(initialData.doi || '');
       setAuthors(initialData.authors || '');
+      setPublisher(initialData.publisher || '');
       setArticleReferences(null); // Reset references for editing
     } else {
       setTitle('');
       setUrl('');
       setDoi('');
       setAuthors('');
+      setPublisher('');
       setArticleReferences(null); // Reset references for new article
     }
   }, [initialData]);
@@ -127,9 +138,10 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
 
     // Ensure authors field is never undefined
     const authorData = authors.trim() || 'N/A';
+    const publisherData = publisher.trim();
 
     try {
-      await onSave({ title, url, doi: cleanDoi, authors: authorData });
+      await onSave({ title, url, doi: cleanDoi, authors: authorData, publisher: publisherData });
       
       // After successfully saving the article, save the DOI references
       try {
@@ -250,6 +262,13 @@ export default function ArticleFormModal({ onClose, onSave, initialData }) {
             onChange={(e) => setAuthors(e.target.value)}
             style={inputStyle}
             required
+          />
+          <input
+            type="text"
+            placeholder="Publisher"
+            value={publisher}
+            onChange={(e) => setPublisher(e.target.value)}
+            style={inputStyle}
           />
           <input
             type="url"

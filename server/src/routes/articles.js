@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Op } from 'sequelize';
-import { Article, Author, ArticleAuthor, User, TempArticle, TempUser } from '../models/index.js'; // Ensure TempArticle and TempUser are imported!
+import { Article, Author, ArticleAuthor, Publisher, ArticlePublisher, User, TempArticle, TempUser } from '../models/index.js'; // Ensure TempArticle and TempUser are imported!
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -37,11 +37,32 @@ async function upsertAuthorsByNames(names, transaction) {
   return authors;
 }
 
+// Helper to find or create publisher by name, returns Publisher instance
+async function upsertPublisherByName(name, transaction) {
+  if (!name || !name.trim()) return null;
+  const [publisher] = await Publisher.findOrCreate({
+    where: { name: name.trim() },
+    defaults: { name: name.trim() },
+    transaction
+  });
+  return publisher;
+}
+
 // Helper function to associate authors with article without duplicates
 async function associateAuthors(articleId, authors, transaction) {
   if (!authors || authors.length === 0) return;
   const rows = authors.map(a => ({ article_id: articleId, author_id: a.id }));
   await ArticleAuthor.bulkCreate(rows, { ignoreDuplicates: true, transaction });
+}
+
+// Helper function to associate publisher with article without duplicates
+async function associatePublisher(articleId, publisher, transaction) {
+  if (!publisher) return;
+  await ArticlePublisher.findOrCreate({
+    where: { article_id: articleId, publisher_id: publisher.id },
+    defaults: { article_id: articleId, publisher_id: publisher.id },
+    transaction
+  });
 }
 
 // Helper function to get authors for an article as a formatted string
@@ -52,6 +73,15 @@ async function getArticleAuthorsString(articleId) {
   });
 
   return articleAuthors.map(aa => aa.Author.name).join(', ');
+}
+
+// Helper function to get publishers for an article as a formatted string
+async function getArticlePublishersString(articleId) {
+  const articlePublishers = await ArticlePublisher.findAll({
+    where: { article_id: articleId },
+    include: [{ model: Publisher, attributes: ['name'] }]
+  });
+  return articlePublishers.map(ap => ap.Publisher.name).join(', ');
 }
 
 // ===== TEMP ARTICLE ENDPOINTS =====
@@ -230,8 +260,8 @@ router.post('/',
         return res.status(400).json({ message: 'An article with the same URL or DOI already exists' });
       }
 
-      // Prepare authors names (support string or array) and run everything in a transaction
-      const { authors: authorsInput, ...articleData } = req.body;
+      // Prepare authors names (support string or array) and publisher, run everything in a transaction
+      const { authors: authorsInput, publisher: publisherInput, ...articleData } = req.body;
       const names = normalizeAuthorNames(authorsInput);
       const authorsStringForLegacy = names.join(', ');
 
@@ -249,12 +279,23 @@ router.post('/',
           await associateAuthors(created.id, authors, t);
         }
 
+        // Upsert publisher and link if provided
+        if (publisherInput && publisherInput.trim()) {
+          const publisher = await upsertPublisherByName(publisherInput, t);
+          await associatePublisher(created.id, publisher, t);
+        }
+
         return created;
       });
 
-      // Return article with authors as string for backward compatibility
+      // Return article with authors and publishers as string for backward compatibility
       const authorsStr = await getArticleAuthorsString(result.id);
-      res.json({ ...result.toJSON(), authors: authorsStr || authorsStringForLegacy || '' });
+      const publishersStr = await getArticlePublishersString(result.id);
+      res.json({ 
+        ...result.toJSON(), 
+        authors: authorsStr || authorsStringForLegacy || '',
+        publisher: publishersStr || ''
+      });
     } catch (err) {
       console.error('Failed to create article:', err);
       res.status(500).json({ message: 'Failed to create article', error: String(err?.message || err) });
@@ -270,11 +311,16 @@ router.get('/', requireAuth, async (req, res) => {
       order: [['id', 'DESC']]
     });
     
-    // Add authors string to each article for backward compatibility
+    // Add authors and publishers string to each article for backward compatibility
     const articlesWithAuthors = await Promise.all(
       list.map(async (article) => {
         const authorsStr = await getArticleAuthorsString(article.id);
-        return { ...article.toJSON(), authors: authorsStr || article.authors || '' };
+        const publishersStr = await getArticlePublishersString(article.id);
+        return { 
+          ...article.toJSON(), 
+          authors: authorsStr || article.authors || '',
+          publisher: publishersStr || ''
+        };
       })
     );
     
