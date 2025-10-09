@@ -20,6 +20,9 @@ import makePdfImage from './pdfImage.js'; // <-- Import your model
 // Import Paypal/Payment model
 import makePayment from './Payments.js';
 
+// Import Plan model
+import makePlan from './Plan.js'; // <-- Import Plan model
+
 // Add UserPlan model
 export const UserPlan = makeUserPlan(sequelize, Sequelize.DataTypes);
 
@@ -45,6 +48,9 @@ export const PdfImage = makePdfImage(sequelize); // <-- Export and initialize th
 
 // Payment model
 export const Payment = makePayment(sequelize); // <-- Export and initialize the Payment model
+
+// Plan model
+export const Plan = makePlan(sequelize); // <-- Export and initialize the Plan model
 
 // User-Article associations
 User.hasMany(Article, { foreignKey: 'userId' });
@@ -121,7 +127,7 @@ export const syncDb = async () => {
   await sequelize.sync({ alter: true });
 };
 
-// Default export for ES module compatibility, now with UserPlan, Collections, Temp models, PdfImage, Payment
+// Default export for ES module compatibility, now with UserPlan, Collections, Temp models, PdfImage, Payment, Plan
 export default {
   Author,
   ArticleAuthor,
@@ -136,6 +142,7 @@ export default {
   TempArticle,
   PdfImage,
   Payment,
+  Plan,         // <-- Export Plan here
   DoiReference,
   syncDb,
   sequelize
