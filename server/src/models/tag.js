@@ -1,25 +1,32 @@
 export default (sequelize, DataTypes) => {
-  const Tag = sequelize.define('Tag', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
+  const Tag = sequelize.define(
+    'Tag',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      name: {
+        type: DataTypes.STRING(191),
+        unique: true,
+        allowNull: false,
+      },
     },
-    name: {
-      type: DataTypes.STRING(191),
-      unique: true,
-      allowNull: false
+    {
+      tableName: 'tags',
+      timestamps: false,
+      indexes: [
+        { unique: true, fields: ['name'] },
+      ],
     }
-  }, {
-    tableName: 'tags',
-    timestamps: false
-  });
+  );
 
   Tag.associate = (models) => {
     Tag.belongsToMany(models.Article, {
       through: models.ArticleTag,
       foreignKey: 'tag_id',
-      otherKey: 'article_id'
+      otherKey: 'article_id',
     });
   };
 

@@ -151,7 +151,6 @@ ${pdfData.text.slice(0, 8000)}
   }
 }
 
-/*
 // Extract embedded images from the PDF using Poppler's pdfimages utility
 function extractEmbeddedImagesFromPdf(pdfPath, outputDir) {
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
@@ -179,7 +178,6 @@ function extractEmbeddedImagesFromPdf(pdfPath, outputDir) {
     });
   });
 }
-*/
 
 // Authenticated PDF upload and processing!
 router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
@@ -200,8 +198,7 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
 
     const result = await processPDF(pdfBuffer, req.file.filename);
 
-    // --- Image extraction is commented out ---
-    /*
+    // --- Extract images with Poppler ---
     let extractedImageFiles = [];
     let imageExtractionDebug = {};
     let convertedImages = [];
@@ -233,7 +230,6 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
       imageExtractionDebug.error = String(imgErr);
       console.error('⚠️ Failed to extract or store images from PDF:', imgErr);
     }
-    */
 
     // Tag creation and association
     let tagInstances = [];
@@ -278,13 +274,28 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
       hashtags: result.success ? result.hashtagsStr : undefined,
       pages: result.pages,
       info: result.info,
-      // extractedImages: extractedImageFiles.map(f => path.relative(process.cwd(), f)),
-      // convertedImages: convertedImages.map(f => path.relative(process.cwd(), f)),
-      // failedConversions,
-      // imageExtractionDebug
+      extractedImages: extractedImageFiles.map(f => path.relative(process.cwd(), f)),
+      convertedImages: convertedImages.map(f => path.relative(process.cwd(), f)),
+      failedConversions,
+      imageExtractionDebug
     });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
+  }
+});
+
+// Endpoint to get PDF images for an article (NEW)
+router.get('/pdf_images/:articleId', requireAuth, async (req, res) => {
+  try {
+    const articleId = req.params.articleId;
+    const images = await PdfImage.findAll({
+      where: { article_id: articleId },
+      order: [['created_at', 'ASC']]
+    });
+    const imageNames = images.map(img => img.images_name);
+    res.json({ images: imageNames });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch images', details: err.message });
   }
 });
 
