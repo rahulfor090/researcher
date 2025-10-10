@@ -528,31 +528,7 @@ export default function Settings() {
               </button>
             </div>
             
-
-            <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} style={inputStyle} required />
-            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} required />
-            <input type="text" placeholder="Phone Number" value={phone_number} onChange={e => setPhoneNumber(e.target.value)} style={inputStyle} />
-            <select value={gender} onChange={e => setGender(e.target.value)} style={inputStyle}>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-            <input type="text" placeholder="University" value={university} onChange={e => setUniversity(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="Department" value={department} onChange={e => setDepartment(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="Program" value={program} onChange={e => setProgram(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="Year of Study" value={year_of_study} onChange={e => setYearOfStudy(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="Research Area" value={research_area} onChange={e => setResearchArea(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="Research Interests" value={research_interests} onChange={e => setResearchInterests(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="Publications" value={publications} onChange={e => setPublications(e.target.value)} style={inputStyle} />
-            <input type="url" placeholder="LinkedIn URL" value={linkedin_url} onChange={e => setLinkedinUrl(e.target.value)} style={inputStyle} />
-            <input type="url" placeholder="Google Scholar URL" value={google_scholar_url} onChange={e => setGoogleScholarUrl(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="ORCID ID" value={orcid_id} onChange={e => setOrcidId(e.target.value)} style={inputStyle} />
-            <textarea placeholder="Bio" value={bio} onChange={e => setBio(e.target.value)} style={inputStyle} />
-            <input type="text" placeholder="Skills" value={skills} onChange={e => setSkills(e.target.value)} style={inputStyle} />
-            <button type="submit" style={{ ...saveButtonStyle, marginTop: 12, alignSelf: 'flex-end' }}>Save Profile</button>
-
-            {saveMessage && <div style={{ color: 'green', marginTop: 8 }}>{saveMessage}</div>}
-            {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
+            
           </form>
           
           {/* Change Password Popup Modal */}

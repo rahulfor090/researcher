@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { colors, shadows, cardStyle } from '../theme';
 import Layout from '../components/Layout';
+import './CollectionAssign.scss';
 
 export default function CollectionAssign() {
   const { id } = useParams();
