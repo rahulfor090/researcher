@@ -192,83 +192,112 @@ router.get('/twitter/callback',
       { expiresIn: '7d' }
     );
     
-    // Redirect to dashboard with token as query parameter
-    res.redirect(`http://localhost:5173/dashboard?token=${token}`);
+    // Check if user needs to set password (OAuth users who haven't set one)
+    const needsPasswordSetup = !req.user.password_set && req.user.twitterId;
+    
+    // Redirect to set-password or dashboard with token as query parameter
+    const redirectUrl = needsPasswordSetup 
+      ? `http://localhost:5173/set-password?token=${token}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}&oauth=twitter`
+      : `http://localhost:5173/dashboard?token=${token}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}`;
+    
+    res.redirect(redirectUrl);
   }
 );
 
-// LinkedIn authentication routes - force fresh login each time
-// Alias to support /oauth/linkedin start URL (keeps login/register links consistent)
+// LinkedIn authentication with enhanced debugging
 router.get('/oauth/linkedin', (req, res) => {
   return res.redirect(302, '/v1/auth/linkedin');
 });
 router.get('/linkedin', (req, res) => {
-  // Generate unique state and add timestamp to force fresh auth
   const timestamp = Date.now();
   const randomState = Math.random().toString(36).substring(7);
-  
-  // Build LinkedIn authorization URL manually with force re-auth parameters
+
+  const clientId = process.env.LINKEDIN_CLIENT_ID;
+  const callbackUrl = process.env.LINKEDIN_CALLBACK_URL;
+
+  console.log('=== LinkedIn OAuth Init ===');
+  console.log('Client ID:', clientId);
+  console.log('Redirect URI:', callbackUrl);
+
+  if (!clientId || !callbackUrl) {
+    console.error('Missing LINKEDIN_CLIENT_ID or LINKEDIN_CALLBACK_URL in environment variables');
+    return res.status(500).send('Server misconfigured for LinkedIn OAuth');
+  }
+
   const authUrl = new URL('https://www.linkedin.com/oauth/v2/authorization');
   authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('client_id', process.env.LINKEDIN_CLIENT_ID);
-  authUrl.searchParams.set('redirect_uri', process.env.LINKEDIN_CALLBACK_URL);
+  authUrl.searchParams.set('client_id', clientId);
+  authUrl.searchParams.set('redirect_uri', callbackUrl);
   authUrl.searchParams.set('scope', 'openid profile email');
   authUrl.searchParams.set('state', `${randomState}_${timestamp}`);
-  authUrl.searchParams.set('prompt', 'login'); // Force login
-  authUrl.searchParams.set('max_age', '0'); // Force fresh authentication
-  
+
+  console.log('LinkedIn Auth URL (decoded):', authUrl.toString());
   res.redirect(authUrl.toString());
 });
 router.get('/linkedin/callback', async (req, res) => {
   try {
-    const { code, state } = req.query;
-    
+    const { code, state, error, error_description } = req.query;
+
+    console.log('=== LinkedIn Callback ===');
+    console.log('Query:', req.query);
+
+    if (error) {
+      console.error('LinkedIn OAuth Error:', error);
+      console.error('Error Description:', error_description);
+      return res.redirect(`http://localhost:5173/login?error=${encodeURIComponent(error)}&description=${encodeURIComponent(error_description || '')}`);
+    }
+
     if (!code) {
       console.error('No authorization code received');
       return res.redirect('http://localhost:5173/login?error=no_code');
     }
-    
-    console.log('LinkedIn callback received code:', code);
-    console.log('State:', state);
-    
-    // Exchange code for access token
+
+    const callbackUrl = process.env.LINKEDIN_CALLBACK_URL;
+    console.log('Using Redirect URI for token exchange:', callbackUrl);
+
+    const tokenParams = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: callbackUrl,
+      client_id: process.env.LINKEDIN_CLIENT_ID,
+      client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+    });
+
+    console.log('Token Request Params:', Object.fromEntries(tokenParams.entries()));
+
     const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: process.env.LINKEDIN_CALLBACK_URL,
-        client_id: process.env.LINKEDIN_CLIENT_ID,
-        client_secret: process.env.LINKEDIN_CLIENT_SECRET,
-      }),
+      body: tokenParams,
     });
-    
+
     if (!tokenResponse.ok) {
-      console.error('Token exchange failed:', tokenResponse.status, await tokenResponse.text());
-      return res.redirect('http://localhost:5173/login?error=token_exchange_failed');
+      const errorText = await tokenResponse.text();
+      console.error('Token exchange failed:', tokenResponse.status, errorText);
+      return res.redirect(`http://localhost:5173/login?error=token_exchange_failed&token_status=${tokenResponse.status}&body=${encodeURIComponent(errorText)}`);
     }
-    
+
     const tokenData = await tokenResponse.json();
     const accessToken = tokenData.access_token;
-    
-    console.log('LinkedIn Access Token received');
-    
-    // Use the same profile fetching logic from passport strategy
+    if (!accessToken) {
+      console.error('No access token received:', tokenData);
+      return res.redirect('http://localhost:5173/login?error=no_access_token');
+    }
+
+    // Fetch LinkedIn userinfo
     const profileResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       }
     });
-    
+
     let linkedinId, name, userEmail, profileImage;
-    
+
     if (!profileResponse.ok) {
       console.error('Profile fetch failed:', profileResponse.status, await profileResponse.text());
-      // Fallback to token-based ID
       linkedinId = Buffer.from(accessToken.substring(0, 20)).toString('base64').replace(/[^a-zA-Z0-9]/g, '');
       name = 'LinkedIn User';
       userEmail = `linkedin_${linkedinId}@linkedin.local`;
@@ -276,50 +305,58 @@ router.get('/linkedin/callback', async (req, res) => {
     } else {
       const profileData = await profileResponse.json();
       console.log('LinkedIn Profile Data:', profileData);
-      
+
       linkedinId = profileData.sub || profileData.id;
       name = profileData.name || `${profileData.given_name || ''} ${profileData.family_name || ''}`.trim() || 'LinkedIn User';
       userEmail = profileData.email || `${linkedinId}@linkedin.local`;
       profileImage = profileData.picture;
     }
-    
+
     // Find or create user
     const { User } = await import('../models/index.js');
-    const bcrypt = await import('bcryptjs');
-    
     let user = await User.findOne({ where: { linkedinId } });
     if (!user) {
-      const password = await bcrypt.default.hash(Math.random().toString(36).slice(-8), 10);
-      user = await User.create({
-        name,
-        email: userEmail,
-        password,
-        linkedinId,
-        linkedinToken: accessToken,
-        profile_image: profileImage || null
-      });
+      user = await User.findOne({ where: { email: userEmail } });
+      if (user) {
+        await user.update({
+          linkedinId,
+          linkedinToken: accessToken,
+          profile_image: profileImage || user.profile_image
+        });
+      } else {
+        user = await User.create({
+          name,
+          email: userEmail,
+          password: null,
+          linkedinId,
+          linkedinToken: accessToken,
+          profile_image: profileImage || null,
+          password_set: false
+        });
+      }
     } else {
-      await user.update({ 
+      await user.update({
         linkedinToken: accessToken,
         name: name,
         email: userEmail,
         profile_image: profileImage || user.profile_image
       });
     }
-    
-    // Generate JWT token for the authenticated user
+
     const jwt = await import('jsonwebtoken');
     const token = jwt.default.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    
-    console.log('LinkedIn authentication successful for user:', user.name);
-    
-    // Redirect to dashboard with token as query parameter
-    res.redirect(`http://localhost:5173/dashboard?token=${token}`);
-    
+
+    const needsPasswordSetup = !user.password_set && user.linkedinId;
+    const redirectUrl = needsPasswordSetup
+      ? `http://localhost:5173/set-password?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&oauth=linkedin`
+      : `http://localhost:5173/dashboard?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}`;
+
+    res.redirect(redirectUrl);
+
   } catch (error) {
     console.error('LinkedIn callback error:', error);
     res.redirect('http://localhost:5173/login?error=callback_failed');
@@ -392,7 +429,8 @@ router.get('/me', requireAuth, (req, res) => {
       name: req.user.name,
       email: req.user.email,
       plan: req.user.plan,
-      profile_image: req.user.profile_image
+      profile_image: req.user.profile_image,
+      password_set: req.user.password_set !== false // Default to true for existing users
     }
   });
 });
@@ -451,7 +489,18 @@ const callbackGoogle = async (req, res) => {
 
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      user = await User.create({ name, email, password: '' });
+      user = await User.create({ 
+        name, 
+        email, 
+        password: null, // OAuth users start without password
+        googleId: profile.sub,
+        password_set: false // Flag that password needs to be set
+      });
+    } else {
+      // Update existing user with Google ID if not set
+      if (!user.googleId) {
+        await user.update({ googleId: profile.sub });
+      }
     }
 
     if (!env.jwtSecret) {
@@ -459,10 +508,16 @@ const callbackGoogle = async (req, res) => {
     }
     const token = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: '7d' });
 
-    const redirect = new URL(env.webAppUrl + '/dashboard');
+    // Check if user needs to set password (OAuth users who haven't set one)
+    const needsPasswordSetup = !user.password_set && user.googleId;
+    
+    const redirect = new URL(env.webAppUrl + (needsPasswordSetup ? '/set-password' : '/dashboard'));
     redirect.searchParams.set('token', token);
     redirect.searchParams.set('name', user.name);
     redirect.searchParams.set('email', user.email);
+    if (needsPasswordSetup) {
+      redirect.searchParams.set('oauth', 'google');
+    }
     return res.redirect(redirect.toString());
   } catch (err) {
     console.error('Google OAuth error', err);
@@ -586,5 +641,50 @@ router.post('/test-email', async (req, res) => {
     });
   }
 });
+
+// Set password for OAuth users
+router.post('/set-password',
+  requireAuth,
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const { password } = req.body;
+    
+    try {
+      const user = await User.findByPk(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Check if user is OAuth user who needs to set password
+      if (user.password_set) {
+        return res.status(400).json({ message: 'Password already set' });
+      }
+      
+      // Hash and set the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await user.update({ 
+        password: hashedPassword, 
+        password_set: true 
+      });
+      
+      res.json({ 
+        success: true, 
+        message: 'Password set successfully',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          password_set: true
+        }
+      });
+    } catch (error) {
+      console.error('Set password error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+);
 
 export default router;

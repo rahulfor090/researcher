@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import session from 'express-session';
 import passport from 'passport';
+import path from 'path'; // Needed for static serving
 import './config/passport.js'; // Import passport configuration
 import { env } from './config/env.js';
 import { syncDb } from './models/index.js';
@@ -14,8 +15,9 @@ import profileRouter from './routes/profile.js';
 import authorRoutes from './routes/authors.js';
 import tagRouter from './routes/tag.js';
 import collectionsRoutes from './routes/collections.js';
-import paypalRoutes from './routes/paypal.js'; // <--- Use REST API integration route
+import paypalRoutes from './routes/paypal.js'; // Use REST API integration route
 import doiReferencesRoutes from './routes/doiReferences.js'; // Import DOI references routes
+import publishersRoutes from './routes/publishers.js';
 
 const app = express();
 
@@ -57,7 +59,8 @@ app.use(cors({
     if (origin && origin.startsWith('chrome-extension://')) return cb(null, true);
     if (origin && env.corsOrigins.includes(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS. Origin was: ' + origin));
-  }
+  },
+  credentials: true
 }));
 
 app.get('/v1/health', (_, res) => res.json({ ok: true }));
@@ -71,12 +74,23 @@ app.use('/api/authors', authorRoutes); // For backward compatibility if needed
 app.use('/v1/tag', tagRouter);
 app.use('/v1/collections', collectionsRoutes);
 app.use('/v1/doi-references', doiReferencesRoutes); // Add DOI references routes
+app.use('/v1/publishers', publishersRoutes);
 
 // PayPal REST API endpoints (create-order and capture-order)
 app.use('/v1/paypal', paypalRoutes);
 
 // Serve uploaded files with CORS headers
-app.use('/uploads', cors(), express.static('src/uploads'));
+app.use('/v1/uploads', cors(), express.static('src/uploads'));
+app.use('/v1/images', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.resolve('src/uploads/images')));
+
+// If you want this for all image serving routes:
+app.use('/images', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.resolve('src/uploads/images')));
 
 // TEMP ARTICLES & TEMP USERS ENDPOINTS
 // These endpoints are handled within articleRoutes,

@@ -63,6 +63,8 @@ export function Protected({ children }) {
   const { setUser } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
   const [hasToken, setHasToken] = useState(false);
+  const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
+  const navigate = useNavigate();
   
   useEffect(() => {
     console.log('Protected component checking authentication...');
@@ -73,9 +75,21 @@ export function Protected({ children }) {
     
     if (localToken) {
       setHasToken(true);
-      // Ensure profile is loaded on protected pages
-      api.get(`${BASE_API_URL}/profile`)
-        .then(res => setUser(res.data))
+      setAuthToken(localToken);
+      
+      // Ensure profile is loaded on protected pages and check password_set status
+      api.get(`${BASE_API_URL}/auth/me`)
+        .then(res => {
+          const userData = res.data.user;
+          setUser(userData);
+          
+          // Check if user needs to set password (OAuth users who haven't set one)
+          if (userData.password_set === false && window.location.pathname !== '/set-password') {
+            setNeedsPasswordSetup(true);
+            navigate('/set-password');
+            return;
+          }
+        })
         .catch(() => setUser(null))
         .finally(() => setIsChecking(false));
       return;
@@ -86,8 +100,9 @@ export function Protected({ children }) {
     const token = urlParams.get('token');
     const name = urlParams.get('name');
     const email = urlParams.get('email');
+    const oauth = urlParams.get('oauth'); // Check if this is OAuth flow
     
-    console.log('URL params - token:', token ? 'exists' : 'not found', 'name:', name, 'email:', email);
+    console.log('URL params - token:', token ? 'exists' : 'not found', 'name:', name, 'email:', email, 'oauth:', oauth);
     
     if (token) {
       console.log('Processing OAuth callback...');
@@ -108,20 +123,31 @@ export function Protected({ children }) {
       }
       
       // Try to load full profile after setting token; fallback to basic info
-      api.get(`${BASE_API_URL}/profile`)
-        .then(res => setUser(res.data))
+      api.get(`${BASE_API_URL}/auth/me`)
+        .then(res => {
+          const userData = res.data.user;
+          setUser(userData);
+          
+          // Check if user needs to set password (OAuth users who haven't set one)
+          if (userData.password_set === false) {
+            setNeedsPasswordSetup(true);
+            // Don't clean URL params yet, let SetPassword component handle them
+            return;
+          }
+          
+          // Clean up URL parameters only if password setup not needed
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        })
         .catch(() => setUser({ name, email, plan: 'free' }));
 
       setHasToken(true);
       
-      // Clean up URL parameters
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
       console.log('OAuth callback processed successfully');
     }
     
     setIsChecking(false);
-  }, [setUser]);
+  }, [setUser, navigate]);
   
   console.log('Protected component state - isChecking:', isChecking, 'hasToken:', hasToken);
   

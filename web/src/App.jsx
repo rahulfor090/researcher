@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import SetPassword from './pages/SetPassword';
 import Dashboard from './pages/Dashboard';
 import Library from './pages/Library';
 import Collection from './pages/Collection';
@@ -12,6 +13,7 @@ import CollectionAssign from './pages/CollectionAssign';
 import Settings from './pages/Settings'
 import ArticleDetails from './pages/ArticleDetails';
 import Authors from './pages/Authors';
+import Publishers from './pages/Publishers';
 import About from './pages/About';
 import Home from './pages/Home';
 import AuthSuccess from './pages/AuthSuccess';
@@ -54,6 +56,7 @@ export default function App() {
           <Route path="/register" element={<Register/>} />
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path="/reset-password" element={<ResetPassword/>} />
+          <Route path="/set-password" element={<SetPassword/>} />
 
           {/* Protected app sections (custom internal layouts) */}
           <Route path="/dashboard" element={<Protected><Dashboard/></Protected>} />
@@ -62,6 +65,7 @@ export default function App() {
           <Route path="/collection/:id" element={<Protected><CollectionDetail/></Protected>} />
           <Route path="/collection/:id/assign" element={<Protected><CollectionAssign/></Protected>} />
           <Route path="/authors" element={<Protected><Authors/></Protected>} />
+          <Route path="/publishers" element={<Protected><Publishers/></Protected>} />
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/articles/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />

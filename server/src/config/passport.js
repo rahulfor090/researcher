@@ -8,27 +8,70 @@ import bcrypt from 'bcryptjs'; // Use bcryptjs for consistency
 passport.use(new TwitterStrategy({
   consumerKey: env.twitter.consumerKey,
   consumerSecret: env.twitter.consumerSecret,
-  callbackURL: env.twitter.callbackURL // Should be 'http://localhost:5000/v1/auth/twitter/callback'
-}, async (token, tokenSecret, profile, done) => {
+  callbackURL: env.twitter.callbackURL,
+  includeEmail: true, // Request email from Twitter if available
+  passReqToCallback: true
+}, async (req, token, tokenSecret, profile, done) => {
   try {
-    console.log('Twitter Profile:', profile); // Add for debugging
-    let user = await User.findOne({ where: { twitterId: profile.id } });
-    if (!user) {
-      const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10); // Random password
-      user = await User.create({
-        name: profile.displayName,
-        email: profile.emails?.[0]?.value || `${profile.id}@twitter.com`,
-        password,
-        twitterId: profile.id,
-        twitterToken: token,
-        twitterTokenSecret: tokenSecret
-      });
-    } else {
-      await user.update({ twitterToken: token, twitterTokenSecret: tokenSecret });
+    console.log('Twitter Strategy - Incoming profile:', {
+      id: profile.id,
+      displayName: profile.displayName,
+      emails: profile.emails
+    });
+
+    if (!profile || !profile.id) {
+      console.error('Invalid profile received from Twitter');
+      return done(new Error('Invalid profile received from Twitter'));
     }
+
+    let user = await User.findOne({ where: { twitterId: profile.id } });
+    
+    if (!user) {
+      // Generate a unique email if Twitter doesn't provide one
+      const email = profile.emails?.[0]?.value || `twitter_${profile.id}@${new URL(env.frontendBaseUrl).hostname}`;
+      
+      // Check if email is already in use
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        // Link Twitter to existing account
+        await existingUser.update({
+          twitterId: profile.id,
+          twitterToken: token,
+          twitterTokenSecret: tokenSecret
+        });
+        return done(null, existingUser);
+      }
+      
+      try {
+        user = await User.create({
+          name: profile.displayName || 'Twitter User',
+          email,
+          password: null, // OAuth users start without password
+          twitterId: profile.id,
+          twitterToken: token,
+          twitterTokenSecret: tokenSecret,
+          password_set: false // Flag that password needs to be set
+        });
+      } catch (createError) {
+        console.error('Error creating user:', createError);
+        return done(createError);
+      }
+    } else {
+      try {
+        await user.update({
+          twitterToken: token,
+          twitterTokenSecret: tokenSecret,
+          name: profile.displayName || user.name
+        });
+      } catch (updateError) {
+        console.error('Error updating user:', updateError);
+        // Continue with existing user data if update fails
+      }
+    }
+    
     return done(null, user);
   } catch (err) {
-    console.error('Twitter Auth Error:', err); // Log the error
+    console.error('Twitter Auth Error:', err);
     return done(err);
   }
 }));
@@ -69,13 +112,13 @@ passport.use('linkedin', new OAuth2Strategy({
       
       let user = await User.findOne({ where: { linkedinId } });
       if (!user) {
-        const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
         user = await User.create({
           name,
           email: userEmail,
-          password,
+          password: null, // OAuth users start without password
           linkedinId,
-          linkedinToken: accessToken
+          linkedinToken: accessToken,
+          password_set: false // Flag that password needs to be set
         });
       } else {
         await user.update({ linkedinToken: accessToken });
@@ -93,14 +136,26 @@ passport.use('linkedin', new OAuth2Strategy({
     
     let user = await User.findOne({ where: { linkedinId } });
     if (!user) {
-      const password = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
+      // Check if user exists with this email
+      const existingUser = await User.findOne({ where: { email: userEmail } });
+      if (existingUser) {
+        // Link LinkedIn to existing account
+        await existingUser.update({
+          linkedinId,
+          linkedinToken: accessToken,
+          profile_image: profileImage || existingUser.profile_image
+        });
+        return done(null, existingUser);
+      }
+      
       user = await User.create({
         name,
         email: userEmail,
-        password,
+        password: null, // OAuth users start without password
         linkedinId,
         linkedinToken: accessToken,
-        profile_image: profileImage || null
+        profile_image: profileImage || null,
+        password_set: false // Flag that password needs to be set
       });
     } else {
       await user.update({ 
