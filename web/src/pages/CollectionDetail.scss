@@ -1,0 +1,80 @@
+/* CollectionDetail page styles */
+
+.collection-detail-page {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .back-btn {
+      background: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: .9rem;
+      cursor: pointer;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 8px; }
+    p { font-size: 1.1rem; margin: 0; }
+
+    .assign-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 16px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .table {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+
+    .thead {
+      display: grid;
+      grid-template-columns: 1fr 200px 150px 120px;
+      gap: 16px;
+      padding: 20px 24px;
+      color: #fff;
+      font-weight: 600;
+      font-size: .9rem;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 200px 150px 120px;
+      gap: 16px;
+      padding: 20px 24px;
+
+      h4 { font-size: 1.1rem; font-weight: 600; margin: 0 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      p { font-size: .9rem; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      .status { padding: 4px 8px; border-radius: 6px; font-size: .8rem; font-weight: 500; }
+      .actions { display: flex; gap: 8px; align-items: center; }
+      .action-btn { border: none; border-radius: 6px; padding: 6px 8px; font-size: .8rem; cursor: pointer; }
+    }
+
+    .tfoot {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .9rem;
+    }
+  }
+}

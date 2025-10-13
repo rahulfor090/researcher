@@ -1,0 +1,12 @@
+/* Help Center page styles */
+
+.helpcenter-page {
+  padding: 40px 0;
+  min-height: 100vh;
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  .title { text-align: center; margin-bottom: 24px; }
+  .sections { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .card { border-radius: 12px; padding: 20px; }
+}
+
