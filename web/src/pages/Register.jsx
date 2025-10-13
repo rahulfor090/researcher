@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import './Register.scss';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
-import { colors, cardStyle, primaryButtonStyle, gradients, shadows } from '../theme';
+// Removed unused theme imports since styles are now in SCSS
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -43,8 +44,7 @@ export default function Register() {
   const providers = [
     { key: 'google', label: 'Sign up with Google', icon: '🟢' },
     { key: 'linkedin', label: 'Sign up with LinkedIn', icon: '🔷' },
-    { key: 'twitter', label: 'Sign up with X (Twitter)', icon: '✖️' },
-    { key: 'facebook', label: 'Sign up with Facebook', icon: '🔵' }
+    { key: 'twitter', label: 'Sign up with X (Twitter)', icon: '✖️' }
   ];
   const redirectToProvider = (provider) => {
     window.location.href = `${BASE_API_URL}/auth/oauth/${provider}`;
@@ -75,347 +75,109 @@ export default function Register() {
             <path fill="#000" d="M17.6 3H21l-7.1 8.1L22 21h-4.9l-5.3-6.2-6 6.2H2.3l7.6-8.3L2 3h5l4.8 5.6L17.6 3zM16.7 19.6h2.2L7.4 4.2H5.1l11.6 15.4z"/>
           </svg>
         );
-      case 'facebook':
-        return (
-          <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-            <rect width="24" height="24" rx="4" fill="#1877F2"/>
-            <path fill="#fff" d="M15.5 8H14c-1 0-1.2.5-1.2 1.1V10h2.6l-.3 2.2h-2.3V20h-2.3v-7.8H8.5V10h2V8.7C10.5 6.9 11.5 6 13.4 6c.8 0 1.5.1 2.1.2V8z"/>
-          </svg>
-        );
+      
       default:
         return null;
     }
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: gradients.auth,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      fontFamily: 'Inter, sans-serif',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
+    <div className="register-root">
       {/* Background decorative elements */}
-      <div style={{
-        position: 'absolute',
-        top: '-50%',
-        left: '-50%',
-        width: '200%',
-        height: '200%',
-        background: `radial-gradient(circle at 80% 20%, rgba(13, 148, 136, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%)`,
-        animation: 'float 25s ease-in-out infinite reverse'
-      }} />
-      
-      <div style={{
-        position: 'absolute',
-        top: '15%',
-        left: '10%',
-        width: '180px',
-        height: '180px',
-        background: `linear-gradient(45deg, ${colors.link}, ${colors.highlight})`,
-        borderRadius: '50%',
-        opacity: 0.08,
-        animation: 'pulse 5s ease-in-out infinite'
-      }} />
-
-      <div style={{
-        position: 'absolute',
-        bottom: '10%',
-        right: '15%',
-        width: '220px',
-        height: '220px',
-        background: `linear-gradient(45deg, ${colors.highlight}, ${colors.link})`,
-        borderRadius: '50%',
-        opacity: 0.06,
-        animation: 'pulse 7s ease-in-out infinite reverse'
-      }} />
+      <div className="register-bg-1" />
+      <div className="register-bg-2" />
+      <div className="register-bg-3" />
 
       {/* Main Registration Card */}
-      <div style={{
-        ...cardStyle,
-        width: '100%',
-        maxWidth: '460px',
-        padding: '48px 40px',
-        position: 'relative',
-        zIndex: 10,
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(25px)',
-        WebkitBackdropFilter: 'blur(25px)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: `${shadows.soft}, 0 25px 50px -12px rgba(0, 0, 0, 0.15)`,
-        transform: 'translateY(0)',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        animation: 'slideUp 0.8s ease-out 0.1s both'
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-8px)';
-        e.currentTarget.style.boxShadow = `${shadows.medium}, 0 32px 64px -12px rgba(0, 0, 0, 0.2)`;
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = `${shadows.soft}, 0 25px 50px -12px rgba(0, 0, 0, 0.15)`;
-      }}>
+      <div className="register-card">
         
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            background: '#4146C9',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 24px',
-            boxShadow: `0 8px 32px rgba(249, 115, 22, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)`,
-            animation: 'bounce 2s ease-in-out infinite 0.5s',
-            position: 'relative'
-          }}>
-            <span style={{ fontSize: '2.5rem', color: 'white' }}>🚀</span>
+        <div className="register-header">
+          <div className="register-logo-circle">
+            <span className="logo-icon">🚀</span>
           </div>
           
-          <h1 style={{
-            fontSize: '2.25rem',
-            fontWeight: 700,
-            color: colors.primaryText,
-            margin: '0 0 8px',
-            background: `linear-gradient(135deg, ${colors.primaryText}, ${colors.highlight})`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
+          <h1 className="register-title">
             Join Research Locker
           </h1>
           
-          <p style={{
-            fontSize: '1.1rem',
-            color: colors.mutedText,
-            margin: 0,
-            fontWeight: 400
-          }}>
+          <p className="register-subtitle">
             Create your account and start organizing your research
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ marginBottom: '32px' }}>
+        <form onSubmit={handleSubmit} className="register-form">
           {error && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.2)',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '24px',
-              color: '#dc2626',
-              fontSize: '0.95rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              animation: 'shake 0.5s ease-in-out'
-            }}>
-              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+            <div className="register-error">
+              <span className="error-icon">⚠️</span>
               {error}
             </div>
           )}
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              color: colors.primaryText
-            }}>
+          <div className="form-field">
+            <label className="form-label">
               Full Name
             </label>
-            <div style={{ position: 'relative' }}>
-              <span style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '1.1rem',
-                color: colors.mutedText
-              }}>👤</span>
+            <div className="input-wrapper">
+              <span className="input-icon">👤</span>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '16px 16px 16px 48px',
-                  border: `2px solid ${colors.border}`,
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  transition: 'all 0.3s ease',
-                  background: 'white',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={e => {
-                  e.currentTarget.style.border = `2px solid #4146C9`;
-                  e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.border}`;
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
+                className="form-input"
                 placeholder="Enter your full name"
               />
             </div>
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              color: colors.primaryText
-            }}>
+          <div className="form-field">
+            <label className="form-label">
               Email Address
             </label>
-            <div style={{ position: 'relative' }}>
-              <span style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '1.1rem',
-                color: colors.mutedText
-              }}>📧</span>
+            <div className="input-wrapper">
+              <span className="input-icon">📧</span>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '16px 16px 16px 48px',
-                  border: `2px solid ${colors.border}`,
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  transition: 'all 0.3s ease',
-                  background: 'white',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={e => {
-                  e.currentTarget.style.border = `2px solid #4146C9`;
-                  e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.border}`;
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
+                className="form-input"
                 placeholder="Enter your email"
               />
             </div>
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              color: colors.primaryText
-            }}>
+          <div className="form-field">
+            <label className="form-label">
               Password
             </label>
-            <div style={{ position: 'relative' }}>
-              <span style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '1.1rem',
-                color: colors.mutedText
-              }}>🔒</span>
+            <div className="input-wrapper">
+              <span className="input-icon">🔒</span>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '16px 16px 16px 48px',
-                  border: `2px solid ${colors.border}`,
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  transition: 'all 0.3s ease',
-                  background: 'white',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={e => {
-                  e.currentTarget.style.border = `2px solid #4146C9`;
-                  e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.border}`;
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
+                className="form-input"
                 placeholder="Create a password (min. 6 characters)"
               />
             </div>
           </div>
 
-          <div style={{ marginBottom: '32px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              color: colors.primaryText
-            }}>
+          <div className="form-field confirm-password-field">
+            <label className="form-label">
               Confirm Password
             </label>
-            <div style={{ position: 'relative' }}>
-              <span style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '1.1rem',
-                color: colors.mutedText
-              }}>✅</span>
+            <div className="input-wrapper">
+              <span className="input-icon">✅</span>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '16px 16px 16px 48px',
-                  border: `2px solid ${colors.border}`,
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  transition: 'all 0.3s ease',
-                  background: 'white',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={e => {
-                  e.currentTarget.style.border = `2px solid #4146C9`;
-                  e.currentTarget.style.boxShadow = `0 0 0 4px rgba(13, 148, 136, 0.1)`;
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.border = `2px solid ${colors.border}`;
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
+                className="form-input"
                 placeholder="Confirm your password"
               />
             </div>
@@ -424,44 +186,11 @@ export default function Register() {
           <button
             type="submit"
             disabled={isLoading}
-            style={{
-              ...primaryButtonStyle,
-              width: '100%',
-              padding: '18px 24px',
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              borderRadius: '12px',
-              border: 'none',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              overflow: 'hidden',
-              background: isLoading ? colors.mutedText : '#4146C9',
-              boxShadow: isLoading ? 'none' : `0 4px 12px rgba(65, 70, 201, 0.3)`
-            }}
-            onMouseEnter={e => {
-              if (!isLoading) {
-                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                e.currentTarget.style.boxShadow = `0 6px 20px rgba(65, 70, 201, 0.4)`;
-              }
-            }}
-            onMouseLeave={e => {
-              if (!isLoading) {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = `0 4px 12px rgba(65, 70, 201, 0.3)`;
-              }
-            }}
+            className={`register-submit ${isLoading ? 'is-loading' : ''}`}
           >
             {isLoading ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '20px',
-                  height: '20px',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderTop: '2px solid white',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
+              <div className="loading-content">
+                <div className="spinner" />
                 Creating Account...
               </div>
             ) : (
@@ -471,14 +200,14 @@ export default function Register() {
         </form>
 
         {/* Social Auth Divider */}
-        <div style={{ margin: '20px 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ flex: 1, height: 1, background: colors.border }} />
-          <div style={{ color: colors.mutedText, fontSize: '0.9rem' }}>or</div>
-          <div style={{ flex: 1, height: 1, background: colors.border }} />
+        <div className="social-divider">
+          <div className="divider-line" />
+          <div className="divider-text">or</div>
+          <div className="divider-line" />
         </div>
 
         {/* Social Auth Buttons (icons only) */}
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '14px' }}>
+        <div className="social-auth-buttons">
           {providers.map((p) => (
             <button
               key={p.key}
@@ -486,27 +215,7 @@ export default function Register() {
               title={p.label}
               aria-label={p.label}
               onClick={() => redirectToProvider(p.key)}
-              style={{
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '12px',
-                background: 'white',
-                cursor: 'pointer',
-                color: colors.primaryText,
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = shadows.soft;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              className="social-button"
             >
               <ProviderIcon name={p.key} />
             </button>
@@ -514,89 +223,22 @@ export default function Register() {
         </div>
 
         {/* Footer */}
-        <div style={{ textAlign: 'center' }}>
-          <p style={{
-            color: colors.mutedText,
-            margin: '0 0 16px',
-            fontSize: '0.95rem'
-          }}>
+        <div className="register-footer">
+          <p className="footer-text">
             Already have an account?{' '}
-            <Link to="/login" style={{
-              color: '#4146C9',
-              textDecoration: 'none',
-              fontWeight: 600,
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.color = colors.highlight;
-              e.currentTarget.style.textDecoration = 'underline';
-            }}
-            onMouseLeave={e => {
-                e.currentTarget.style.color = '#4146C9';
-              e.currentTarget.style.textDecoration = 'none';
-            }}>
+            <Link to="/login" className="login-link">
               Sign in here
             </Link>
           </p>
           
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '16px',
-            padding: '20px 0 0',
-            borderTop: `1px solid ${colors.border}`
-          }}>
-            <span style={{ fontSize: '0.9rem', color: colors.mutedText }}>🔒 Secure & Private</span>
-            <span style={{ fontSize: '0.9rem', color: colors.mutedText }}>⚡ Fast & Reliable</span>
-            <span style={{ fontSize: '0.9rem', color: colors.mutedText }}>🎯 Easy to Use</span>
+          <div className="footer-features">
+            <span className="feature-badge">🔒 Secure & Private</span>
+            <span className="feature-badge">⚡ Fast & Reliable</span>
+            <span className="feature-badge">🎯 Easy to Use</span>
           </div>
         </div>
       </div>
 
-      {/* Animations */}
-      <style>
-        {`
-          @keyframes slideUp {
-            from { 
-              opacity: 0; 
-              transform: translateY(40px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0) scale(1); 
-            }
-          }
-          
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-30px) rotate(120deg); }
-            66% { transform: translateY(30px) rotate(240deg); }
-          }
-          
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.08; }
-            50% { transform: scale(1.15); opacity: 0.18; }
-          }
-          
-          @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-15px) scale(1.05); }
-            60% { transform: translateY(-8px) scale(1.02); }
-          }
-          
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-          }
-        `}
-      </style>
     </div>
   );
 }

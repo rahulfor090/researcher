@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api';
-import { colors, cardStyle, primaryButtonStyle, secondaryButtonStyle, gradients, shadows } from '../theme';
+import { primaryButtonStyle, secondaryButtonStyle } from '../theme';
 import { useAuth } from '../auth';
 import ArticleFormModal from '../components/ArticleFormModal';
 import SummaryModal from '../components/SummaryModal';
 import Layout from '../components/Layout';
+import './Library.scss';
 
 export default function Library() {
   const { user, logout } = useAuth();
@@ -23,6 +24,7 @@ export default function Library() {
   const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState(new Set());
   const [onlyMissingPdf, setOnlyMissingPdf] = useState(false);
   const [showSummary, setShowSummary] = useState(null); // { id, summary }
+  const [openMenuRowId, setOpenMenuRowId] = useState(null);
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
   const [showLimitModal, setShowLimitModal] = useState(false);
   const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000/v1';
@@ -206,7 +208,8 @@ export default function Library() {
     return (
       (a.title && a.title.toLowerCase().includes(q)) ||
       (a.doi && a.doi.toLowerCase().includes(q)) ||
-      (a.authors && a.authors.toLowerCase().includes(q))
+      (a.authors && a.authors.toLowerCase().includes(q)) ||
+      (a.publisher && a.publisher.toLowerCase().includes(q))
     );
   });
   if (onlyMissingPdf) {
@@ -220,71 +223,23 @@ export default function Library() {
 
   return (
     <Layout>
-      <div
-        style={{
-          flexGrow: 1,
-          padding: isMobile ? '16px' : '40px',
-          display: 'flex',
-          flexDirection: 'column',
-          borderTopRightRadius: '16px',
-          borderBottomRightRadius: '16px',
-          animation: 'fadeInRight 0.6s ease-out 0.3s both'
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '30px',
-            animation: 'fadeInDown 0.8s ease-out 0.5s both'
-          }}
-        >
-          <div>
-            <h2
-              style={{
-                fontSize: '2.25rem',
-                fontWeight: 700,
-                color: '#1f2937',
-                letterSpacing: '-0.02em',
-                marginBottom: '8px',
-                background: 'linear-gradient(135deg, #1f2937, #4b5563)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
-            >
+      <div className="library-page">
+        <div className="library-header">
+          <div className="header-content">
+            <h2 className="header-title">
               Research Library
             </h2>
-            <p style={{
-              color: colors.mutedText,
-              fontSize: '1rem',
-              margin: 0,
-              fontWeight: 400
-            }}>
+            <p className="header-subtitle">
               Manage and organize your research articles
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="header-actions">
               <button
-                style={{ 
-                  ...primaryButtonStyle,
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+              className="add-article-btn"
+              style={primaryButtonStyle}
                 onClick={() => {
                   setEditArticle(null);
                   setShowModal(true);
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(249, 115, 22, 0.3)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 <span>+</span> Add New Article
@@ -293,23 +248,16 @@ export default function Library() {
         </div>
 
         {/* Search Bar */}
-        <div style={{
-          marginBottom: '24px',
-          animation: 'fadeInDown 0.7s ease-out 0.6s both'
-        }}>
-          <div style={{
-            ...cardStyle,
-            padding: '12px',
-            background: 'rgba(255,255,255,0.95)',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '12px'
-          }}>
-          <div style={{ position: 'relative' }}>
+        <div className="search-section">
+          <div className="search-card">
+            <div className="search-wrapper">
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search articles by title, DOI, or author..."
+                className="search-input"
+              placeholder="Search articles by title, DOI, author, or publisher..."
               style={{
                 padding: '12px 44px 12px 18px',
                 borderRadius: '10px',
@@ -328,21 +276,7 @@ export default function Library() {
             {search && (
               <button
                 onClick={() => setSearch('')}
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: colors.mutedText,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '6px 10px',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                  fontSize: '0.8rem',
-                  lineHeight: 1
-                }}
+                  className="clear-search-btn"
                 title="Clear search"
               >
                 ✖
@@ -350,31 +284,12 @@ export default function Library() {
             )}
           </div>
           {onlyMissingPdf && (
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 12px',
-              background: 'rgba(239,68,68,0.08)',
-              border: '1px solid rgba(239,68,68,0.2)',
-              borderRadius: '10px',
-              color: '#ef4444',
-              marginTop: '12px'
-            }}>
+              <div className="filter-badge">
               <span>📄</span>
-              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Showing articles without uploaded PDF</span>
+                <span className="filter-text">Showing articles without uploaded PDF</span>
               <button
                 onClick={() => nav('/library')}
-                style={{
-                  marginLeft: '6px',
-                  background: 'transparent',
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '6px',
-                  padding: '4px 8px',
-                  cursor: 'pointer',
-                  color: colors.primaryText,
-                  fontSize: '0.8rem'
-                }}
+                  className="clear-filter-btn"
               >
                 Clear
               </button>
@@ -384,13 +299,7 @@ export default function Library() {
         </div>
 
         {/* Library Statistics */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '20px',
-          marginBottom: '30px',
-          animation: 'fadeInUp 0.8s ease-out 0.7s both'
-        }}>
+        <div className="stats-section">
           {[
             {
               count: articles.length,
@@ -429,145 +338,58 @@ export default function Library() {
               description: 'PDFs uploaded',
               isPercentage: true
             }
-          ].map((stat, index) => (
+          ].map((stat, index) => {
+            const statClass = stat.label === 'Total Articles' ? 'stat-total' :
+                             stat.label === 'With DOI' ? 'stat-doi' :
+                             stat.label === 'With Links' ? 'stat-links' :
+                             'stat-complete';
+            const countClass = stat.label === 'Total Articles' ? 'count-total' :
+                             stat.label === 'With DOI' ? 'count-doi' :
+                             stat.label === 'With Links' ? 'count-links' :
+                             'count-complete';
+            
+            return (
             <div
               key={stat.label}
-              style={{
-                padding: '20px',
-                background: stat.bgColor,
-                borderRadius: '16px',
-                border: `1px solid ${stat.borderColor}`,
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                animation: `fadeInUp 0.6s ease-out ${0.9 + index * 0.1}s both`,
-                transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
-                opacity: isLoaded ? 1 : 0
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                e.currentTarget.style.boxShadow = `0 12px 24px ${stat.color}20`;
-                e.currentTarget.style.border = `2px solid ${stat.color}`;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.border = `1px solid ${stat.borderColor}`;
-              }}
+                className={`stat-item ${statClass}`}
               onClick={() => {
                 if (stat.label === 'Complete %') {
                   nav('/library?missing=1');
                 }
               }}
             >
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '12px'
-              }}>
-                <span style={{ fontSize: '1.8rem' }}>{stat.icon}</span>
-                <div style={{
-                  fontSize: '2rem',
-                  fontWeight: 700,
-                  color: stat.color
-                }}>
+                <div className="stat-header">
+                  <span className="stat-icon">{stat.icon}</span>
+                  <div className={`stat-count ${countClass}`}>
                   {stat.count}{stat.isPercentage ? '%' : ''}
                 </div>
               </div>
-              <div style={{
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                color: colors.primaryText,
-                marginBottom: '4px'
-              }}>
+                <div className="stat-label">
                 {stat.label}
               </div>
-              <div style={{
-                fontSize: '0.8rem',
-                color: colors.mutedText
-              }}>
+                <div className="stat-description">
                 {stat.description}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Articles Table */}
-        <div
-          style={{ 
-            ...cardStyle,
-            marginBottom: '24px',
-            animation: `fadeInUp 0.8s ease-out ${isLoaded ? '1.1s' : '0s'} both`,
-            transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
-            opacity: isLoaded ? 1 : 0,
-            background: 'rgba(255,255,255,0.95)',
-            border: `1px solid ${colors.border}`,
-            borderRadius: '16px',
-            overflow: 'hidden'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.boxShadow = shadows.medium;
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.boxShadow = shadows.soft;
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px',
-            }}
-          >
+        <div className="articles-section">
+          <div className="section-header">
             <div>
-              <h3 style={{ 
-                fontSize: '1.25rem', 
-                fontWeight: 600, 
-                color: colors.primaryText,
-                margin: '0 0 4px 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
+              <h3 className="section-title">
                 🗃️ My Articles Collection
-                <span style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: '#2563eb',
-                  background: 'rgba(37, 99, 235, 0.08)',
-                  border: '1px solid rgba(37,99,235,0.2)',
-                  padding: '4px 8px',
-                  borderRadius: '9999px'
-                }}>Theme</span>
+                <span className="theme-badge">Theme</span>
               </h3>
-              <p style={{
-                color: colors.mutedText,
-                fontSize: '0.9rem',
-                margin: 0
-              }}>
+              <p className="section-subtitle">
                 {articles.length === 0 ? 'Your research library is empty' : `Manage your ${articles.length} research articles`}
               </p>
             </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}>
+            <div className="section-actions">
               {articles.length > 0 && (
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: articles.filter(a => a.doi).length > articles.length * 0.7 ? '#22c55e' : '#f59e0b',
-                  padding: '6px 12px',
-                  background: articles.filter(a => a.doi).length > articles.length * 0.7 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                  borderRadius: '20px',
-                  border: articles.filter(a => a.doi).length > articles.length * 0.7 ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
+                <div className={`doi-status-badge ${articles.filter(a => a.doi).length > articles.length * 0.7 ? 'status-good' : 'status-warning'}`}>
                   <span>{articles.filter(a => a.doi).length > articles.length * 0.7 ? '✅' : '⚠️'}</span>
                   {Math.round((articles.filter(a => a.doi).length / articles.length) * 100)}% with DOI
                 </div>
@@ -577,79 +399,20 @@ export default function Library() {
           
           {/* Selection Summary */}
           {selectedRows.size > 0 && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              background: 'rgba(13, 148, 136, 0.1)',
-              border: `1px solid rgba(13, 148, 136, 0.2)`,
-              borderRadius: '8px',
-              marginBottom: '16px',
-              animation: 'fadeInDown 0.3s ease-out'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span style={{
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  color: colors.primaryText
-                }}>
+            <div className="selection-summary">
+              <div className="selection-info">
+                <span className="selection-text">
                   ✅ {selectedRows.size} article{selectedRows.size !== 1 ? 's' : ''} selected
                 </span>
               </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
+              <div className="selection-actions">
                 <button
                   onClick={() => setSelectedRows(new Set())}
-                  style={{
-                    padding: '6px 12px',
-                    background: 'transparent',
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '6px',
-                    fontSize: '0.8rem',
-                    color: colors.primaryText,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = colors.mutedText;
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = colors.primaryText;
-                  }}
+                  className="clear-selection-btn"
                 >
                   Clear Selection
                 </button>
-                <button
-                  style={{
-                    padding: '6px 12px',
-                    background: '#4146C9',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '0.8rem',
-                    color: 'white',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = '#0f766e';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = '#4146C9';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
+                <button className="delete-selected-btn">
                   🗑️ Delete Selected
                 </button>
               </div>
@@ -657,19 +420,12 @@ export default function Library() {
           )}
           
           {articles.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '60px 40px',
-              color: colors.mutedText,
-              background: 'rgba(0,0,0,0.02)',
-              borderRadius: '12px',
-              border: `1px dashed ${colors.border}`
-            }}>
-              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📚</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '12px', color: colors.primaryText }}>
+            <div className="empty-state">
+              <div className="empty-icon">📚</div>
+              <div className="empty-title">
                 Your Library is Empty
               </div>
-              <div style={{ fontSize: '1rem', marginBottom: '24px', lineHeight: 1.5 }}>
+              <div className="empty-description">
                 Start building your research collection by adding your first article.<br/>
                 You can add articles with DOI, URLs, or manual entries.
               </div>
@@ -678,61 +434,29 @@ export default function Library() {
                   setEditArticle(null);
                   setShowModal(true);
                 }}
-                style={{
-                  background: '#4146C9',
-                  color: 'white',
-                  border: 'none',
-                  padding: '14px 28px',
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  margin: '0 auto'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(13, 148, 136, 0.3)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
+                className="add-first-btn"
               >
                 <span>🚀</span> Add Your First Article
               </button>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', borderRadius: '12px' }}>
-              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+            <div className="table-container">
+              <table className="articles-table">
                 <thead>
-                  <tr style={{ background: `${colors.link}10` }}>
-                    <th
-                      style={{
-                        textAlign: 'center',
-                        padding: '14px 16px',
-                        borderBottom: `2px solid ${colors.border}`,
-                        color: colors.primaryText,
-                        fontWeight: 600,
-                        fontSize: '0.9rem',
-                        width: '50px'
-                      }}
-                    >
+                  <tr>
+                    <th className="checkbox-column">
                       <input
                         type="checkbox"
                         checked={selectedRows.size === articles.length && articles.length > 0}
                         onChange={handleSelectAll}
-                        style={{
-                          width: '16px',
-                          height: '16px',
-                          cursor: 'pointer',
-                          accentColor: colors.highlight
-                        }}
+                        className="select-all-checkbox"
                       />
                     </th>
+                    <th>🔢 No.</th>
+                    <th>📄 Title</th>
+                    <th>🏷️ DOI</th>
+                    <th>👥 Authors</th>
+                    <th>⋯</th>
                     <th
                       style={{
                         textAlign: 'center',
@@ -783,6 +507,18 @@ export default function Library() {
                     </th>
                     <th
                       style={{
+                        textAlign: 'left',
+                        padding: '14px 16px',
+                        borderBottom: `2px solid ${colors.border}`,
+                        color: colors.primaryText,
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      📚 Publisher
+                    </th>
+                    <th
+                      style={{
                         textAlign: 'center',
                         padding: '14px 16px',
                         borderBottom: `2px solid ${colors.border}`,
@@ -803,189 +539,67 @@ export default function Library() {
                     return (
                     <tr 
                       key={a.id}
-                      style={{
-                        transition: 'all 0.2s ease',
-                        cursor: 'pointer',
-                        animation: `fadeInUp 0.4s ease-out ${idx * 0.05}s both`,
-                        background: isSelected ? 'rgba(13, 148, 136, 0.1)' : (idx % 2 === 1 ? 'rgba(0,0,0,0.02)' : 'transparent'),
-                        borderLeft: isSelected ? `4px solid ${colors.highlight}` : '4px solid transparent'
-                      }}
-                      onMouseEnter={e => {
-                        if (!isSelected) {
-                          e.currentTarget.style.background = idx % 2 === 1 ? 'rgba(13, 148, 136, 0.04)' : 'rgba(13, 148, 136, 0.03)';
-                        }
-                        e.currentTarget.style.transform = 'translateX(4px)';
-                        // Animate the number badge
-                        const badge = e.currentTarget.querySelector('td:nth-child(2) div div');
-                        if (badge) {
-                          badge.style.transform = 'scale(1.1) rotate(5deg)';
-                          badge.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        if (!isSelected) {
-                          e.currentTarget.style.background = idx % 2 === 1 ? 'rgba(0,0,0,0.02)' : 'transparent';
-                        }
-                        e.currentTarget.style.transform = 'translateX(0)';
-                        // Reset the number badge
-                        const badge = e.currentTarget.querySelector('td:nth-child(2) div div');
-                        if (badge) {
-                          badge.style.transform = 'scale(1) rotate(0deg)';
-                          badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                        }
-                      }}
+                      className={`${isSelected ? 'row-selected' : ''} ${idx % 2 === 1 ? 'row-even' : ''}`}
                       onClick={() => nav(`/library/article/${a.id}`)}
                     >
-                      <td
-                        style={{
-                          padding: '16px',
-                          borderBottom: `1px solid ${colors.border}`,
-                          textAlign: 'center',
-                          width: '50px'
-                        }}
-                      >
+                      <td className="checkbox-cell">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={(e) => handleRowSelection(a.id, e)}
                           onClick={(e) => e.stopPropagation()}
-                          style={{
-                            width: '16px',
-                            height: '16px',
-                            cursor: 'pointer',
-                            accentColor: colors.highlight
-                          }}
+                          className="row-checkbox"
                         />
                       </td>
-                      <td
-                        style={{
-                          padding: '16px',
-                          borderBottom: `1px solid ${colors.border}`,
-                          color: colors.primaryText,
-                          fontWeight: 600,
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <div style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '8px',
-                            background: `linear-gradient(135deg, ${colors.highlight}, #f97316)`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '0.85rem',
-                            fontWeight: 700,
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            transition: 'all 0.2s ease'
-                          }}>
+                      <td className="number-cell">
+                        <div className="row-number-badge">
                             {idx + 1}
-                          </div>
                         </div>
                       </td>
-                      <td style={{ 
-                        padding: '16px', 
-                        borderBottom: `1px solid ${colors.border}`,
-                        maxWidth: '300px'
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          marginBottom: '4px'
-                        }}>
-                          <div style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: a.doi ? '#22c55e' : '#f59e0b',
-                            flexShrink: 0
-                          }} />
+                      <td className="title-cell">
+                        <div className="title-content">
+                          <div className={`doi-indicator ${a.doi ? 'has-doi' : 'no-doi'}`} />
                           <a
                             href={a.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ 
-                              color: colors.link, 
-                              textDecoration: 'none', 
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
-                              lineHeight: 1.4,
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden'
-                            }}
+                            className="article-title-link"
                             onClick={e => e.stopPropagation()}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.textDecoration = 'underline';
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.textDecoration = 'none';
-                            }}
                           >
                             {a.title || 'Untitled Article'}
                           </a>
                         </div>
                       </td>
-                      <td
-                        style={{
-                          padding: '16px',
-                          borderBottom: `1px solid ${colors.border}`,
-                          color: colors.primaryText,
-                        }}
-                      >
+                      <td className="doi-cell">
                         {a.doi ? (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '4px 8px',
-                            background: 'rgba(34, 197, 94, 0.1)',
-                            borderRadius: '6px',
-                            border: '1px solid rgba(34, 197, 94, 0.2)',
-                            fontSize: '0.8rem',
-                            maxWidth: 'fit-content'
-                          }}>
+                          <div className="doi-badge has-doi">
                             <span>✅</span>
-                            <span style={{ 
-                              fontFamily: 'monospace',
-                              color: '#22c55e',
-                              fontWeight: 600
-                            }}>
+                            <span className="doi-text">
                               {a.doi.length > 20 ? `${a.doi.substring(0, 20)}...` : a.doi}
                             </span>
                           </div>
                         ) : (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '4px 8px',
-                            background: 'rgba(245, 158, 11, 0.1)',
-                            borderRadius: '6px',
-                            border: '1px solid rgba(245, 158, 11, 0.2)',
-                            fontSize: '0.8rem',
-                            color: '#f59e0b',
-                            maxWidth: 'fit-content'
-                          }}>
+                          <div className="doi-badge no-doi">
                             <span>⚠️</span>
                             <span>No DOI</span>
                           </div>
                         )}
                       </td>
+                      <td className="authors-cell">
+                        <div 
+                          className={`authors-text ${!a.authors ? 'unknown-authors' : ''}`}
+                          title={a.authors || 'Unknown authors'}
+                        >
+                          {a.authors || 'Unknown authors'}
+                        </div>
+                      </td>
+                      <td className="actions-cell">
                       <td
                         style={{
                           padding: '16px',
                           borderBottom: `1px solid ${colors.border}`,
                           color: colors.primaryText,
-                          maxWidth: '200px'
+                          maxWidth: '150px'
                         }}
                       >
                         <div 
@@ -999,14 +613,14 @@ export default function Library() {
                             overflow: 'hidden',
                             cursor: 'help'
                           }}
-                          title={a.authors || 'Unknown authors'}
+                          title={a.publisher || 'Unknown publisher'}
                         >
-                          {a.authors || (
+                          {a.publisher || (
                             <span style={{ 
                               color: colors.mutedText,
                               fontStyle: 'italic'
                             }}>
-                              Unknown authors
+                              Unknown publisher
                             </span>
                           )}
                         </div>
@@ -1027,185 +641,63 @@ export default function Library() {
                           <button
                             disabled
                             onClick={(e) => e.stopPropagation()}
-                            style={{
-                              background: colors.mutedText,
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '6px 12px',
-                              fontWeight: 600,
-                              fontSize: '0.8rem',
-                              opacity: 0.8,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px'
-                            }}
+                            className="uploading-btn"
                           >
                             <span>⏳</span> Uploading...
                           </button>
                         )}
 
                         {uploadingArticleId !== a.id && recentlyUpdatedIds.has(a.id) && (
-                          <div style={{
-                            padding: '6px 10px',
-                            background: 'rgba(34,197,94,0.12)',
-                            border: '1px solid rgba(34,197,94,0.3)',
-                            borderRadius: '8px',
-                            color: '#16a34a',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                          }}>
+                          <div className="updated-badge">
                             <span>✅</span> Updated
                           </div>
                         )}
 
-                        {/* Upload PDF CTA when missing */}
-                        {uploadingArticleId !== a.id && !recentlyUpdatedIds.has(a.id) && (!hasPdf) && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleUploadPdf(a); }}
-                            style={{
-                              background: '#4146C9',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '6px 12px',
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              fontSize: '0.8rem',
-                              transition: 'all 0.2s ease',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.transform = 'translateY(-1px)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(13, 148, 136, 0.3)';
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = 'none';
-                            }}
-                          >
-                            <span>⬆️</span> Upload PDF 
-                          </button>
-                        )}
-
                         {/* PDF present indicator */}
                         {hasPdf && (
-                          <div style={{
-                            padding: '6px 10px',
-                            background: 'rgba(34,197,94,0.12)',
-                            border: '1px solid rgba(34,197,94,0.3)',
-                            borderRadius: '8px',
-                            color: '#16a34a',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                          }}>
+                          <div className="pdf-status-badge">
                             <span>📄</span> {hasSummary ? 'PDF & Summary ready' : 'PDF ready'}
                           </div>
                         )}
 
-                      {/* View Details Button */}
+                        {/* Kebab (three-dots) menu with actions */}
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            nav(`/library/article/${a.id}`);
-                          }}
-                          style={{
-                            ...primaryButtonStyle,
-                            padding: '6px 12px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
+                          onClick={(e) => { e.stopPropagation(); setOpenMenuRowId(prev => prev === a.id ? null : a.id); }}
+                          aria-label="More actions"
+                          className="kebab-menu-btn"
+                          title="More actions"
                         >
-                          <span>👁️</span> View
+                          ⋯
                         </button>
-
-                        {/* Edit Button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditArticle(a);
-                          }}
-                          style={{
-                            background: colors.mutedText,
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '6px 12px',
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            fontSize: '0.8rem',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        >
-                          <span>✏️</span> Edit
-                        </button>
-
-                        {/* Delete Button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteArticle(a.id);
-                          }}
-                          style={{
-                            background: colors.highlight,
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '6px 12px',
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            fontSize: '0.8rem',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
-                            e.currentTarget.style.background = '#dc2626';
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                            e.currentTarget.style.background = colors.highlight;
-                          }}
-                        >
-                          <span>🔥</span> Delete
-                        </button>
+                        {openMenuRowId === a.id && (
+                          <div
+                            className="dropdown-menu"
+                            role="menu"
+                            aria-label="Row actions"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              onClick={() => { setOpenMenuRowId(null); nav(`/library/article/${a.id}`); }}
+                              className="menu-item"
+                              role="menuitem"
+                            >👁️ View</button>
+                            <button
+                              onClick={() => { setOpenMenuRowId(null); handleEditArticle(a); }}
+                              className="menu-item"
+                              role="menuitem"
+                            >✏️ Edit</button>
+                            <button
+                              onClick={() => { setOpenMenuRowId(null); handleUploadPdf(a); }}
+                              className="menu-item"
+                              role="menuitem"
+                            >⬆️ Upload PDF</button>
+                            <button
+                              onClick={() => { setOpenMenuRowId(null); handleDeleteArticle(a.id); }}
+                              className="menu-item delete-item"
+                              role="menuitem"
+                            >🔥 Delete</button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                     );
@@ -1218,46 +710,19 @@ export default function Library() {
       </div>
 
       {showLimitModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 1000,
-          background: 'rgba(0,0,0,0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <div style={{
-            background: 'white',
-            color: colors.primaryText,
-            borderRadius: '16px',
-            boxShadow: shadows.medium,
-            padding: '40px 32px',
-            minWidth: '375px',
-            maxWidth: '95vw',
-            textAlign: 'center',
-            position: 'relative'
-          }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🚫</div>
-              <h2 style={{ margin: '0 0 10px 0', fontWeight: 700, fontSize: '1.5rem', color: colors.highlight }}>
+        <div className="limit-modal">
+          <div className="modal-content">
+            <div className="modal-icon">🚫</div>
+            <h2 className="modal-title">
                 Article Limit Reached
               </h2>
-              <p style={{ fontSize: '1rem', marginBottom: '20px', color: colors.mutedText }}>
+            <p className="modal-description">
                 Free accounts can save up to <b>10 articles</b>.<br />
                 Upgrade to unlock unlimited articles and more features.
               </p>
               <button
-                style={{
-                  ...primaryButtonStyle,
-                  fontWeight: 700,
-                  fontSize: '1.09rem',
-                  padding: '12px 32px',
-                  borderRadius: '10px',
-                  marginBottom: '6px'
-                }}
+              className="upgrade-btn"
+              style={primaryButtonStyle}
                 onClick={() => {
                   setShowLimitModal(false);
                   nav('/upgrade');
@@ -1267,12 +732,8 @@ export default function Library() {
               </button>
             <div>
               <button
-                style={{
-                  ...secondaryButtonStyle,
-                  fontWeight: 600,
-                  fontSize: '0.96rem',
-                  marginTop: '10px'
-                }}
+                className="cancel-btn"
+                style={secondaryButtonStyle}
                 onClick={() => setShowLimitModal(false)}
               >
                 Cancel
@@ -1307,125 +768,6 @@ export default function Library() {
         />
       )}
 
-      {/* Enhanced Animations keyframes */}
-      <style>
-        {`
-          @keyframes libraryFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-25px) rotate(90deg); }
-            50% { transform: translateY(20px) rotate(180deg); }
-            75% { transform: translateY(-15px) rotate(270deg); }
-          }
-          
-          @keyframes libraryPulse {
-            0%, 100% { transform: scale(1); opacity: 0.05; }
-            50% { transform: scale(1.2); opacity: 0.1; }
-          }
-          
-          @keyframes slideInLeft {
-            from { 
-              opacity: 0; 
-              transform: translateX(-100px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
-          }
-          
-          @keyframes slideInRight {
-            from { 
-              opacity: 0; 
-              transform: translateX(100px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
-          }
-          
-          @keyframes fadeInDown {
-            from { 
-              opacity: 0; 
-              transform: translateY(-30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0) scale(1); 
-            }
-          }
-          
-          @keyframes fadeInUp {
-            from { 
-              opacity: 0; 
-              transform: translateY(30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateY(0) scale(1); 
-            }
-          }
-          
-          @keyframes fadeInLeft {
-            from { 
-              opacity: 0; 
-              transform: translateX(-30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
-          }
-          
-          @keyframes fadeInRight {
-            from { 
-              opacity: 0; 
-              transform: translateX(30px) scale(0.95); 
-            }
-            to { 
-              opacity: 1; 
-              transform: translateX(0) scale(1); 
-            }
-          }
-          
-          @keyframes dropdownIn { 
-            from { opacity: 0; transform: scaleY(0.9) scale(0.95); } 
-            to { opacity: 1; transform: scaleY(1) scale(1); } 
-          }
-          
-          @keyframes slideDown {
-            0% { 
-              opacity: 0; 
-              transform: translateY(-15px) scaleY(0.95) scale(0.95); 
-              maxHeight: 0;
-              filter: blur(4px);
-            }
-            30% {
-              opacity: 0.3;
-              transform: translateY(-8px) scaleY(0.98) scale(0.98);
-              maxHeight: 60px;
-              filter: blur(2px);
-            }
-            70% {
-              opacity: 0.8;
-              transform: translateY(-2px) scaleY(0.99) scale(0.99);
-              maxHeight: 160px;
-              filter: blur(1px);
-            }
-            100% { 
-              opacity: 1; 
-              transform: translateY(0) scaleY(1) scale(1); 
-              maxHeight: 200px;
-              filter: blur(0px);
-            }
-          }
-          
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-          }
-        `}
-      </style>
     </Layout>
   );
 }

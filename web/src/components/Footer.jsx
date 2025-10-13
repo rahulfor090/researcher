@@ -7,12 +7,11 @@ const Footer = () => {
   const { user } = useAuth();
   
   return (
-    <footer className="relative z-20 mt-20 bg-[#fefcf3]/95 backdrop-blur-md border-t border-[#e8ddd4] text-[#6b5b47] py-16 px-4 w-full" style={{ 
-      background: 'linear-gradient(135deg, rgba(254, 252, 243, 0.95) 0%, rgba(245, 241, 232, 0.95) 100%)',
-      boxShadow: '0 -4px 20px -2px rgba(45, 27, 14, 0.1)'
+    <footer className="relative z-20 mt-20 bg-white border-t border-[#e5e7eb] text-[#6b7280] py-16 px-4 w-full" style={{ 
+      boxShadow: '0 -4px 16px -6px rgba(2, 6, 23, 0.08)'
     }}>
       {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#0D9488] via-[#F97316] to-[#8b5cf6]"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6366f1] via-[#06b6d4] to-[#8b5cf6]"></div>
       
       <div className="max-w-7xl mx-auto">
         {/* Main footer content */}
@@ -73,26 +72,23 @@ const Footer = () => {
         </div>
         
         {/* Newsletter signup section */}
-        <div className="bg-[#f5f1e8] rounded-2xl p-8 mb-8 text-center" style={{ 
-          background: 'linear-gradient(135deg, rgba(245, 241, 232, 0.8) 0%, rgba(254, 252, 243, 0.8) 100%)',
-          border: '1px solid #e8ddd4'
-        }}>
+        <div className="bg-white rounded-2xl p-8 mb-8 text-center border border-[#e5e7eb] shadow-sm">
           <h3 className="text-2xl font-bold text-[#2d1b0e] mb-2">Stay Updated</h3>
           <p className="text-[#6b5b47] mb-6 max-w-2xl mx-auto">Get the latest updates on new features, research tips, and platform improvements delivered to your inbox.</p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto">
             <input 
               type="email" 
               placeholder="Enter your email address" 
-              className="flex-1 px-4 py-3 rounded-lg border border-[#e8ddd4] focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-[#0D9488] transition-colors duration-300 text-[#2d1b0e] placeholder-[#8b7d6b]"
+              className="flex-1 h-12 px-4 rounded-2xl border border-[#e5e7eb] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-[#6366f1] transition-colors duration-300 text-[#1f2937] placeholder-[#9ca3af]"
             />
-            <button className="px-6 py-3 text-white font-semibold rounded-lg transition-all duration-300 shadow-sm hover:shadow-md" style={{ background: colors.link }}>
+            <button className="btn-brand h-12 px-6 rounded-2xl shadow-md hover:shadow-lg">
               Subscribe
             </button>
           </div>
         </div>
 
         {/* Bottom section with copyright */}
-        <div className="flex flex-col items-center pt-8 border-t border-[#e8ddd4]">
+        <div className="flex flex-col items-center pt-8 border-t border-[#2563eb      ]">
           <div className="text-center">
             <p className="text-sm text-[#8b7d6b] mb-2">&copy; {new Date().getFullYear()} ResearchLocker. All rights reserved.</p>
           </div>
@@ -103,6 +99,7 @@ const Footer = () => {
 };
 
 export default Footer;
+
 
 
 

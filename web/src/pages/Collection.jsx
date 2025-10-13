@@ -143,7 +143,7 @@ export default function Collection() {
           <button
             onClick={() => setShowCollectionModal(true)}
             style={{
-              background: colors.link,
+              background: '#1E3A8A',
               color: 'white',
               border: 'none',
               borderRadius: '12px',

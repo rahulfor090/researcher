@@ -1,0 +1,28 @@
+/* FAQ page styles */
+
+.faq-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  padding: 96px 0 64px;
+
+  .header { text-align: center; margin-bottom: 40px; }
+
+  .search {
+    max-width: 640px;
+    margin: 0 auto 40px;
+    position: relative;
+
+    .icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
+    input { width: 100%; border-radius: 16px; padding: 12px 16px 12px 40px; }
+  }
+
+  .grid { display: grid; gap: 20px; }
+
+  .help-cta {
+    margin-top: 48px;
+    text-align: center;
+
+    .inline-card { display: inline-flex; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 12px; }
+  }
+}

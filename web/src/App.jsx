@@ -13,6 +13,7 @@ import CollectionAssign from './pages/CollectionAssign';
 import Settings from './pages/Settings'
 import ArticleDetails from './pages/ArticleDetails';
 import Authors from './pages/Authors';
+import Publishers from './pages/Publishers';
 import About from './pages/About';
 import Home from './pages/Home';
 import AuthSuccess from './pages/AuthSuccess';
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/collection/:id" element={<Protected><CollectionDetail/></Protected>} />
           <Route path="/collection/:id/assign" element={<Protected><CollectionAssign/></Protected>} />
           <Route path="/authors" element={<Protected><Authors/></Protected>} />
+          <Route path="/publishers" element={<Protected><Publishers/></Protected>} />
           <Route path="/library/article/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/articles/:id" element={<Protected><ArticleDetails/></Protected>} />
           <Route path="/settings" element={<Protected><Settings/></Protected>} />

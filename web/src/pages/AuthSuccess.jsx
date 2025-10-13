@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { colors, cardStyle } from '../theme';
+import './AuthSuccess.scss';
 
 export default function AuthSuccess() {
   const navigate = useNavigate();

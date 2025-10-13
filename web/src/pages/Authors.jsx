@@ -4,6 +4,7 @@ import { useAuth } from '../auth';
 import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, shadows, gradients } from '../theme';
 import Layout from '../components/Layout';
+import './Authors.scss';
 
 export default function Authors() {
   const { user } = useAuth();

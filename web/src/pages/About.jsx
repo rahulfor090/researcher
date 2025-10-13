@@ -1,5 +1,6 @@
 import { useAuth } from '../auth';
 import { colors, gradients } from '../theme';
+import './About.scss';
 
 export default function About() {
   const { user } = useAuth();
