@@ -255,9 +255,8 @@ export default function Library() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search articles by title, DOI, or author..."
-                className="search-input"
               placeholder="Search articles by title, DOI, author, or publisher..."
+                className="search-input"
               style={{
                 padding: '12px 44px 12px 18px',
                 borderRadius: '10px',
@@ -456,79 +455,8 @@ export default function Library() {
                     <th>📄 Title</th>
                     <th>🏷️ DOI</th>
                     <th>👥 Authors</th>
-                    <th>⋯</th>
-                    <th
-                      style={{
-                        textAlign: 'center',
-                        padding: '14px 16px',
-                        borderBottom: `2px solid ${colors.border}`,
-                        color: colors.primaryText,
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      🔢 No.
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '14px 16px',
-                        borderBottom: `2px solid ${colors.border}`,
-                        color: colors.primaryText,
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      📄 Title
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '14px 16px',
-                        borderBottom: `2px solid ${colors.border}`,
-                        color: colors.primaryText,
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      🏷️ DOI
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '14px 16px',
-                        borderBottom: `2px solid ${colors.border}`,
-                        color: colors.primaryText,
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      👥 Authors
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '14px 16px',
-                        borderBottom: `2px solid ${colors.border}`,
-                        color: colors.primaryText,
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      📚 Publisher
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'center',
-                        padding: '14px 16px',
-                        borderBottom: `2px solid ${colors.border}`,
-                        color: colors.primaryText,
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      ⚙️ Actions
-                    </th>
+                    <th>📚 Publisher</th>
+                    <th>⚙️ Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -593,30 +521,13 @@ export default function Library() {
                           {a.authors || 'Unknown authors'}
                         </div>
                       </td>
-                      <td className="actions-cell">
-                      <td
-                        style={{
-                          padding: '16px',
-                          borderBottom: `1px solid ${colors.border}`,
-                          color: colors.primaryText,
-                          maxWidth: '150px'
-                        }}
-                      >
+                      <td className="publisher-cell">
                         <div 
-                          style={{
-                            fontSize: '0.9rem',
-                            fontWeight: 500,
-                            lineHeight: 1.3,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            cursor: 'help'
-                          }}
+                          className={`publisher-text ${!a.publisher ? 'unknown-publisher' : ''}`}
                           title={a.publisher || 'Unknown publisher'}
                         >
                           {a.publisher || (
-                            <span style={{ 
+                            <span style={{
                               color: colors.mutedText,
                               fontStyle: 'italic'
                             }}>
@@ -625,18 +536,9 @@ export default function Library() {
                           )}
                         </div>
                       </td>
-                      <td
-                        style={{
-                          padding: '16px',
-                          borderBottom: `1px solid ${colors.border}`,
-                          textAlign: 'center',
-                          whiteSpace: 'nowrap',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          gap: '8px'
-                        }}
-                      >
-                        {/* Upload state and status */}
+                      <td className="actions-cell">
+                        <div className="actions-wrapper">
+                          {/* Upload state and status */}
                         {uploadingArticleId === a.id && (
                           <button
                             disabled
@@ -698,6 +600,7 @@ export default function Library() {
                             >🔥 Delete</button>
                           </div>
                         )}
+                        </div>
                       </td>
                     </tr>
                     );
