@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api';
-import { primaryButtonStyle, secondaryButtonStyle } from '../theme';
+import { colors, primaryButtonStyle, secondaryButtonStyle } from '../theme';
 import { useAuth } from '../auth';
 import ArticleFormModal from '../components/ArticleFormModal';
 import SummaryModal from '../components/SummaryModal';
