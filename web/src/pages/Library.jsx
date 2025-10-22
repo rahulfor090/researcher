@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api';
-import { primaryButtonStyle, secondaryButtonStyle } from '../theme';
+import { colors, primaryButtonStyle, secondaryButtonStyle } from '../theme';
 import { useAuth } from '../auth';
 import ArticleFormModal from '../components/ArticleFormModal';
 import SummaryModal from '../components/SummaryModal';
@@ -254,8 +254,22 @@ export default function Library() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search articles by title, DOI, or author..."
+              placeholder="Search articles by title, DOI, author, or publisher..."
                 className="search-input"
+              style={{
+                padding: '12px 44px 12px 18px',
+                borderRadius: '10px',
+                border: `1px solid ${colors.border}`,
+                fontSize: '1rem',
+                width: '100%',
+                background: '#f8fafc',
+                color: colors.primaryText,
+                outline: 'none',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                transition: 'border 0.2s'
+              }}
+              onFocus={e => e.currentTarget.style.border = `1.5px solid ${colors.link}`}
+              onBlur={e => e.currentTarget.style.border = `1px solid ${colors.border}`}
             />
             {search && (
               <button
@@ -440,7 +454,8 @@ export default function Library() {
                     <th>📄 Title</th>
                     <th>🏷️ DOI</th>
                     <th>👥 Authors</th>
-                    <th>⋯</th>
+                    <th>📚 Publisher</th>
+                    <th>⚙️ Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -505,8 +520,24 @@ export default function Library() {
                           {a.authors || 'Unknown authors'}
                         </div>
                       </td>
+                      <td className="publisher-cell">
+                        <div 
+                          className={`publisher-text ${!a.publisher ? 'unknown-publisher' : ''}`}
+                          title={a.publisher || 'Unknown publisher'}
+                        >
+                          {a.publisher || (
+                            <span style={{
+                              color: colors.mutedText,
+                              fontStyle: 'italic'
+                            }}>
+                              Unknown publisher
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="actions-cell">
-                        {/* Upload state and status */}
+                        <div className="actions-wrapper">
+                          {/* Upload state and status */}
                         {uploadingArticleId === a.id && (
                           <button
                             disabled
@@ -568,6 +599,7 @@ export default function Library() {
                             >🔥 Delete</button>
                           </div>
                         )}
+                        </div>
                       </td>
                     </tr>
                     );
