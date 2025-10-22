@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 import dotenv from 'dotenv';
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Article, Tag, ArticleTag, PdfImage } from '../models/index.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -14,12 +14,8 @@ dotenv.config();
 const router = express.Router();
 
 const uploadDir = path.resolve('src/uploads');
-const imagesDir = path.resolve('src/uploads/images');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
-}
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
@@ -151,35 +147,85 @@ ${pdfData.text.slice(0, 8000)}
   }
 }
 
-// Extract embedded images from the PDF using Poppler's pdfimages utility
-function extractEmbeddedImagesFromPdf(pdfPath, outputDir) {
-  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
-  const baseName = path.basename(pdfPath, path.extname(pdfPath));
-  const outputPattern = path.join(outputDir, baseName);
+/**
+ * Extract images and tables from PDF using Python script
+ */
+async function extractImagesAndTablesFromPDF(pdfPath) {
+  return new Promise((resolve) => {
+    console.log(`🐍 Running Python extractor on: ${pdfPath}`);
+    
+    const pythonScript = path.resolve('src/scripts/pdf_extractor.py');
+    
+    // Check if Python script exists
+    if (!fs.existsSync(pythonScript)) {
+      console.error(`❌ Python script not found at: ${pythonScript}`);
+      resolve({ success: false, error: 'Python script not found', images: [], tables: [] });
+      return;
+    }
 
-  return new Promise((resolve, reject) => {
-    // -j = save jpeg/jpg directly; -png for PNG output if possible (Poppler >=22.01.0)
-    // Use -j and -png together for best compatibility
-    console.log(`🔍 Running pdfimages on: ${pdfPath}`);
-    exec(`pdfimages -j -png "${pdfPath}" "${outputPattern}"`, (error, stdout, stderr) => {
-      if (error) {
-        console.error('❌ pdfimages error:', error);
-        console.error('❌ pdfimages stderr:', stderr);
-        return reject(stderr || stdout || error.message);
+    console.log(`📜 Python script: ${pythonScript}`);
+
+    // Use 'py -3' command (Windows Python Launcher)
+    const pythonProcess = spawn('py', ['-3', pythonScript, pdfPath], {
+      windowsHide: true,
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      const output = data.toString();
+      stderr += output;
+      
+      // Log Python's stderr (which contains our debug messages)
+      const lines = output.split('\n');
+      lines.forEach(line => {
+        if (line.trim()) {
+          console.log(`  🐍 ${line.trim()}`);
+        }
+      });
+    });
+
+    pythonProcess.on('error', (error) => {
+      console.error(`❌ Python process error: ${error.message}`);
+      resolve({ success: false, error: error.message, images: [], tables: [] });
+    });
+
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error(`❌ Python process exited with code ${code}`);
+        console.error(`stderr: ${stderr}`);
+        resolve({ success: false, error: `Python exited with code ${code}`, images: [], tables: [] });
+        return;
       }
-      const files = fs.readdirSync(outputDir)
-        .filter(f =>
-          (f.startsWith(baseName + "-") && /\.(jpg|jpeg|png|ppm|pbm|jp2)$/i.test(f))
-        )
-        .map(f => path.join(outputDir, f));
-      console.log(`✅ pdfimages extraction complete. Files found: ${files.length}`);
-      files.forEach(file => console.log('  🖼️', file));
-      resolve(files);
+
+      try {
+        // Parse JSON from stdout
+        const jsonMatch = stdout.match(/\{[\s\S]*"success"[\s\S]*\}/);
+        if (jsonMatch) {
+          const result = JSON.parse(jsonMatch[0]);
+          console.log(`✅ Extraction complete: ${result.total_images} images, ${result.total_tables} tables`);
+          resolve(result);
+        } else {
+          console.warn('⚠️ Could not parse Python output');
+          console.log('stdout:', stdout);
+          resolve({ success: false, error: 'Failed to parse extraction results', images: [], tables: [] });
+        }
+      } catch (error) {
+        console.error('❌ Error parsing Python output:', error.message);
+        console.log('stdout:', stdout);
+        resolve({ success: false, error: error.message, images: [], tables: [] });
+      }
     });
   });
 }
 
-// Authenticated PDF upload and processing!
+// Authenticated PDF upload and processing
 router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
   const articleId = req.query.id;
   if (!articleId) {
@@ -196,39 +242,43 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
     const pdfPath = path.join(uploadDir, req.file.filename);
     const pdfBuffer = await fs.promises.readFile(pdfPath);
 
+    // Process PDF for text, summary, and hashtags
     const result = await processPDF(pdfBuffer, req.file.filename);
 
-    // --- Extract images with Poppler ---
-    let extractedImageFiles = [];
-    let imageExtractionDebug = {};
-    let convertedImages = [];
-    let failedConversions = [];
+    // Extract images and tables using Python
+    let extractionResult = { success: false, images: [], tables: [] };
     try {
-      console.log('🚩 Starting image extraction via pdfimages...');
-      const beforeFiles = fs.readdirSync(imagesDir);
-      extractedImageFiles = await extractEmbeddedImagesFromPdf(pdfPath, imagesDir);
-      const afterFiles = fs.readdirSync(imagesDir);
-      imageExtractionDebug.beforeCount = beforeFiles.length;
-      imageExtractionDebug.afterCount = afterFiles.length;
-      imageExtractionDebug.filesAdded = afterFiles.filter(f => !beforeFiles.includes(f));
-      imageExtractionDebug.allFiles = afterFiles;
-      imageExtractionDebug.extractedCount = extractedImageFiles.length;
-      console.log(`🖼️ Extracted images:`, extractedImageFiles);
+      console.log('🖼️ Starting image and table extraction...');
+      extractionResult = await extractImagesAndTablesFromPDF(pdfPath);
+    } catch (extractErr) {
+      console.error('⚠️ Failed to extract images/tables:', extractErr);
+    }
 
-      // --- Remove old images for this article ---
-      await PdfImage.destroy({ where: { article_id: articleId } });
+    // Remove old images for this article from database
+    await PdfImage.destroy({ where: { article_id: articleId } });
 
-      // --- Store each new image name ---
-      for (const imgPath of extractedImageFiles) {
+    // Store extracted images in database
+    if (extractionResult.images && extractionResult.images.length > 0) {
+      for (const imgName of extractionResult.images) {
         await PdfImage.create({
           article_id: articleId,
-          images_name: path.basename(imgPath),
+          images_name: imgName,
           created_at: new Date()
         });
       }
-    } catch (imgErr) {
-      imageExtractionDebug.error = String(imgErr);
-      console.error('⚠️ Failed to extract or store images from PDF:', imgErr);
+      console.log(`✅ Stored ${extractionResult.images.length} images in database`);
+    }
+
+    // Store extracted table files in database
+    if (extractionResult.tables && extractionResult.tables.length > 0) {
+      for (const tableName of extractionResult.tables) {
+        await PdfImage.create({
+          article_id: articleId,
+          images_name: tableName,
+          created_at: new Date()
+        });
+      }
+      console.log(`✅ Stored ${extractionResult.tables.length} table files in database`);
     }
 
     // Tag creation and association
@@ -255,7 +305,7 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
       const rows = tagInstances.map(tag => ({
         article_id: article.id,
         tag_id: tag.id,
-        user_id: req.user.id // always set user_id!
+        user_id: req.user.id
       }));
       await ArticleTag.bulkCreate(rows, { ignoreDuplicates: true });
     }
@@ -274,17 +324,20 @@ router.post('/pdf', requireAuth, upload.single('pdf'), async (req, res) => {
       hashtags: result.success ? result.hashtagsStr : undefined,
       pages: result.pages,
       info: result.info,
-      extractedImages: extractedImageFiles.map(f => path.relative(process.cwd(), f)),
-      convertedImages: convertedImages.map(f => path.relative(process.cwd(), f)),
-      failedConversions,
-      imageExtractionDebug
+      extractedImages: extractionResult.images || [],
+      extractedTables: extractionResult.tables || [],
+      totalImages: extractionResult.total_images || 0,
+      totalTables: extractionResult.total_tables || 0,
+      extractorVersion: extractionResult.extractor_version,
+      extractionTimestamp: extractionResult.extraction_timestamp
     });
   } catch (err) {
+    console.error('❌ Error in PDF upload route:', err);
     res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
   }
 });
 
-// Endpoint to get PDF images for an article (NEW)
+// Endpoint to get PDF images for an article
 router.get('/pdf_images/:articleId', requireAuth, async (req, res) => {
   try {
     const articleId = req.params.articleId;

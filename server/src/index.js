@@ -18,6 +18,7 @@ import collectionsRoutes from './routes/collections.js';
 import paypalRoutes from './routes/paypal.js'; // Use REST API integration route
 import doiReferencesRoutes from './routes/doiReferences.js'; // Import DOI references routes
 import publishersRoutes from './routes/publishers.js';
+import pptRoutes from './routes/ppt.js'; // Import PPT routes
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use('/v1/images', (req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(path.resolve('src/uploads/images')));
+app.use('/v1/ppt', pptRoutes);
 
 // If you want this for all image serving routes:
 app.use('/images', (req, res, next) => {

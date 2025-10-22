@@ -14,6 +14,8 @@ import Lightbox from 'yet-another-react-lightbox';
 import "yet-another-react-lightbox/styles.css";
 import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
 import './ArticleDetails.css';
 import { Document, Page, pdfjs } from 'react-pdf';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min?url';
@@ -44,12 +46,19 @@ export default function ArticleDetails() {
 
   // PDF Viewer state
   const [numPages, setNumPages] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [pdfError, setPdfError] = useState(null);
+  const [scale, setScale] = useState(1.25); // Default 125%
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const pdfContainerRef = useRef(null);
+  const pdfScrollContainerRef = useRef(null);
+  const pageRefs = useRef([]);
 
   // Image state
   const [pdfImages, setPdfImages] = useState([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [imageRotations, setImageRotations] = useState({});
 
   // For scroll
   const pdfRef = useRef(null);
@@ -98,12 +107,9 @@ export default function ArticleDetails() {
     }
 
     // === Custom formatting ===
-    // 1. Turn "• Detailed Summary with Key Points" → <h1>
     outputHtml = outputHtml.replace(/(?:<p>)?•?\s*Detailed Summary with Key Points\s*(?:<\/p>)?/gi,
       '<h3>Detailed Summary with Key Points</h3>'
     );
-
-    // 2. Ensure paragraph spacing
     outputHtml = outputHtml.replace(/<p>/g, '<p style="margin-bottom:16px;">');
 
     return DOMPurify.sanitize(outputHtml);
@@ -292,6 +298,168 @@ export default function ArticleDetails() {
     setLightboxOpen(true);
   };
 
+  // Rotate image function
+  const rotateImage = (direction) => {
+    const currentImageSrc = pdfImages[lightboxIndex];
+    const currentRotation = imageRotations[currentImageSrc] || 0;
+    const newRotation = direction === 'right' 
+      ? (currentRotation + 90) % 360 
+      : (currentRotation - 90 + 360) % 360;
+    
+    setImageRotations(prev => ({
+      ...prev,
+      [currentImageSrc]: newRotation
+    }));
+  };
+
+  // Scroll to specific page
+  const scrollToPage = (pageNum) => {
+    const pageIndex = pageNum - 1;
+    if (pageRefs.current[pageIndex]) {
+      pageRefs.current[pageIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // === PDF Navigation Controls ===
+  const goToFirstPage = () => {
+    setCurrentPage(1);
+    scrollToPage(1);
+  };
+
+  const goToLastPage = () => {
+    const lastPage = numPages || 1;
+    setCurrentPage(lastPage);
+    scrollToPage(lastPage);
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      scrollToPage(newPage);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < (numPages || 1)) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      scrollToPage(newPage);
+    }
+  };
+
+  const handlePageChange = (pageNum) => {
+    setCurrentPage(pageNum);
+    scrollToPage(pageNum);
+  };
+
+  // Zoom controls
+  const zoomIn = () => {
+    setScale((prev) => {
+      const newScale = Math.min(prev + 0.25, 3.0);
+      return newScale;
+    });
+  };
+
+  const zoomOut = () => {
+    setScale((prev) => {
+      const newScale = Math.max(prev - 0.25, 0.5);
+      return newScale;
+    });
+  };
+
+  const resetZoom = () => setScale(1.25); // Reset to 125%
+
+  // Fullscreen toggle
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      if (pdfContainerRef.current?.requestFullscreen) {
+        pdfContainerRef.current.requestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      setIsFullscreen(false);
+    }
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Detect which page is currently visible - DISABLED to prevent conflicts
+  // This was causing the page to reset when scrolling
+  /*
+  useEffect(() => {
+    if (!pdfScrollContainerRef.current) return;
+
+    const handleScroll = () => {
+      if (!pdfScrollContainerRef.current) return;
+      
+      const container = pdfScrollContainerRef.current;
+      const scrollTop = container.scrollTop;
+      const containerHeight = container.clientHeight;
+      const middleOfViewport = scrollTop + containerHeight / 2;
+
+      // Find which page is in the middle of viewport
+      for (let i = 0; i < pageRefs.current.length; i++) {
+        const pageElement = pageRefs.current[i];
+        if (pageElement) {
+          const pageTop = pageElement.offsetTop;
+          const pageBottom = pageTop + pageElement.clientHeight;
+          
+          if (middleOfViewport >= pageTop && middleOfViewport <= pageBottom) {
+            setCurrentPage(i + 1);
+            break;
+          }
+        }
+      }
+    };
+
+    const container = pdfScrollContainerRef.current;
+    container.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [numPages]);
+  */
+
+  // --- PPT Generate Handler ---
+  const [pptStatus, setPptStatus] = useState('');
+  const handleGeneratePPT = async () => {
+    setPptStatus('Generating...');
+    const token = user?.token || localStorage.getItem('token');
+    if (!token) {
+      setPptStatus('No authentication token found. Please login.');
+      return;
+    }
+    try {
+      const genRes = await fetch(`${BASE_API_URL}/ppt?id=${id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!genRes.ok) {
+        const genErr = await genRes.json();
+        setPptStatus('Failed to generate PPT: ' + (genErr.error || 'Unknown error'));
+        return;
+      }
+      setPptStatus('PPT generated and stored successfully!');
+      setTimeout(() => setPptStatus(''), 2000);
+    } catch (err) {
+      setPptStatus('Error generating PPT: ' + err.message);
+    }
+  };
+
   const markdownComponents = {
     h1: ({ node, ...props }) => (
       <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: '24px 0 16px 0', color: '#2c3e50' }} {...props} />
@@ -328,19 +496,16 @@ export default function ArticleDetails() {
     (!article?.file_name || !pdfProcessed) &&
     (!mainSummary || mainSummary === '<p></p>' || mainSummary === '<p><br></p>');
 
-  // Determine button label
   const uploadBtnLabel = uploading
     ? 'Uploading...'
     : article?.file_name && pdfProcessed
       ? 'Process New PDF'
       : 'Upload PDF';
 
-  // The PDF URL to show
   const pdfUrl = article?.file_name
     ? `${BASE_API_URL}/uploads/${article.file_name}`
     : null;
 
-  // PDF error handling callback
   const handlePdfError = (err) => {
     setPdfError(err?.message || String(err));
   };
@@ -350,6 +515,29 @@ export default function ArticleDetails() {
   if (!article) return <div className="articledetails-loading">Article not found.</div>;
 
   const imageBaseUrl = `${BASE_API_URL}/images/`;
+
+  // Render all PDF pages for continuous scrolling
+  const renderAllPages = () => {
+    if (!numPages) return null;
+    const pages = [];
+    for (let i = 1; i <= numPages; i++) {
+      pages.push(
+        <div 
+          key={i} 
+          ref={(el) => (pageRefs.current[i - 1] = el)}
+          style={{ marginBottom: i < numPages ? '20px' : '0' }}
+        >
+          <Page
+            pageNumber={i}
+            scale={scale}
+            renderTextLayer={true}
+            renderAnnotationLayer={true}
+          />
+        </div>
+      );
+    }
+    return pages;
+  };
 
   return (
     <div className="articledetails-app" style={{ background: gradients.app }}>
@@ -424,22 +612,44 @@ export default function ArticleDetails() {
               </div>
             )}
 
-            <div ref={pdfRef} className="articledetails-pdfbox">
-              <button
-                className="articledetails-uploadbtn articledetails-uploadbtn-left"
-                type="button"
-                onClick={handleButtonClick}
-                disabled={uploading}
-              >
-                {uploadBtnLabel}
-              </button>
-              <input
-                type="file"
-                accept="application/pdf"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={handleFileChange}
-              />
+            <div ref={pdfRef} className="articledetails-pdfbox" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <button
+                  className="articledetails-uploadbtn articledetails-uploadbtn-left"
+                  type="button"
+                  onClick={handleButtonClick}
+                  disabled={uploading}
+                >
+                  {uploadBtnLabel}
+                </button>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+                <button
+                  className="articledetails-pptbtn"
+                  type="button"
+                  onClick={handleGeneratePPT}
+                  disabled={uploading || !pdfProcessed}
+                  style={{ minWidth: 120 }}
+                  title="Generate PPT summary"
+                >
+                  Generate PPT
+                </button>
+                {pptStatus && (
+                  <span style={{
+                    color: pptStatus.toLowerCase().includes('fail') || pptStatus.toLowerCase().includes('error') ? '#a00' : '#008800',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    marginLeft: 12
+                  }}>
+                    {pptStatus}
+                  </span>
+                )}
+              </div>
 
               {uploadStatus && (
                 <p className={`articledetails-uploadstatus ${uploadStatus.startsWith('Upload and processing successful') ? 'success' : 'error'}`}>
@@ -454,65 +664,305 @@ export default function ArticleDetails() {
               >
                 Show Images from PDF
               </button>
-              {/* PDF Viewer -- scrollable, fixed size, one page at a time */}
-              <div
+
+              {/* PDF Viewer with Control Bar Above */}
+              <div ref={pdfContainerRef} style={{ margin: '20px 0' }}>
+                {/* Control Bar - Above PDF */}
+                {pdfUrl && (
+                  <div
+                    style={{
+                      height: '56px',
+                      background: 'linear-gradient(to bottom, rgba(50, 54, 57, 0.95) 0%, rgba(50, 54, 57, 0.85) 100%)',
+                      backdropFilter: 'blur(10px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0 20px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      borderRadius: '8px 8px 0 0',
+                      border: '1px solid #333',
+                      borderBottom: 'none',
+                    }}
+                  >
+                    {/* Left Side - Navigation */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={goToFirstPage}
+                        disabled={currentPage === 1}
+                        title="First page"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: currentPage === 1 ? '#666' : '#fff',
+                          cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== 1) e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        ⟪
+                      </button>
+                      <button
+                        onClick={goToPrevPage}
+                        disabled={currentPage === 1}
+                        title="Previous page"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: currentPage === 1 ? '#666' : '#fff',
+                          cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== 1) e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        ◀
+                      </button>
+                      <button
+                        onClick={goToNextPage}
+                        disabled={currentPage === numPages}
+                        title="Next page"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: currentPage === numPages ? '#666' : '#fff',
+                          cursor: currentPage === numPages ? 'not-allowed' : 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== numPages) e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        ▶
+                      </button>
+                      <button
+                        onClick={goToLastPage}
+                        disabled={currentPage === numPages}
+                        title="Last page"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: currentPage === numPages ? '#666' : '#fff',
+                          cursor: currentPage === numPages ? 'not-allowed' : 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== numPages) e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        ⟫
+                      </button>
+                    </div>
+
+                    {/* Center - Page Info with Dropdown */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ color: '#ccc', fontSize: '14px', fontWeight: 500 }}>
+                        Page
+                      </span>
+                      <select
+                        value={currentPage}
+                        onChange={(e) => {
+                          const newPage = parseInt(e.target.value, 10);
+                          handlePageChange(newPage);
+                        }}
+                        style={{
+                          padding: '6px 8px',
+                          textAlign: 'center',
+                          border: '1px solid #555',
+                          borderRadius: '4px',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: '#fff',
+                          fontWeight: 600,
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {Array.from({ length: numPages || 1 }, (_, i) => i + 1).map((pageNum) => (
+                          <option key={pageNum} value={pageNum} style={{ background: '#2c3e50', color: '#fff' }}>
+                            {pageNum}
+                          </option>
+                        ))}
+                      </select>
+                      <span style={{ color: '#ccc', fontSize: '14px', fontWeight: 500 }}>
+                        of {numPages || '?'}
+                      </span>
+                    </div>
+
+                    {/* Right Side - Zoom & Fullscreen Controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={zoomOut}
+                        disabled={scale <= 0.5}
+                        title="Zoom out"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: scale <= 0.5 ? '#666' : '#fff',
+                          cursor: scale <= 0.5 ? 'not-allowed' : 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (scale > 0.5) e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        −
+                      </button>
+                      <span style={{ color: '#ccc', fontSize: '14px', fontWeight: 500, minWidth: '50px', textAlign: 'center' }}>
+                        {Math.round(scale * 100)}%
+                      </span>
+                      <button
+                        onClick={zoomIn}
+                        disabled={scale >= 3.0}
+                        title="Zoom in"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: scale >= 3.0 ? '#666' : '#fff',
+                          cursor: scale >= 3.0 ? 'not-allowed' : 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (scale < 3.0) e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={resetZoom}
+                        title="Reset zoom (125%)"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '14px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                          fontWeight: 500,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        Reset
+                      </button>
+                      <div style={{ width: '1px', height: '24px', background: '#555', margin: '0 4px' }} />
+                      <button
+                        onClick={toggleFullscreen}
+                        title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          borderRadius: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                        }}
+                      >
+                        {isFullscreen ? '⛶' : '⛶'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* PDF Container - Scrollable with all pages */}
+                <div
+                  ref={pdfScrollContainerRef}
                   style={{
-                    margin: '20px 0',
-                    height: '900px',
-                    maxHeight: '90vh',
-                    width: '700px',
-                    maxWidth: '100%',
+                    width: '100%',
+                    height: isFullscreen ? '100vh' : '800px',
+                    maxHeight: isFullscreen ? '100vh' : '800px',
                     overflowY: 'auto',
-                    overflowX: 'hidden',
-                    border: pdfUrl ? "1px solid #eee" : "none",
+                    overflowX: 'auto',
+                    border: pdfUrl ? "1px solid #333" : "none",
+                    borderTop: pdfUrl ? "none" : "1px solid #333",
                     boxSizing: 'border-box',
-                    background: "#fafafa",
-                    scrollSnapType: 'y mandatory',
+                    background: "#525659",
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    borderRadius: pdfUrl ? '0 0 8px 8px' : '8px',
+                    padding: '20px',
                   }}
                 >
                   {pdfUrl ? (
                     <Document
-                      key={pdfUrl}
                       file={pdfUrl}
                       onLoadSuccess={({ numPages }) => {
                         setNumPages(numPages);
                         setPdfError(null);
                       }}
-                      loading={<div>Loading PDF...</div>}
+                      loading={
+                        <div style={{ color: '#fff', fontSize: '16px', padding: '40px' }}>
+                          Loading PDF...
+                        </div>
+                      }
                       error={handlePdfError}
                     >
-                      {numPages &&
-                        Array.from({ length: numPages }, (_, index) => (
-                          <div
-                            key={index}
-                            style={{
-                              scrollSnapAlign: 'start',
-                              minHeight: '900px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderBottom: '1px solid #eee',
-                              background: "#fff",
-                            }}
-                          >
-                            <Page
-                              pageNumber={index + 1}
-                              width={650}
-                            />
-                          </div>
-                        ))}
+                      {renderAllPages()}
                     </Document>
                   ) : (
-                    <div style={{ textAlign: 'center', color: '#888', fontStyle: 'italic', padding: '40px 0' }}>
+                    <div style={{ textAlign: 'center', color: '#999', fontStyle: 'italic', padding: '40px 0' }}>
                       No PDF uploaded yet.
                     </div>
                   )}
-                  {pdfError && (
-                    <div style={{ color: "#900", textAlign: "center", padding: "8px" }}>
-                      Failed to load PDF: {pdfError}
-                    </div>
-                  )}
                 </div>
+                {pdfError && (
+                  <div style={{ color: "#f88", textAlign: "center", padding: "8px", marginTop: '10px' }}>
+                    Failed to load PDF: {pdfError}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div ref={imagesRef} className="articledetails-images-section">
@@ -529,7 +979,10 @@ export default function ArticleDetails() {
                       key={img}
                       onClick={() => handleLightboxOpen(idx)}
                       tabIndex={0}
-                      style={{ outline: lightboxOpen && lightboxIndex === idx ? '2px solid #0099ff' : 'none' }}
+                      style={{ 
+                        outline: lightboxOpen && lightboxIndex === idx ? '2px solid #0099ff' : 'none',
+                        cursor: 'pointer'
+                      }}
                     >
                       <img
                         src={imageBaseUrl + img}
@@ -543,14 +996,113 @@ export default function ArticleDetails() {
               <Lightbox
                 open={lightboxOpen}
                 close={() => setLightboxOpen(false)}
-                slides={pdfImages.map(img => ({
+                slides={pdfImages.map((img) => ({
                   src: imageBaseUrl + img,
                   alt: `Extracted image ${img}`,
                 }))}
-                plugins={[Thumbnails]}
+                plugins={[Thumbnails, Zoom, Fullscreen]}
                 index={lightboxIndex}
-                on={{
-                  view: ({ index }) => setLightboxIndex(index)
+                carousel={{
+                  finite: true,
+                  preload: 1,
+                  padding: 0,
+                  spacing: 0,
+                  imageFit: "contain",
+                }}
+                zoom={{
+                  maxZoomPixelRatio: 5,
+                  zoomInMultiplier: 2,
+                  doubleTapDelay: 300,
+                  doubleClickDelay: 300,
+                  doubleClickMaxStops: 2,
+                  keyboardMoveDistance: 50,
+                  wheelZoomDistanceFactor: 100,
+                  pinchZoomDistanceFactor: 100,
+                  scrollToZoom: true
+                }}
+                toolbar={{
+                  buttons: [
+                    <div key="rotate-controls" style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          rotateImage('left');
+                        }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          padding: '8px 14px',
+                          fontSize: '20px',
+                          borderRadius: '6px',
+                          fontWeight: 600,
+                          transition: 'opacity 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.opacity = '0.7';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.opacity = '1';
+                        }}
+                        title="Rotate left"
+                      >
+                        ↺
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          rotateImage('right');
+                        }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          padding: '8px 14px',
+                          fontSize: '20px',
+                          borderRadius: '6px',
+                          fontWeight: 600,
+                          transition: 'opacity 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.opacity = '0.7';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.opacity = '1';
+                        }}
+                        title="Rotate right"
+                      >
+                        ↻
+                      </button>
+                    </div>,
+                    "close"
+                  ]
+                }}
+                render={{
+                  slideContainer: ({ children }) => {
+                    const imgName = pdfImages[lightboxIndex];
+                    const rotation = imageRotations[imgName] || 0;
+                    
+                    return (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transform: `rotate(${rotation}deg)`,
+                          transition: 'transform 0.3s ease',
+                        }}
+                      >
+                        {children}
+                      </div>
+                    );
+                  },
+                }}
+                styles={{
+                  container: { backgroundColor: "rgba(0, 0, 0, .9)" },
                 }}
               />
             </div>
