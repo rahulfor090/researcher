@@ -208,8 +208,7 @@ export default function Library() {
     return (
       (a.title && a.title.toLowerCase().includes(q)) ||
       (a.doi && a.doi.toLowerCase().includes(q)) ||
-      (a.authors && a.authors.toLowerCase().includes(q)) ||
-      (a.publisher && a.publisher.toLowerCase().includes(q))
+      (a.authors && a.authors.toLowerCase().includes(q))
     );
   });
   if (onlyMissingPdf) {
