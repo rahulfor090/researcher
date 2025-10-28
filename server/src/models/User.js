@@ -16,6 +16,7 @@ export default (sequelize) => {
       email: {
         type: DataTypes.STRING(160),
         allowNull: false,
+        unique: true,
       },
       password: {
         type: DataTypes.STRING(200),
@@ -29,10 +30,12 @@ export default (sequelize) => {
       googleId: {
         type: DataTypes.STRING(255),
         allowNull: true,
+        unique: true,
       },
       twitterId: {
         type: DataTypes.STRING(255),
         allowNull: true,
+        unique: true,
       },
       twitterToken: {
         type: DataTypes.STRING(255),
@@ -45,6 +48,7 @@ export default (sequelize) => {
       linkedinId: {
         type: DataTypes.STRING(255),
         allowNull: true,
+        unique: true,
       },
       linkedinToken: {
         type: DataTypes.STRING(255),
@@ -118,15 +122,9 @@ export default (sequelize) => {
     },
     {
       tableName: 'users',
-      indexes: [
-        { unique: true, fields: ['email'] },
-        { unique: true, fields: ['googleId'] },
-        { unique: true, fields: ['twitterId'] },
-        { unique: true, fields: ['linkedinId'] },
-      ],
+      // REMOVED: Duplicate indexes array - using column-level unique constraints instead
     }
   );
 
   return User;
-
 };

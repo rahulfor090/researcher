@@ -31,9 +31,7 @@ export default (sequelize) => {
     {
       tableName: 'doi_references',
       timestamps: false, // We're managing createdAt manually
-      indexes: [
-        { unique: true, fields: ['doi'] },
-      ],
+      // REMOVED: Duplicate indexes array
     }
   );
 

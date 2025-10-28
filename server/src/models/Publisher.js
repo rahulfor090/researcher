@@ -28,5 +28,5 @@ export default (sequelize) => {
     });
   };
 
-  return Publisher;
-};
+  return Publisher; 
+};  
