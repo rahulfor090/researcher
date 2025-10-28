@@ -11,9 +11,7 @@ export default (sequelize) => {
     {
       tableName: 'temp_users',
       timestamps: false,
-      indexes: [
-        { unique: true, fields: ['tempUserId'] },
-      ],
+      // REMOVED: Duplicate indexes array
     }
   );
 

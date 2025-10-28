@@ -16,9 +16,7 @@ export default (sequelize, DataTypes) => {
     {
       tableName: 'tags',
       timestamps: false,
-      indexes: [
-        { unique: true, fields: ['name'] },
-      ],
+      // REMOVED: Duplicate indexes array
     }
   );
 
