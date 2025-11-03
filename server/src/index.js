@@ -17,6 +17,7 @@ import authorRoutes from './routes/authors.js';
 import tagRouter from './routes/tag.js';
 import collectionsRoutes from './routes/collections.js';
 import paypalRoutes from './routes/paypal.js'; // Use REST API integration route
+import stripeRoutes from './routes/stripe.js'; // Import Stripe routes
 import doiReferencesRoutes from './routes/doiReferences.js'; // Import DOI references routes
 import { notFound, errorHandler, AppError } from './middleware/errorHandler.js';
 import publishersRoutes from './routes/publishers.js';
@@ -52,12 +53,13 @@ app.use(helmet.contentSecurityPolicy({
       "'self'",
       'http://localhost:5000',
       'http://localhost:5173',
-      'https://api.twitter.com'
+      'https://api.twitter.com',
+      'https://api.stripe.com' // Add Stripe API
     ],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", 'https://js.stripe.com'], // Add Stripe.js
     styleSrc: ["'self'", "'unsafe-inline'"],
     imgSrc: ["'self'", 'data:', 'https:'],
-    frameSrc: ["'self'", 'https://twitter.com']
+    frameSrc: ["'self'", 'https://twitter.com', 'https://js.stripe.com', 'https://hooks.stripe.com'] // Add Stripe frames
   }
 }));
 
@@ -130,6 +132,9 @@ app.use('/v1/publishers', publishersRoutes);
 
 // PayPal REST API endpoints (create-order and capture-order)
 app.use('/v1/paypal', paypalRoutes);
+
+// Stripe REST API endpoints (create-checkout-session, verify-session, cancel-session)
+app.use('/v1/stripe', stripeRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/v1/uploads', cors(), express.static('src/uploads'));
