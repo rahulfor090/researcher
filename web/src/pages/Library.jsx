@@ -4,6 +4,7 @@ import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, secondaryButtonStyle, gradients, shadows } from '../theme';
 import { useAuth } from '../auth';
 import ArticleFormModal from '../components/ArticleFormModal';
+import SummaryModal from '../components/SummaryModal';
 
 export default function Library() {
   const { user, logout } = useAuth();
@@ -15,7 +16,11 @@ export default function Library() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [search, setSearch] = useState(''); // Add search state
+  const [uploadingArticleId, setUploadingArticleId] = useState(null);
+  const [recentlyUpdatedIds, setRecentlyUpdatedIds] = useState(new Set());
+  const [showSummary, setShowSummary] = useState(null); // { id, summary }
   const initials = (user?.name || 'User ').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Load articles from backend
   const load = async () => {
@@ -24,13 +29,66 @@ export default function Library() {
     setTimeout(() => setIsLoaded(true), 100);
   };
 
+  // Upload PDF for an article and refresh
+  const handleUploadPdf = async (article) => {
+    try {
+      setUploadingArticleId(article.id);
+      const picker = document.createElement('input');
+      picker.type = 'file';
+      picker.accept = 'application/pdf';
+      picker.onchange = async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const form = new FormData();
+        form.append('pdf', file);
+        try {
+          const { data } = await api.post(`/upload/pdf?id=${article.id}`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          await load();
+          if (data?.summary) {
+            setShowSummary({ id: article.id, summary: data.summary });
+          } else {
+            setShowSummary({ id: article.id, summary: 'Summary generation queued or skipped. Open details to view when ready.' });
+          }
+          // Mark as recently updated for UX feedback
+          setRecentlyUpdatedIds(prev => {
+            const next = new Set(prev);
+            next.add(article.id);
+            return next;
+          });
+          setTimeout(() => {
+            setRecentlyUpdatedIds(prev => {
+              const next = new Set(prev);
+              next.delete(article.id);
+              return next;
+            });
+          }, 3000);
+        } catch (err) {
+          console.error('Upload failed', err);
+          alert('Failed to upload/process PDF.');
+        }
+        setUploadingArticleId(null);
+      };
+      picker.click();
+    } catch (err) {
+      console.error(err);
+      setUploadingArticleId(null);
+    }
+  };
+
   // Save new or edited article
   const handleSaveArticle = async (articleData) => {
+    if (!editArticle && articles.length >= 10) {
+      // Show upgrade modal before saving if limit is reached
+      setShowLimitModal(true);
+      setShowModal(false);
+      setEditArticle(null);
+      return;
+    }
     if (editArticle) {
-      // Edit mode
       await api.put(`/articles/${editArticle.id}`, articleData);
     } else {
-      // Add mode
       await api.post('/articles', articleData);
     }
     setEditArticle(null);
@@ -314,9 +372,9 @@ export default function Library() {
             {[
               { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
               { label: 'Library', icon: '📚', path: '/library' },
+              { label: 'Authors', icon: '✍️', path: '/authors' },
               { label: 'HashTags', icon: '🗂️', path: '/hashtags' },
               { label: 'All insights', icon: '📈', path: null },
-              
             ].map(({ label, icon, path }, index) => (
               <li
                 key={label}
@@ -1121,6 +1179,95 @@ export default function Library() {
                           gap: '8px'
                         }}
                       >
+                        {/* Upload state and status */}
+                        {uploadingArticleId === a.id && (
+                          <button
+                            disabled
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              background: colors.mutedText,
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '6px 12px',
+                              fontWeight: 600,
+                              fontSize: '0.8rem',
+                              opacity: 0.8,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <span>⏳</span> Uploading...
+                          </button>
+                        )}
+
+                        {uploadingArticleId !== a.id && recentlyUpdatedIds.has(a.id) && (
+                          <div style={{
+                            padding: '6px 10px',
+                            background: 'rgba(34,197,94,0.12)',
+                            border: '1px solid rgba(34,197,94,0.3)',
+                            borderRadius: '8px',
+                            color: '#16a34a',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}>
+                            <span>✅</span> Updated
+                          </div>
+                        )}
+
+                        {/* Upload PDF CTA when missing */}
+                        {uploadingArticleId !== a.id && !recentlyUpdatedIds.has(a.id) && (!a.file_name || !a.summary) && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleUploadPdf(a); }}
+                            style={{
+                              background: colors.link,
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '6px 12px',
+                              cursor: 'pointer',
+                              fontWeight: 600,
+                              fontSize: '0.8rem',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(13, 148, 136, 0.3)';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <span>⬆️</span> Upload PDF 
+                          </button>
+                        )}
+
+                        {/* PDF present indicator */}
+                        {a.file_name && a.summary && (
+                          <div style={{
+                            padding: '6px 10px',
+                            background: 'rgba(34,197,94,0.12)',
+                            border: '1px solid rgba(34,197,94,0.3)',
+                            borderRadius: '8px',
+                            color: '#16a34a',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}>
+                            <span>📄</span> PDF ready
+                          </div>
+                        )}
+
                       {/* View Details Button */}
                         <button
                           onClick={(e) => {
@@ -1227,6 +1374,71 @@ export default function Library() {
         </div>
       </div>
 
+      {showLimitModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 1000,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            background: 'white',
+            color: colors.primaryText,
+            borderRadius: '16px',
+            boxShadow: shadows.medium,
+            padding: '40px 32px',
+            minWidth: '375px',
+            maxWidth: '95vw',
+            textAlign: 'center',
+            position: 'relative'
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🚫</div>
+            <h2 style={{ margin: '0 0 10px 0', fontWeight: 700, fontSize: '1.5rem', color: colors.highlight }}>
+              Article Limit Reached
+            </h2>
+            <p style={{ fontSize: '1rem', marginBottom: '20px', color: colors.mutedText }}>
+              Free accounts can save up to <b>10 articles</b>.<br />
+              Upgrade to unlock unlimited articles and more features.
+            </p>
+            <button
+              style={{
+                ...primaryButtonStyle,
+                fontWeight: 700,
+                fontSize: '1.09rem',
+                padding: '12px 32px',
+                borderRadius: '10px',
+                marginBottom: '6px'
+              }}
+              onClick={() => {
+                setShowLimitModal(false);
+                nav('/upgrade');
+              }}
+            >
+              Upgrade for $49
+            </button>
+            <div>
+              <button
+                style={{
+                  ...secondaryButtonStyle,
+                  fontWeight: 600,
+                  fontSize: '0.96rem',
+                  marginTop: '10px'
+                }}
+                onClick={() => setShowLimitModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Conditionally render the ArticleFormModal */}
       {showModal && (
         <ArticleFormModal
@@ -1236,6 +1448,19 @@ export default function Library() {
           }}
           onSave={handleSaveArticle}
           initialData={editArticle}
+        />
+      )}
+
+      {/* Summary modal after upload */}
+      {showSummary && (
+        <SummaryModal
+          summary={showSummary.summary}
+          onClose={() => setShowSummary(null)}
+          onViewDetails={() => {
+            const id = showSummary.id;
+            setShowSummary(null);
+            nav(`/library/article/${id}`);
+          }}
         />
       )}
 

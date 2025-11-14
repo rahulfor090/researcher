@@ -5,11 +5,6 @@ import { api } from '../api';
 import { colors, cardStyle, primaryButtonStyle, shadows, gradients } from '../theme';
 import Layout from '../components/Layout';
 
-// Add debugging information to help troubleshoot the connection
-console.log('🔍 Debug info:');
-console.log('- Base API URL:', import.meta.env.VITE_API_BASE || 'http://localhost:5000');
-console.log('- Full authors URL:', `${import.meta.env.VITE_API_BASE || 'http://localhost:5000'}/api/articles/authors/list`);
-
 export default function Authors() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -20,33 +15,22 @@ export default function Authors() {
   const [selectedAuthor, setSelectedAuthor] = useState(null);
   const [authorArticles, setAuthorArticles] = useState([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const BASE_API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 
   // Load authors from backend
   const loadAuthors = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log('🚀 Attempting to load authors...');
-      console.log('API URL:', `${import.meta.env.VITE_API_BASE || 'http://localhost:5000'}/api/articles/authors/list`);
-      
-      // First try to check if the basic articles endpoint works
-      try {
-        console.log('🔍 Testing basic articles endpoint...');
-        const testResponse = await api.get('/articles');
-        console.log('✅ Basic articles endpoint works:', testResponse.status);
-      } catch (testErr) {
-        console.log('❌ Basic articles endpoint failed:', testErr);
-        if (testErr.code === 'ERR_NETWORK') {
-          throw new Error('ERR_CONNECTION_REFUSED');
-        }
-      }
-      
-      const response = await api.get('/articles/authors/list');
-      console.log('✅ Authors loaded successfully:', response.data);
+      const response = await api.get(`${BASE_API_URL}/authors`);
       setAuthors(response.data || []);
     } catch (err) {
-      console.error('❌ Failed to load authors:', err); 
+      console.error('Failed to load authors:', err);
+      setError('Failed to load authors. Please try again.');
       setAuthors([]);
     } finally {
       setLoading(false);
@@ -57,7 +41,7 @@ export default function Authors() {
   const loadAuthorArticles = async (authorId) => {
     try {
       setLoadingArticles(true);
-      const response = await api.get(`/articles/authors/${authorId}/articles`);
+      const response = await api.get(`${BASE_API_URL}/authors/${authorId}/articles`);
       setAuthorArticles(response.data || []);
     } catch (err) {
       console.error('Failed to load author articles:', err);
@@ -87,6 +71,60 @@ export default function Authors() {
   const filteredAuthors = authors.filter(author =>
     author.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Calculate pagination
+  const totalItems = filteredAuthors.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAuthors = filteredAuthors.slice(startIndex, endIndex);
+
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Reset to first page when items per page changes
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   if (loading) {
     return (
@@ -201,7 +239,7 @@ export default function Authors() {
                         cursor: 'pointer',
                         transition: 'all 0.2s ease'
                       }}
-                      onClick={() => navigate(`/article/${article.id}`)}
+                      onClick={() => navigate(`/library/article/${article.id}`)}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = colors.primary;
                         e.currentTarget.style.transform = 'translateY(-1px)';
@@ -307,44 +345,61 @@ export default function Authors() {
           padding: '24px',
           boxShadow: shadows.medium 
         }}>
-          <h2 style={{ 
-            fontSize: '1.5rem', 
-            fontWeight: 600, 
-            color: colors.primaryText, 
-            marginBottom: '24px' 
+          {/* Authors List Header with Items Per Page */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: '16px'
           }}>
-            Saved Authors ({filteredAuthors.length})
-          </h2>
+            <h2 style={{ 
+              fontSize: '1.5rem', 
+              fontWeight: 600, 
+              color: colors.primaryText, 
+              margin: 0
+            }}>
+              Saved Authors ({filteredAuthors.length})
+            </h2>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ color: colors.secondaryText, fontSize: '0.9rem' }}>
+                Show:
+              </span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                style={{
+                  padding: '8px 12px',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  backgroundColor: colors.background,
+                  color: colors.primaryText,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value={10}>10</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span style={{ color: colors.secondaryText, fontSize: '0.9rem' }}>
+                entries
+              </span>
+            </div>
+          </div>
 
           {error && (
             <div style={{ 
-              padding: '20px', 
+              padding: '16px', 
               backgroundColor: '#fee2e2', 
               border: '1px solid #fecaca', 
               borderRadius: '8px', 
               color: '#dc2626',
               marginBottom: '24px'
             }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem' }}>⚠️ Connection Error</h3>
-              <p style={{ margin: '0 0 12px 0' }}>{error}</p>
-              {error.includes('Cannot connect to server') && (
-                <div style={{ 
-                  padding: '12px', 
-                  backgroundColor: '#fef3c7', 
-                  border: '1px solid #fbbf24', 
-                  borderRadius: '6px',
-                  color: '#92400e',
-                  fontSize: '0.9rem'
-                }}>
-                  <strong>To fix this:</strong>
-                  <ol style={{ margin: '8px 0 0 20px', padding: 0 }}>
-                    <li>Open terminal in the server directory</li>
-                    <li>Run: <code style={{ backgroundColor: '#f3f4f6', padding: '2px 4px', borderRadius: '3px' }}>npm start</code> or <code style={{ backgroundColor: '#f3f4f6', padding: '2px 4px', borderRadius: '3px' }}>npm run dev</code></li>
-                    <li>Make sure the server is running on port 5000</li>
-                    <li>Refresh this page</li>
-                  </ol>
-                </div>
-              )}
+              {error}
             </div>
           )}
 
@@ -370,7 +425,7 @@ export default function Authors() {
               display: 'grid', 
               gap: '16px' 
             }}>
-              {filteredAuthors.map((author) => (
+              {currentAuthors.map((author) => (
                 <div
                   key={author.id}
                   style={{
@@ -434,6 +489,96 @@ export default function Authors() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{ 
+              marginTop: '32px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px'
+            }}>
+              {/* Info text */}
+              <div style={{ color: colors.secondaryText, fontSize: '0.9rem' }}>
+                Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} entries
+              </div>
+
+              {/* Pagination buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Previous button */}
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    padding: '8px 12px',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '6px',
+                    backgroundColor: currentPage === 1 ? colors.border : colors.background,
+                    color: currentPage === 1 ? colors.secondaryText : colors.primaryText,
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Previous
+                </button>
+
+                {/* Page numbers */}
+                {getPageNumbers().map((page, index) => (
+                  <button
+                    key={index}
+                    onClick={() => typeof page === 'number' && setCurrentPage(page)}
+                    disabled={page === '...'}
+                    style={{
+                      padding: '8px 12px',
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '6px',
+                      backgroundColor: page === currentPage ? colors.primary : colors.background,
+                      color: page === currentPage ? 'white' : 
+                             page === '...' ? colors.secondaryText : colors.primaryText,
+                      cursor: page === '...' ? 'default' : 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: page === currentPage ? '600' : '400',
+                      transition: 'all 0.2s ease',
+                      minWidth: '40px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (page !== '...' && page !== currentPage) {
+                        e.target.style.backgroundColor = colors.border;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (page !== '...' && page !== currentPage) {
+                        e.target.style.backgroundColor = colors.background;
+                      }
+                    }}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                {/* Next button */}
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    padding: '8px 12px',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '6px',
+                    backgroundColor: currentPage === totalPages ? colors.border : colors.background,
+                    color: currentPage === totalPages ? colors.secondaryText : colors.primaryText,
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </div>
