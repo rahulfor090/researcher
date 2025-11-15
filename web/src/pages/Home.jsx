@@ -46,7 +46,7 @@ const Home = () => {
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      
+
       // Update scroll progress
       if (scrollProgressRef.current) {
         const progress = (scrollY / (documentHeight - windowHeight)) * 100;
@@ -95,7 +95,7 @@ const Home = () => {
     <div className="home-root min-h-screen flex flex-col items-center relative overflow-hidden pt-0 font-inter bg-app-gradient">
       {/* Scroll Progress Indicator */}
       <div className="fixed top-0 left-0 w-full h-1 z-50 progress-track">
-        <div 
+        <div
           ref={scrollProgressRef}
           className="h-full transition-all duration-300 ease-out progress-bar"
         />
@@ -108,7 +108,7 @@ const Home = () => {
         ref={heroRef}
         className="relative flex min-h-[70vh] items-center justify-center bg-cover bg-center py-20 text-white w-full overflow-hidden animate-fade-in hero-section"
       >
-        
+
         {/* Enhanced Hero animated accents */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 left-1/4 h-80 w-80 rounded-full blur-2xl animate-float-slow opacity-40 radial-brand-40" />
@@ -117,25 +117,26 @@ const Home = () => {
           <div className="absolute top-1/2 left-1/6 h-32 w-32 rounded-full blur-lg animate-pulse opacity-25 radial-success-40" />
         </div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] animate-slide-up">
-            Accelerate Your Research Workflow
-          </h1>
+          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] animate-slide-up">
+            Your Personal Library for Every Research Article You Buy
+          </h2>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-slate-100 leading-relaxed animate-slide-up animation-delay-200">
-            Streamline your research process with Research Locker. Save, organize, and access your research materials effortlessly, anytime, anywhere.
+            Stop losing PDFs in email receipts, downloads folders, or random drives.
+            ResearchLocker keeps all your articles organized, searchable, and always accessible — in one clean, secure place.
           </p>
           {user ? (
-             <div className="mt-10 flex items-center justify-center gap-6 animate-slide-up animation-delay-400">
-            <Link 
-              to="/dashboard" 
-              className="group relative inline-flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 btn-brand"
-            >
-               <span className="relative z-[1] flex items-center gap-2">
-                 <span>Go to Dashboard</span>
-                 <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
-               </span>
-               <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-             </Link>
-           </div>
+            <div className="mt-10 flex items-center justify-center gap-6 animate-slide-up animation-delay-400">
+              <Link
+                to="/dashboard"
+                className="group relative inline-flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 btn-brand"
+              >
+                <span className="relative z-[1] flex items-center gap-2">
+                  <span>Go to Dashboard</span>
+                  <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+              </Link>
+            </div>
           ) : (
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up animation-delay-400">
               <Link to="/register" className="group relative inline-flex min-w-[200px] max-w-[500px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-10 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1 btn-brand">
@@ -145,16 +146,16 @@ const Home = () => {
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               </Link>
-              
-              <a 
-                href="https://chromewebstore.google.com/detail/research-locker/fgnfgifnggpfbmconkhcdjhdjdnnomfd?authuser=0&hl=en" 
-                target="_blank" 
+
+              <a
+                href="https://chromewebstore.google.com/detail/research-locker/fgnfgifnggpfbmconkhcdjhdjdnnomfd?authuser=0&hl=en"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="group relative inline-flex min-w-[180px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1 btn-outline-light"
               >
                 <span className="relative z-[1] flex items-center gap-3">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                   <span>Download Extension</span>
                   <span className="group-hover:translate-x-1 transition-transform duration-300">⬇️</span>
@@ -169,72 +170,132 @@ const Home = () => {
       <section className="py-16 sm:py-24 w-full bg-alt" id="features">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-primary-text">Powerful Features Designed for You</h2>
-              <p className="mt-4 max-w-2xl mx-auto text-lg text-secondary-text">
-              Explore the features that make Research Locker the ultimate research management tool.
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-primary-text">Powerful Features Built for Researchers Who Buy Articles</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-secondary-text">
+              Everything you need to keep your PDFs organized, searchable, and easy to revisit.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
               <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-brand-10" />
-              <span className="text-3xl mt-1 text-brand">📦</span>
-            <div>
-                <h3 className="text-lg font-bold text-primary-text">Free Article Storage</h3>
-                <p className="mt-1 text-secondary-text">Start with a free plan that includes ample storage for your research articles.</p>
+              <span className="text-3xl mt-1 text-brand">📂</span>
+              <div>
+                <h3 className="text-lg font-bold text-primary-text">Store All Your Purchased PDFs in One Place</h3>
+                <p className="mt-1 text-secondary-text">Upload files or forward them from your email — no more searching through messy folders or receipts.</p>
               </div>
             </div>
             <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
               <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-highlight-10" />
-              <span className="text-3xl mt-1 text-highlight">☁️</span>
+              <span className="text-3xl mt-1 text-highlight">⚡</span>
               <div>
-                <h3 className="text-lg font-bold text-primary-text">Secure Cloud Storage</h3>
-                <p className="mt-1 text-secondary-text">Your research is stored securely in the cloud, ensuring it's always safe and accessible.</p>
-          </div>
+                <h3 className="text-lg font-bold text-primary-text">One-Click Saving From Any Journal Website</h3>
+                <p className="mt-1 text-secondary-text">Use our Chrome extension to instantly save an article with full metadata (title, journal, authors, DOI).</p>
+              </div>
             </div>
             <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
               <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-accent-10" />
-              <span className="text-3xl mt-1 text-accent">🖱️</span>
+              <span className="text-3xl mt-1 text-accent">🧠</span>
               <div>
-                <h3 className="text-lg font-bold text-primary-text">One-Click Saving</h3>
-                <p className="mt-1 text-secondary-text">Save articles directly from your browser with our easy-to-use extension.</p>
-          </div>
+                <h3 className="text-lg font-bold text-primary-text">AI Summary for Every Paper</h3>
+                <p className="mt-1 text-secondary-text">Get a quick, clear summary of any research article — perfect for reviewing or refreshing your understanding.</p>
+              </div>
             </div>
             <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
               <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-brand-10" />
-              <span className="text-3xl mt-1 text-brand">🔎</span>
+              <span className="text-3xl mt-1 text-brand">🔍</span>
               <div>
-                <h3 className="text-lg font-bold text-primary-text">Advanced Search & Filters</h3>
-                <p className="mt-1 text-secondary-text">Quickly find articles with powerful search and filtering options.</p>
-          </div>
+                <h3 className="text-lg font-bold text-primary-text">Search by Author, Journal, Tags, or Keywords</h3>
+                <p className="mt-1 text-secondary-text">Find any article in seconds, even if you forgot the file name or where it came from.</p>
+              </div>
             </div>
             <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
               <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-highlight-10" />
-              <span className="text-3xl mt-1 text-highlight">♾️</span>
+              <span className="text-3xl mt-1 text-highlight">📁</span>
               <div>
-                <h3 className="text-lg font-bold text-primary-text">Unlimited Storage Plans</h3>
-                <p className="mt-1 text-secondary-text">Upgrade to unlimited storage to save as many articles as you need.</p>
+                <h3 className="text-lg font-bold text-primary-text">Create Collections for Each Topic or Project</h3>
+                <p className="mt-1 text-secondary-text">Organize your research into folders or categories that match your workflow.</p>
+              </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-accent-10" />
+              <span className="text-3xl mt-1 text-accent">☁️</span>
+              <div>
+                <h3 className="text-lg font-bold text-primary-text">Secure Cloud Library — Available Anywhere</h3>
+                <p className="mt-1 text-secondary-text">Access your research across all devices. Your files are safe, backed up, and never lost.</p>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
+
+
+
+      <section className="py-16 sm:py-24 w-full bg-alt" id="features">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-primary-text">Built for Anyone Who Buys, Reads, or Manages Research PDFs</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-secondary-text">
+              Whether you're a student, researcher, academic, or working professional — ResearchLocker helps you stay organized and save time.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-brand-10" />
+              <span className="text-3xl mt-1 text-brand">🎓</span>
+              <div>
+                <h3 className="text-lg font-bold text-primary-text">Students</h3>
+                <p className="mt-1 text-secondary-text">Keep all your course readings, research articles, and assignments in one organized library.
+                  Find anything instantly during exams or writing projects.</p>
+              </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-highlight-10" />
+              <span className="text-3xl mt-1 text-highlight">🔬</span>
+              <div>
+                <h3 className="text-lg font-bold text-primary-text">Researchers</h3>
+                <p className="mt-1 text-secondary-text">Stop losing PDFs across email, desktop, and downloads.
+                  Use tags, collections, and AI summaries to speed up your review process.</p>
+              </div>
             </div>
             <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
               <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-accent-10" />
               <span className="text-3xl mt-1 text-accent">📚</span>
               <div>
-                <h3 className="text-lg font-bold text-primary-text">Personal Research Library</h3>
-                <p className="mt-1 text-secondary-text">Build a comprehensive library of your research materials, organized and accessible.</p>
-          </div>
+                <h3 className="text-lg font-bold text-primary-text">Academics & Faculty</h3>
+                <p className="mt-1 text-secondary-text">Maintain a clean library of papers for teaching, publishing, and ongoing research.
+                  Quickly revisit and summarize articles you read months ago.</p>
+              </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-brand-10" />
+              <span className="text-3xl mt-1 text-brand">💼</span>
+              <div>
+                <h3 className="text-lg font-bold text-primary-text">Professionals</h3>
+                <p className="mt-1 text-secondary-text">Track industry reports, whitepapers, and research for your field.
+                  Create collections for each project or topic.</p>
+              </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-highlight-10" />
+              <span className="text-3xl mt-1 text-highlight">💡</span>
+              <div>
+                <h3 className="text-lg font-bold text-primary-text">If you read research, ResearchLocker is built for you.</h3>
+                <p className="mt-1 text-secondary-text">Simple, fast, and designed around your actual workflow.</p>
+              </div>
+            </div>
+            <div className="group relative overflow-hidden flex gap-4 p-6 rounded-2xl shadow-sm hover:shadow-md transition card-feature">
+              <span className="absolute -top-8 -right-8 h-24 w-24 rounded-full blur-xl group-hover:scale-125 transition bg-accent-10" />
+              <span className="text-3xl mt-1 text-accent">☁️</span>
+              <div>
+                <h3 className="text-lg font-bold text-primary-text">Researchers</h3>
+                <p className="mt-1 text-secondary-text">Review papers faster with AI summaries, organize articles by tags or collections, and keep every PDF easily accessible for ongoing projects.</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
-      <section ref={addToRefs} className="py-20 sm:py-28 w-full relative overflow-hidden bg-alt">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-6 animate-on-scroll text-earth-primary">Empowering Academics and Professionals</h2>
-          <p className="mt-6 max-w-4xl mx-auto text-xl leading-relaxed animate-on-scroll text-earth-secondary">
-            Join a community of researchers who are transforming their workflows with Research Locker. Whether you're a student, or professional, our platform is designed to meet your needs.
-          </p>
-        </div>
-        {/* Decorative bubbles removed */}
-      </section>
+
+
 
       {/* Demo Video */}
       <section ref={addToRefs} className="relative z-10 w-full py-16 sm:py-24 bg-app">
@@ -257,23 +318,26 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl mb-6 animate-on-scroll text-earth-primary">How It Works</h2>
-            <p className="text-xl max-w-2xl mx-auto animate-on-scroll text-earth-secondary">A simple, intuitive process to revolutionize your research.</p>
+            <p className="text-xl max-w-2xl mx-auto animate-on-scroll text-earth-secondary">A simple, intuitive workflow designed to streamline and elevate your research process.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
             <div className="group flex flex-col items-center p-8 rounded-3xl hover:scale-105 transition-all duration-300 hover:shadow-xl animate-on-scroll howit-card">
               <div className="icon-bubble icon-bubble--save group-hover:scale-110 transition-transform duration-300">💾</div>
-              <h3 className="text-2xl font-bold mb-4 text-earth-primary">Save Articles Easily</h3>
-              <p className="text-center leading-relaxed text-earth-secondary">Use our browser extension to save articles with a single click. No more manual downloads or messy folders.</p>
+              <h3 className="text-2xl font-bold mb-4 text-earth-primary">Save Articles Instantly</h3>
+              <p className="text-center leading-relaxed text-earth-secondary">Capture articles with one click using our browser extension.
+                No more downloads, no more clutter—everything saves automatically to your library.</p>
             </div>
             <div className="group flex flex-col items-center p-8 rounded-3xl hover:scale-105 transition-all duration-300 hover:shadow-xl animate-on-scroll howit-card">
               <div className="icon-bubble icon-bubble--organize group-hover:scale-110 transition-transform duration-300">🗂️</div>
-              <h3 className="text-2xl font-bold mb-4 text-earth-primary">Organize Smarter</h3>
-              <p className="text-center leading-relaxed text-earth-secondary">Effortlessly organize your research with powerful tools that help you categorize, tag, and search your library.</p>
+              <h3 className="text-2xl font-bold mb-4 text-earth-primary">Organize Effortlessly</h3>
+              <p className="text-center leading-relaxed text-earth-secondary">Keep your research structured with smart tools for tagging, categorizing, and filtering.
+                Find what you need in seconds with advanced search and custom labels.</p>
             </div>
             <div className="group flex flex-col items-center p-8 rounded-3xl hover:scale-105 transition-all duration-300 hover:shadow-xl animate-on-scroll howit-card">
               <div className="icon-bubble icon-bubble--access group-hover:scale-110 transition-transform duration-300">📱</div>
-              <h3 className="text-2xl font-bold mb-4 text-earth-primary">Access Anywhere</h3>
-              <p className="text-center leading-relaxed text-earth-secondary">Access your research library from any device, whether you're at your desk or on the go.</p>
+              <h3 className="text-2xl font-bold mb-4 text-earth-primary">Access Anytime, Anywhere</h3>
+              <p className="text-center leading-relaxed text-earth-secondary">Your research library syncs across all your devices.
+                Work seamlessly whether you're at your desk, traveling, or reading on mobile.</p>
             </div>
           </div>
         </div>
@@ -289,7 +353,7 @@ const Home = () => {
               Save research articles with a single click directly from any website. Our browser extension makes it effortless to capture and organize your research.
             </p>
           </div>
-          
+
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#e5e7eb] shadow-xl">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -330,12 +394,12 @@ const Home = () => {
                     </li>
                   </ul>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="mb-6">
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg bg-brand">
+                    <div className="w-24 h-24 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg bg-brand">
                       <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                       </svg>
                     </div>
                     <h4 className="text-xl font-bold mb-2 text-brand">ResearchLocker Extension</h4>
@@ -351,15 +415,15 @@ const Home = () => {
                       <span className="text-sm font-medium text-earth-secondary">5.0 (2 ratings)</span>
                     </div>
                   </div>
-                  
-                  <a 
-                    href="https://chromewebstore.google.com/detail/research-locker/fgnfgifnggpfbmconkhcdjhdjdnnomfd?authuser=0&hl=en" 
-                    target="_blank" 
+
+                  <a
+                    href="https://chromewebstore.google.com/detail/research-locker/fgnfgifnggpfbmconkhcdjhdjdnnomfd?authuser=0&hl=en"
+                    target="_blank"
                     rel="noopener noreferrer"
-                  className="group relative inline-flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1 btn-brand">
+                    className="group relative inline-flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-14 px-8 text-white text-lg font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:scale-105 hover:-translate-y-1 btn-brand">
                     <span className="relative z-[1] flex items-center gap-3">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                       </svg>
                       <span>Add to Chrome</span>
                       <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
@@ -371,94 +435,172 @@ const Home = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Decorative bubbles removed */}
       </section>
 
-      
+
 
       {/* Pricing */}
-      <section className="py-16 sm:py-24 w-full bg-card" id="pricing">
+      <section className="py-20 w-full bg-card" id="pricing">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-primary-text">Pro Membership</h2>
-            <p className="mt-4 text-lg text-secondary-text">Unlock everything with one simple plan.</p>
+
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold text-primary-text">
+              Pricing
+            </h2>
+            <p className="mt-3 text-lg text-secondary-text">
+              Start free. Upgrade anytime for more power.
+            </p>
           </div>
-          <div className="grid grid-cols-1 gap-8 max-w-3xl mx-auto">
-            <div className="flex flex-col gap-6 rounded-lg p-8 relative border-brand-2">
-              <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
-                <span className="text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full badge-brand">Most Popular</span>
-              </div>
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-primary-text">Pro</h3>
-                <p className="mt-2 text-4xl font-extrabold text-primary-text">$9<span className="text-lg font-medium text-secondary-text">/month</span></p>
-                <p className="mt-2 text-sm text-secondary-text">For serious researchers</p>
-              </div>
-              <ul className="space-y-3 text-secondary-text">
-                <li className="flex items-center gap-3">✅ Unlimited Articles</li>
-                <li className="flex items-center gap-3">✅ Advanced Organization</li>
-                <li className="flex items-center gap-3">✅ Priority Support</li>
-            </ul>
-              <Link to="/upgrade" className="w-full mt-auto inline-flex items-center justify-center rounded-md h-12 px-6 text-slate-50 font-semibold transition btn-brand">
-                Upgrade Now
-            </Link>
+
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            {/* Free Plan */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-10 shadow-sm">
+              <h3 className="text-2xl font-semibold text-primary-text text-center">Free</h3>
+              <p className="mt-2 text-4xl font-bold text-primary-text text-center">
+                $0<span className="text-lg font-medium text-secondary-text">/year</span>
+              </p>
+              <p className="mt-3 text-sm text-secondary-text text-center max-w-sm mx-auto">
+                Perfect for students and casual readers getting started with research organization.
+              </p>
+
+              <ul className="space-y-4 text-secondary-text mt-8">
+                <li className="flex items-center gap-3">✔ Save up to 10 articles</li>
+                <li className="flex items-center gap-3">✔ Basic Tags & Collections</li>
+                <li className="flex items-center gap-3">✔ Access on Web</li>
+              </ul>
+
+              <Link
+                to="/register"
+                className="w-full mt-10 inline-flex items-center justify-center rounded-xl h-12 px-6 font-semibold text-primary-text border border-gray-300 hover:bg-gray-50 transition"
+              >
+                Get Started Free
+              </Link>
             </div>
+
+            {/* Pro Plan */}
+            <div className="relative rounded-2xl border border-brand-2 bg-white p-10 shadow-lg">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-brand-2  text-xs font-bold px-4 py-1 rounded-full shadow">
+                  MOST POPULAR
+                </span>
+              </div>
+
+              <h3 className="text-2xl font-semibold text-primary-text text-center">Pro</h3>
+              <p className="mt-2 text-5xl font-extrabold text-primary-text text-center">
+                $9<span className="text-lg font-medium text-secondary-text">/year</span>
+              </p>
+              <p className="mt-3 text-sm text-secondary-text text-center max-w-sm mx-auto">
+                For researchers who want a smarter, faster workflow with full features unlocked.
+              </p>
+
+              <ul className="space-y-4 text-secondary-text mt-8">
+                <li className="flex items-center gap-3">✔ Save Unlimited Articles</li>
+                <li className="flex items-center gap-3">✔ Smart Tags & Collections</li>
+                <li className="flex items-center gap-3">✔ AI Summaries & Insights</li>
+                <li className="flex items-center gap-3">✔ Access Across All Devices</li>
+                <li className="flex items-center gap-3">✔ Priority Support</li>
+              </ul>
+
+
+
+              <Link
+                to="/upgrade"
+                className="w-full mt-10 inline-flex items-center justify-center rounded-xl h-12 px-6 font-semibold text-primary-text border border-gray-300 hover:bg-gray-50 transition"
+              >
+                Upgrade Now
+              </Link>
+            </div>
+
           </div>
         </div>
       </section>
+
+
+
 
       {/* Who Benefits */}
       <section className="py-16 sm:py-24 w-full bg-background-alt" id="who-benefits">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-primary-text">Who Benefits from ResearchLocker?</h2>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-primary-text">
+              Who Benefits from ResearchLocker?
+            </h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-secondary-text">
-              See how ResearchLocker can help you achieve your goals, no matter your field.
+              Designed for anyone who reads, buys, or manages research.
             </p>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
             <div className="flex flex-col">
               <div className="w-full bg-center bg-no-repeat bg-cover rounded-lg mb-4 benefit-img benefit-img--students"></div>
               <h3 className="text-lg font-bold text-primary-text">Students</h3>
-              <p className="mt-1 text-secondary-text">Organize your course materials and research papers efficiently.</p>
+              <p className="mt-1 text-secondary-text">
+                Keep all your course readings, research articles, and assignments in one organized library.
+              </p>
             </div>
+
             <div className="flex flex-col">
               <div className="w-full bg-center bg-no-repeat bg-cover rounded-lg mb-4 benefit-img benefit-img--researchers"></div>
               <h3 className="text-lg font-bold text-primary-text">Researchers</h3>
-              <p className="mt-1 text-secondary-text">Streamline your research process and collaborate with colleagues.</p>
+              <p className="mt-1 text-secondary-text">
+                Stop losing PDFs across email or downloads. Use tags, collections, and AI summaries to speed up your review process.
+              </p>
             </div>
+
             <div className="flex flex-col">
               <div className="w-full bg-center bg-no-repeat bg-cover rounded-lg mb-4 benefit-img benefit-img--academics"></div>
-              <h3 className="text-lg font-bold text-primary-text">Academics</h3>
-              <p className="mt-1 text-secondary-text">Manage your publications and teaching resources in one place.</p>
-          </div>
+              <h3 className="text-lg font-bold text-primary-text">Academics & Faculty</h3>
+              <p className="mt-1 text-secondary-text">
+                Maintain a clean library of papers for teaching and publishing. Quickly revisit articles you read months ago.
+              </p>
+            </div>
+
             <div className="flex flex-col">
               <div className="w-full bg-center bg-no-repeat bg-cover rounded-lg mb-4 benefit-img benefit-img--professionals"></div>
               <h3 className="text-lg font-bold text-primary-text">Professionals</h3>
-              <p className="mt-1 text-secondary-text">Keep track of industry trends and research relevant to your field.</p>
-          </div>
+              <p className="mt-1 text-secondary-text">
+                Track industry reports, whitepapers, and research for your field. Create collections for each project or topic.
+              </p>
+            </div>
+
           </div>
         </div>
       </section>
 
+
       {/* Bottom CTA */}
       <section className="py-16 sm:py-24 w-full bg-card">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-primary-text">Ready to take control of your research?</h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-primary-text">
+            Ready to Organize Every Research Article You Own?
+          </h2>
+
           <p className="mt-4 max-w-2xl mx-auto text-lg text-secondary-text">
-            Start building your research library today and experience a new level of efficiency.
+            Stop losing PDFs in emails and downloads. Start your free library and keep every article searchable, summarized, and accessible anywhere.
           </p>
+
           {user ? (
-            <Link to="/library" className="mt-8 inline-flex min-w-[84px] max-w-md mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-6 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors btn-brand">
+            <Link
+              to="/library"
+              className="mt-8 inline-flex min-w-[84px] max-w-md mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-6 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors btn-brand"
+            >
               Go to your library
             </Link>
           ) : (
-            <Link to="/register" className="mt-8 inline-flex min-w-[84px] max-w-md mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-6 text-slate-50 text-base font-bold leading-normal tracking-[0.015em] transition-colors btn-brand">
+            <Link
+              to="/register"
+              className="mt-8 inline-flex min-w-[84px] max-w-md mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-6 text-slate-50 text-base font-bold leading-normal tracking-[0.015em] transition-colors btn-brand"
+            >
               Get Started Free
             </Link>
           )}
         </div>
       </section>
+
 
       {/* Local keyframes are defined in Home.scss */}
 
