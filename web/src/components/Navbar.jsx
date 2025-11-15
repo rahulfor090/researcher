@@ -137,7 +137,7 @@ const Navbar = () => {
                 text.style.textShadow = 'none';
               }
             }}>
-              <img src="/unnamed.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <img src="/logo_research_locker.png" alt="Research Locker" className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-[#e8ddd4] object-cover transition-all duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
               <span className="text-[#111827] text-2xl font-bold group-hover:text-[#4F46E5] transition-all duration-300">Research Locker</span>
             </Link>
           </div>

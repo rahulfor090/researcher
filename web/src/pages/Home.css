@@ -1,3 +1,4 @@
+$primary-button: '#4146C9';
 :root {
   --gradient-app: linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 100%);
   --gradient-primary: linear-gradient(135deg, #0D9488, #14b8a6);
